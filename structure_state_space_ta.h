@@ -44,5 +44,7 @@ typedef struct {
 void explore_state_space_ta(TA* ta);
 void build_state_space_ta(TA* ta, State_space_TA* state_space_ta);
 void print_state_space_ta(State_space_TA* state_space_ta, char** locations, char** actions);
-
+State* compute_init_state(TA* ta);
+int EF_p(TA* ta,State* init_state, int goal, bool (*check)(State* s, int goal,TA* ta));
+bool check_p(State* s, int goal,TA* ta);
 #endif

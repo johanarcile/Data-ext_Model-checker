@@ -187,3 +187,16 @@ void print_dbm(DBM zone){
     }
     printf("\n");
 }
+
+bool clock_zones_equal(DBM zone1, DBM zone2, int dim) { // memecmp compare due x bolc de memoire avec la mm taille
+    // for (int i = 0; i < dim; i++) {
+    //     for (int j = 0; j < dim; j++) {
+    //         if (zone1[i][j] != zone2[i][j]) { 
+    //             return false;
+    //         }
+    //     }
+    // }
+    // return true;
+       return memcmp(zone1, zone2,
+                  dim * dim * sizeof(zone1[0][0])) == 0;
+}

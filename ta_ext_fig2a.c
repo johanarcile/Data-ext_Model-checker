@@ -95,7 +95,7 @@ void init_variables() {
 // --------------------- Update functions ---------------------
 
 Variable update_a(Variable var) { if (var.v + 2 <= 10 && var.v + 2 >= -10) var.v += 2; return var; }
-Variable update_b(Variable var) { if (var.v - 1 <= 10 && var.v - 1 >= -10) var.v -= 1; return var; }
+Variable update_b(Variable var) { if (var.v + 1 <= 10 && var.v + 1 >= -10) var.v += 1; return var; }//pour garantir acyclicité - --> +
 Variable update_c(Variable var) { if (var.v * 2 <= 10 && var.v * 2 >= -10) var.v *= 2; return var; }
 
 void init_update_functions() {

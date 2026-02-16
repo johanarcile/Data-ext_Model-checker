@@ -16,5 +16,5 @@ bool is_empty(DBM zone);
 void time_elapse_within_invariant(DBM zone, DBM invariant);
 void successor_zone(DBM zone, DBM guard, clocks reset, DBM invariant);
 void print_dbm(DBM zone);
-
+bool clock_zones_equal(DBM zone1, DBM zone2, int dim);
 #endif

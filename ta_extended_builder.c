@@ -4,7 +4,8 @@
 #include "structure_ta.h"
 #include "structure_state_space_ta.h"
 #include "uthash.h"
-
+#include "structure_DBM.h"
+#include "hashTable.h"
 // --------------------- Hashed state space functions ---------------------
 
 // Ajouter un nouvel état
@@ -202,3 +203,298 @@ void explore_state_space_ta(TA* ta) {
     }
         
 }
+
+
+
+
+
+/*==================properties checking functions ===============================*/
+
+bool check_p(State* s, int goal,TA* ta){
+    //printf("\n i'm checking: \n");
+    //print_state(s, ta->locations);
+    if (s->var.v == goal) {
+        printf("\n value %d found\n", goal);
+        return true;
+    }
+    return false;
+}
+
+/*===============Exploration Alogorithms=============================================*/
+
+State* NextBorder(TA* ta, State state, State* init_state,
+                  int goal, int* num_finals, bool* found)
+{
+    /* ---------- Queue BFS ---------- */
+    int capacity = 10;
+    int head = 0;
+    int tail = 0;
+
+    State* exploring = malloc(capacity * sizeof(State));
+    if (!exploring) return NULL;
+
+    exploring[tail++] = state;
+
+    /* ---------- Finals ---------- */
+    int capacity_finals = 4;
+    State* finals = malloc(capacity_finals * sizeof(State));
+    if (!finals) {
+        free(exploring);
+        return NULL;
+    }
+
+    *num_finals = 0;
+    *found = false;
+
+    printf("\n starting exploration with nextborder\n");
+
+    /* ---------- BFS ---------- */
+    while (head < tail) {
+
+        State current = exploring[head++];
+
+        int num_succ = 0;
+        State* succs = get_successors(ta, &current, &num_succ);
+
+             /*----check in BFS---------*/
+        if (check_p(&current, goal, ta)){
+             printf("\nProperty found in NextBorder!");
+             *found = true;
+              State* result = malloc(sizeof(State));
+             *result = current;
+              free(exploring);
+              free(finals);
+              *num_finals = 0;
+              return result;
+
+             }
+
+
+        for (int j = 0; j < num_succ; j++) {
+
+            State* s = &succs[j];
+            bool present = false;
+
+            /* ----- Border state ----- */
+            if ((s->location == init_state->location) &&
+                clock_zones_equal(s->clock_zone,
+                                  init_state->clock_zone,
+                                  DBM_DIM))
+            {
+                /* vérifier doublon */
+                for (int k = 0; k < *num_finals; k++) {
+                    if (s->var.v == finals[k].var.v) {
+                        present = true;
+                        break;
+                    }
+                }
+
+                if (!present) {
+
+                    if (*num_finals >= capacity_finals) {
+                        capacity_finals *= 2;
+
+                        State* tmp =
+                            realloc(finals,
+                                    capacity_finals * sizeof(State));
+
+                        if (!tmp) {
+                            free(finals);
+                            free(exploring);
+                            free(succs);
+                            return NULL;
+                        }
+
+                        finals = tmp;
+                    }
+
+                    finals[*num_finals] = *s;
+                    (*num_finals)++;
+                }
+
+            }
+            /* ----- Continue BFS ----- */
+            else {
+
+                if (tail >= capacity) {
+                    capacity *= 2;
+
+                    State* tmp =
+                        realloc(exploring,
+                                capacity * sizeof(State));
+
+                    if (!tmp) {
+                        free(finals);
+                        free(exploring);
+                        free(succs);
+                        return NULL;
+                    }
+
+                    exploring = tmp;
+                }
+
+                exploring[tail++] = *s;
+            }
+        }
+
+        free(succs);
+    }
+
+    free(exploring);
+    return finals;
+}
+
+
+
+
+typedef struct ListNode {
+    State state;
+    struct ListNode* next;
+} ListNode;
+
+
+void list_add(ListNode** list, State s) {
+    ListNode* node = malloc(sizeof(ListNode));
+    node->state = s;
+    node->next = *list;
+    *list = node;
+}
+
+State list_extract_best(ListNode** list) {
+    ListNode* prev_best = NULL;
+    ListNode* best = *list;
+    ListNode* prev = NULL;
+    ListNode* cur = *list;
+
+    while (cur != NULL) {
+        if (cur->state.var.v > best->state.var.v) { // HEURISTIQUE
+            best = cur;
+            prev_best = prev;
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+
+    // retirer de la liste
+    if (prev_best == NULL)
+        *list = best->next;
+    else
+        prev_best->next = best->next;
+
+    State s = best->state;
+    free(best);
+
+    return s;
+}
+
+int EF_p(TA* ta, State* init_state, int goal, bool (*check)(State* s, int goal, TA* ta)) {
+    bool found = false;
+    ListNode* exploring = NULL;
+    
+    // Table de hachage pour suivre les états déjà visités/explorés
+    HashTable* visited = hash_table_create();
+    
+    list_add(&exploring, *init_state);
+    hash_table_add(visited, *init_state);  // Marquer l'état initial
+    
+    while (exploring != NULL) {
+        State current = list_extract_best(&exploring);
+        printf("\nvaleur de v %d", current.var.v);
+        
+        int num_succ = 0;
+        State* successors = NextBorder(ta, current, init_state, goal, &num_succ, &found);
+        
+        if (found) {
+            printf("\nProperty FOUND in NextBorder! Returning 1\n");
+            free(successors);
+            hash_table_destroy(visited);
+            return 1;
+        }
+        
+        printf("\nnbr de sucessors de current %d est : %d\n", current.var.v, num_succ);
+        
+        if (!((num_succ == 1) && (current.var.v == successors[0].var.v))) {
+            for (int i = 0; i < num_succ; i++) {
+                State* s = &successors[i];
+                
+                // Vérifier si l'état n'a pas déjà été visité/exploré
+                if (!hash_table_contains(visited, *s)) {
+                    print_state(s, ta->locations);
+                    
+                    if (check_p(s, goal, ta)) {
+                        free(successors);
+                        hash_table_destroy(visited);
+                        printf("\nProperty FOUND in border! Returning 1\n");
+                        return 1;
+                    }
+                    
+                    list_add(&exploring, *s);
+                    hash_table_add(visited, *s);  // Marquer comme visité
+                }
+            }
+            
+            if (num_succ > 0) {
+                free(successors);
+            }
+        }
+    }
+    
+    hash_table_destroy(visited);
+    printf("\nvaleur pas trouvee\n");
+    return 0;
+}
+
+
+// int EF_p(TA* ta,State* init_state, int goal, bool (*check)(State* s, int goal,TA* ta)) {
+  
+//     bool found = false;
+
+//    ListNode* exploring = NULL;
+//    list_add(&exploring, *init_state);
+
+//     while (exploring != NULL) {
+
+//         State current = list_extract_best(&exploring);
+
+//         int num_succ = 0;
+//         printf("\n valeur de v %d", current.var.v);
+        
+     
+        
+//             printf("\nici depth avec valeur %d", current.var.v);
+//            State* successors = NextBorder(ta, current, init_state, goal, &num_succ, &found);
+
+//             // Vérifier si la propriété a été trouvée dans NextBorder
+//             if (found) {
+//                 printf("\n Property FOUND in NextBorder! Returning 1\n");
+//                 free(successors);
+//                 return 1;   // TRUE
+//             }
+//             printf("\n  nbr de sucessors de current %d  est : %d \n", current.var.v,num_succ);
+//             // arreter si num_scc =1 et successor[0]=current 
+//             if(!((num_succ == 1) &&(current.var.v == successors[0].var.v)))
+//             {
+//             for (int i = 0; i < num_succ; i++) {
+//                 State* s = &successors[i];
+//                 print_state(s,ta->locations);
+//                 // Vérifier aussi les états frontières
+//                 if (check_p(s, goal,ta)){
+//                     free(successors);
+//                     printf("\n Property FOUND in border! Returning 1\n");
+//                     return 1;   // TRUE
+//                 }
+               
+//                 // Continuer l'exploration
+//                list_add(&exploring, *s);
+//             }
+            
+//             if (num_succ > 0) {
+//                 free(successors);
+//             }
+//         }
+        
+//     }
+    
+//     printf("\n valeur pas trouvee\n");
+//     return 0;  // FALSE
+// }
