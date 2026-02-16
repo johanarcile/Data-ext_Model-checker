@@ -220,24 +220,44 @@ bool check_p(State* s, int goal,TA* ta){
     return false;
 }
 
+bool check_p_inf(State* s, int goal,TA* ta){
+    //printf("\n i'm checking: \n");
+    //print_state(s, ta->locations);
+    if (s->var.v < goal) {
+        printf("\n value %d found\n", goal);
+        return true;
+    }
+    return false;
+}
+
+bool check_p_sup(State* s, int goal,TA* ta){
+    //printf("\n i'm checking: \n");
+    //print_state(s, ta->locations);
+    if (s->var.v > goal) {
+        printf("\n value %d found\n", goal);
+        return true;
+    }
+    return false;
+}
+
 /*===============Exploration Alogorithms=============================================*/
 
 State* NextBorder(TA* ta, State state, State* init_state,
-                  int goal, int* num_finals, bool* found)
+                  int goal, int* num_finals, bool* found, bool (*check)(State* s, int goal, TA* ta))
 {
     /* ---------- Queue BFS ---------- */
     int capacity = 10;
     int head = 0;
     int tail = 0;
 
-    State* exploring = malloc(capacity * sizeof(State));
+    State* exploring = malloc(capacity * sizeof(State));// trouver une optimisation sans le malloc
     if (!exploring) return NULL;
 
     exploring[tail++] = state;
 
     /* ---------- Finals ---------- */
     int capacity_finals = 4;
-    State* finals = malloc(capacity_finals * sizeof(State));
+    State* finals = malloc(capacity_finals * sizeof(State));// trouver une optimisation sans le malloc
     if (!finals) {
         free(exploring);
         return NULL;
@@ -257,7 +277,7 @@ State* NextBorder(TA* ta, State state, State* init_state,
         State* succs = get_successors(ta, &current, &num_succ);
 
              /*----check in BFS---------*/
-        if (check_p(&current, goal, ta)){
+        if (check(&current, goal, ta)){
              printf("\nProperty found in NextBorder!");
              *found = true;
               State* result = malloc(sizeof(State));
@@ -296,7 +316,7 @@ State* NextBorder(TA* ta, State state, State* init_state,
 
                         State* tmp =
                             realloc(finals,
-                                    capacity_finals * sizeof(State));
+                                    capacity_finals * sizeof(State));// finals = realloc ()
 
                         if (!tmp) {
                             free(finals);
@@ -402,7 +422,7 @@ int EF_p(TA* ta, State* init_state, int goal, bool (*check)(State* s, int goal, 
         printf("\nvaleur de v %d", current.var.v);
         
         int num_succ = 0;
-        State* successors = NextBorder(ta, current, init_state, goal, &num_succ, &found);
+        State* successors = NextBorder(ta, current, init_state, goal, &num_succ, &found, check);
         
         if (found) {
             printf("\nProperty FOUND in NextBorder! Returning 1\n");
@@ -421,7 +441,7 @@ int EF_p(TA* ta, State* init_state, int goal, bool (*check)(State* s, int goal, 
                 if (!hash_table_contains(visited, *s)) {
                     print_state(s, ta->locations);
                     
-                    if (check_p(s, goal, ta)) {
+                    if (check(s, goal, ta)) {
                         free(successors);
                         hash_table_destroy(visited);
                         printf("\nProperty FOUND in border! Returning 1\n");

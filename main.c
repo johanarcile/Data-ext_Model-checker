@@ -12,7 +12,7 @@ int main() {
     TA ta;
     fill_ta_struct(&ta);
     State* init_state = compute_init_state(&ta);
-    int c = EF_p(& ta,init_state,11,check_p);
+    int c = EF_p(& ta,init_state,0,check_p);
     printf("\n la valeur retourne dans main%d",c);
 
     // explore_state_space_ta(&ta);

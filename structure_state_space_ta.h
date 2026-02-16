@@ -47,4 +47,6 @@ void print_state_space_ta(State_space_TA* state_space_ta, char** locations, char
 State* compute_init_state(TA* ta);
 int EF_p(TA* ta,State* init_state, int goal, bool (*check)(State* s, int goal,TA* ta));
 bool check_p(State* s, int goal,TA* ta);
+bool check_p_sup(State* s, int goal,TA* ta);
+bool check_p_inf(State* s, int goal,TA* ta);
 #endif
