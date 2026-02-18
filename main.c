@@ -2,7 +2,8 @@
 #include "structure_DBM.h"
 #include "structure_ta.h"
 #include "structure_state_space_ta.h"
-#include "hashTable.h"
+
+
 // Déclarations manuelles de la fonction de construction du modèle
 
 void fill_ta_struct(TA* ta);
@@ -12,7 +13,11 @@ int main() {
     TA ta;
     fill_ta_struct(&ta);
     State* init_state = compute_init_state(&ta);
-    int c = EF_p(& ta,init_state,0,check_p);
+    // printf("\n location: %d",init_state->location);
+    // printf("\n horloge: %d",init_state->clock_zone);
+
+
+    int c = EF_p(& ta,init_state->location,init_state->clock_zone,1,check_p,heuristique_checkp_max);
     printf("\n la valeur retourne dans main%d",c);
 
     // explore_state_space_ta(&ta);
