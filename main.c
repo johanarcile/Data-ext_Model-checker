@@ -17,7 +17,7 @@ int main() {
     // printf("\n horloge: %d",init_state->clock_zone);
 
 
-    int c = EF_p(& ta,init_state->location,init_state->clock_zone,1,check_p,heuristique_checkp_max);
+    int c = EF_p(& ta,init_state->location,init_state->clock_zone,8,check_p,heuristique_checkp_max);
     printf("\n la valeur retourne dans main%d",c);
 
     // explore_state_space_ta(&ta);
