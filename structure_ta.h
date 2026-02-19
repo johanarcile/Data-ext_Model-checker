@@ -3,6 +3,8 @@
 
 #include "structure_variable.h"
 #include "structure_DBM.h"
+#define TABLE_SIZE 3
+#define NAME_SIZE 50
 
 typedef Variable (*UpdateFunction)(Variable);
 typedef bool (*Constraint)(Variable);

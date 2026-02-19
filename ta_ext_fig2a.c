@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 #include "structure_ta.h"
 
 
@@ -90,14 +91,48 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
 void init_variables() { 
     variable.v = 0;
+    variable.active=false;
+    variable.table_size = 2;
+    variable.table[0] = 0;
+    variable.table[1] = 0;
+    variable.table[2] = 0;
+    strcpy(variable.name, "start");
 }
 
 // --------------------- Update functions ---------------------
 
-Variable update_a(Variable var) { if (var.v + 2 <= 10 && var.v + 2 >= -10) var.v += 2; return var; }
-Variable update_b(Variable var) { if (var.v + 1 <= 10 && var.v + 1 >= -10) var.v += 1; return var; }//pour garantir acyclicité - --> +
-Variable update_c(Variable var) { if (var.v * 2 <= 10 && var.v * 2 >= -10) var.v *= 2; return var; }
+// Variable update_a(Variable var) { if (var.v + 2 <= 100 && var.v + 2 >= -10) var.v += 2; return var; }
+// Variable update_b(Variable var) { if (var.v + 1 <= 100 && var.v + 1 >= -10) var.v += 1; return var; }//pour garantir acyclicité - --> +
+// Variable update_c(Variable var) { if (var.v * 2 <= 100 && var.v * 2 >= -10) var.v *= 2; return var; }
+Variable update_a(Variable var) {
+    var.active = true;
+    // var.table[0]++;
+    // var.table[1] = var.v;
+    if (var.v + 2 <= 100 && var.v + 2 >= -10) var.v += 2;
+    // var.table[2] = var.v;
+    snprintf(var.name, NAME_SIZE, "transition a");
+    return var;
+}
 
+Variable update_b(Variable var) {
+    var.active = true;
+    // var.table[0]++;
+    // var.table[1] = var.v;
+    if (var.v + 1 <= 100 && var.v + 1 >= -10) var.v += 1;
+    // var.table[2] = var.v;
+     snprintf(var.name, NAME_SIZE, "transition b");
+    return var;
+}
+
+Variable update_c(Variable var) {
+    var.active = true;
+    // var.table[0]++;
+    // var.table[1] = var.v;
+    if (var.v * 2 <= 100 && var.v * 2 >= -10) var.v *= 2;
+    // var.table[2] = var.v;
+    snprintf(var.name, NAME_SIZE, "transition c");
+    return var;
+}
 void init_update_functions() {
     update_functions[0] = update_a;
     update_functions[1] = update_b;

@@ -2,7 +2,7 @@
 #include "structure_DBM.h"
 #include "structure_ta.h"
 #include "structure_state_space_ta.h"
-
+#include <time.h>
 
 // Déclarations manuelles de la fonction de construction du modèle
 
@@ -15,10 +15,15 @@ int main() {
     State* init_state = compute_init_state(&ta);
     // printf("\n location: %d",init_state->location);
     // printf("\n horloge: %d",init_state->clock_zone);
+    clock_t debut, fin;
+    double temps_ecoule;
+    debut = clock(); 
+    int c = EF_p(& ta,init_state->location,init_state->clock_zone,8,check_p,heuristique_checkp);
+    fin = clock();            // Fin du chronomètre
 
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
 
-    int c = EF_p(& ta,init_state->location,init_state->clock_zone,8,check_p,heuristique_checkp_max);
-    printf("\n la valeur retourne dans main%d",c);
+    printf("Temps d execution : %f secondes\n", temps_ecoule); 
 
     // explore_state_space_ta(&ta);
     // bool c = c_EFP(& ta);
