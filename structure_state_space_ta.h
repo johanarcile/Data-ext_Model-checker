@@ -41,16 +41,40 @@ typedef struct {
     int* nb_trans_by_state;   //Dynamic array of int giving the number of outgoing transition of state at index
 } State_space_TA;
 
+typedef struct {
+    Variable       key;
+    State          state;
+    double         weight;
+    bool           explored;   /* false = à explorer, true = déjà traité */
+    UT_hash_handle hh;
+} StateWeight;
+
+
+// /* ---------goal variable -----------------  */
+// #define CHECK_V      1   // 001
+// #define CHECK_ACTIVE 2   // 010
+// #define CHECK_NAME   4   // 100
+// //void fill_ta_struct(TA* ta);
+// typedef struct {
+//     int mask;      // indique quoi vérifier
+
+//     int v;
+//     bool active;
+//     char name[50];
+
+// } GoalCondition;
+// /* ------------------------------------  */
+
 void explore_state_space_ta(TA* ta);
 void build_state_space_ta(TA* ta, State_space_TA* state_space_ta);
 void print_state_space_ta(State_space_TA* state_space_ta, char** locations, char** actions);
 State* compute_init_state(TA* ta);
-int EF_p(TA* ta, int location, DBM clock, int goal,
-         bool (*check)(State* s, int goal, TA* ta), int (*heuristique_check)(State* s,int goal));
-bool check_p(State* s, int goal,TA* ta);
-bool check_p_sup(State* s, int goal,TA* ta);
-bool check_p_inf(State* s, int goal,TA* ta);
-int heuristique_checkp(State* s,int goal);
-int heuristique_checkp_inf(State* s, int goal);
-int heuristique_checkp_max(State* s, int goal);
+int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
+         bool (*check)(State* s, GoalCondition* goal, TA* ta), int (*heuristique_check)(State* s,GoalCondition* goal));
+bool check_p(State* s, GoalCondition* goal, TA* ta);
+bool check_p_sup(State* s, GoalCondition* goal,TA* ta);
+bool check_p_inf(State* s, GoalCondition* goal,TA* ta);
+int heuristique_checkp(State* s,GoalCondition* goal);
+int heuristique_checkp_inf(State* s, GoalCondition* goal);
+int heuristique_checkp_max(State* s, GoalCondition* goal);
 #endif

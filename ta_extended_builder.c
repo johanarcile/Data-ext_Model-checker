@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "structure_DBM.h"
 #include "structure_ta.h"
 #include "structure_state_space_ta.h"
@@ -188,6 +189,12 @@ void print_state(State* etat, char** locations) {
         printf("\t Clock zone :\n");
         print_dbm(etat->clock_zone);
         printf("\t Variables       : v = %d\n", etat->var.v);
+        printf("\t Variables       : Active = %d\n", etat->var.active);
+        printf("\t Variables       : name = %s\n", etat->var.name);
+         printf("\t Variables       : table = [ %d, %d, %d,] \n", etat->var.table[0], etat->var.table[1],etat->var.table[2]);
+        
+
+
         printf("\n");
 }
 
@@ -210,47 +217,117 @@ void explore_state_space_ta(TA* ta) {
 
 /*==================properties checking functions ===============================*/
 
-bool check_p(State* s, int goal,TA* ta){
-    //printf("\n i'm checking: \n");
-    //print_state(s, ta->locations);
-    if (s->var.v == goal) {
-        printf("\n value %d found\n", goal);
-        return true;
+// bool check_p(State* s, int goal,TA* ta){
+//     //printf("\n i'm checking: \n");
+//     //print_state(s, ta->locations);
+//     if (s->var.v == goal) {
+//         printf("\n value %d found\n", goal);
+//         return true;
+//     }
+//     return false;
+// }
+
+
+bool check_p(State* s, GoalCondition* goal, TA* ta) {
+
+    if (goal->mask & CHECK_V) { // pour tester v il faut 001 et goal.mask !=0 
+        printf("\n checking v");
+        if (s->var.v != goal->v)
+            return false;
     }
-    return false;
+
+    if (goal->mask & CHECK_ACTIVE) { // pour tester v il faut 010 et goal.mask !=0 
+         printf("\n checking ACTIVE");
+        if (s->var.active != goal->active)
+            return false;
+    }
+
+    if (goal->mask & CHECK_NAME) {// pour tester v il faut 100 et goal.mask !=0 
+        printf("\n checking Name");
+        if (strcmp(s->var.name, goal->name) != 0)
+            return false;
+    }
+
+    return true;
 }
 
-bool check_p_inf(State* s, int goal,TA* ta){
-    //printf("\n i'm checking: \n");
-    //print_state(s, ta->locations);
-    if (s->var.v < goal) {
-        printf("\n value %d found\n", goal);
-        return true;
+bool check_p_inf(State* s, GoalCondition* goal, TA* ta) {
+
+    if (goal->mask & CHECK_V) { // pour tester v il faut 001 et goal.mask !=0 
+        printf("\n checking v");
+        if (s->var.v >= goal->v)
+            return false;
     }
-    return false;
+
+    if (goal->mask & CHECK_ACTIVE) { // pour tester v il faut 010 et goal.mask !=0 
+         printf("\n checking ACTIVE");
+        if (s->var.active != goal->active)
+            return false;
+    }
+
+    if (goal->mask & CHECK_NAME) {// pour tester v il faut 100 et goal.mask !=0 
+        printf("\n checking Name");
+        if (strcmp(s->var.name, goal->name) != 0)
+            return false;
+    }
+
+    return true;
 }
 
-bool check_p_sup(State* s, int goal,TA* ta){
-    //printf("\n i'm checking: \n");
-    //print_state(s, ta->locations);
-    if (s->var.v > goal) {
-        printf("\n value %d found\n", goal);
-        return true;
+bool check_p_sup(State* s, GoalCondition* goal, TA* ta) {
+
+    if (goal->mask & CHECK_V) { // pour tester v il faut 001 et goal.mask !=0 
+        printf("\n checking v");
+        if (s->var.v <= goal->v)
+            return false;
     }
-    return false;
+
+    if (goal->mask & CHECK_ACTIVE) { // pour tester v il faut 010 et goal.mask !=0 
+         printf("\n checking ACTIVE");
+        if (s->var.active != goal->active)
+            return false;
+    }
+
+    if (goal->mask & CHECK_NAME) {// pour tester v il faut 100 et goal.mask !=0 
+        printf("\n checking Name");
+        if (strcmp(s->var.name, goal->name) != 0)
+            return false;
+    }
+
+    return true;
 }
+
+// bool check_p_inf(State* s, int goal,TA* ta){
+//     //printf("\n i'm checking: \n");
+//     //print_state(s, ta->locations);
+//     if (s->var.v < goal) {
+//         printf("\n value %d found\n", goal);
+//         return true;
+//     }
+//     return false;
+// }
+
+// bool check_p_sup(State* s, int goal,TA* ta){
+//     //printf("\n i'm checking: \n");
+//     //print_state(s, ta->locations);
+//     if (s->var.v > goal) {
+//         printf("\n value %d found\n", goal);
+//         return true;
+//     }
+//     return false;
+// }
 /*========================Heuristiques=============================================*/
 
- int heuristique_checkp(State* s,int goal){
-    return abs(s->var.v - goal);
+ int heuristique_checkp(State* s,GoalCondition* goal){
+    return abs(s->var.v - goal->v);
  }
 
- int heuristique_checkp_inf(State* s, int goal){
+ int heuristique_checkp_inf(State* s, GoalCondition* goal){
    
      return  s->var.v ;
  }
 
- int heuristique_checkp_max(State* s, int goal){
+ int heuristique_checkp_max(State* s, GoalCondition* goal){
     
     printf("\n ici using heuristique_checkp_max");
     return   - (s->var.v);
@@ -259,7 +336,7 @@ bool check_p_sup(State* s, int goal,TA* ta){
 /*===============Exploration Alogorithms=============================================*/
 
 State* NextBorder(TA* ta, State state, int location, DBM clock,
-                  int goal, int* num_finals, bool* found, bool (*check)(State* s, int goal, TA* ta))
+                  GoalCondition *goal, int* num_finals, bool* found, bool (*check)(State* s, GoalCondition* goal, TA* ta))
 {
     /* ---------- Queue BFS ---------- */
     int capacity = 10;
@@ -428,8 +505,8 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
 // /*  EF_p                                                              */
 // /* ------------------------------------------------------------------ */
 
-// int EF_p(TA* ta, int location, DBM clock, int goal,
-//          bool (*check)(State* s, int goal, TA* ta), int (*heuristique_check)(State* s, int goal)) {
+// int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
+//          bool (*check)(State* s, GoalCondition* goal, TA* ta), int (*heuristique_check)(State* s, GoalCondition* goal)) {
 
 //     bool   found      = false;
 //     State* init_state = compute_init_state(ta);
@@ -532,15 +609,8 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
 /*  Structure unique : frontière avec booleen explored                   */
 /* ------------------------------------------------------------------ */
 
-typedef struct {
-    Variable       key;
-    State          state;
-    double         weight;
-    bool           explored;   /* false = à explorer, true = déjà traité */
-    UT_hash_handle hh;
-} StateWeight;
 
-static void sw_add(StateWeight** table, State s, double w) {
+ void sw_add(StateWeight** table, State s, double w) {
     StateWeight* e = NULL;
     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
     if (e == NULL) {
@@ -555,13 +625,13 @@ static void sw_add(StateWeight** table, State s, double w) {
     } 
 }
 
-static StateWeight* sw_find(StateWeight** table, State s) {
+StateWeight* sw_find(StateWeight** table, State s) {
     StateWeight* e = NULL;
     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
     return e;
 }
 
-static void sw_destroy(StateWeight** table) {
+ void sw_destroy(StateWeight** table) {
     StateWeight *cur, *tmp;
     HASH_ITER(hh, *table, cur, tmp) {  //Pourquoi tmp ? Parce que HASH_DEL modifie les pointeurs internes de cur. Sans tmp, on perdrait le lien vers le reste de la liste.
         HASH_DEL(*table, cur);
@@ -573,14 +643,14 @@ static void sw_destroy(StateWeight** table) {
 /*  EF_p                                                              */
 /* ------------------------------------------------------------------ */
 
-int EF_p(TA* ta, int location, DBM clock, int goal,
-         bool (*check)(State* s, int goal, TA* ta), int (*heuristique_check)(State* s,int goal)) {
+int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
+         bool (*check)(State* s, GoalCondition* goal, TA* ta), int (*heuristique_check)(State* s,GoalCondition* goal)) {
 
     bool   found      = false;
     State* init_state = compute_init_state(ta);
 
     /* Sécuriser le padding de Var pour que HASH_FIND soit fiable */
-    memset(&init_state->var, 0, sizeof(Variable));
+   // memset(&init_state->var, 0, sizeof(Variable));
 
     StateWeight* states = NULL;  /* Table unique */
 
@@ -618,13 +688,13 @@ int EF_p(TA* ta, int location, DBM clock, int goal,
 
         if (!((num_succ == 1) &&
                        equal_var(&current.var, &successors[0].var))) {
-            for (int i = 0; i < num_succ; i++) {
+            for (int i = 0; i < num_succ; i++) {// parallelFor??????????
                 State* s = &successors[i];
 
                 StateWeight* existing = sw_find(&states, *s);
 
                 /* Traiter uniquement si non exploré */
-                if (existing == NULL || !existing->explored) {
+                if (existing == NULL){// || !existing->explored) {
                     
                     printf("\nNot done!");
 
@@ -652,7 +722,7 @@ int EF_p(TA* ta, int location, DBM clock, int goal,
         best = NULL;
         StateWeight *cur, *tmp;
         HASH_ITER(hh, states, cur, tmp) {
-            if (!cur->explored) {
+            if (!cur->explored) {//A améliorer
                 if (best == NULL || cur->weight < best->weight)
                     best = cur;
             }
