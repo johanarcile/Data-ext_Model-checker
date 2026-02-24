@@ -14,10 +14,10 @@ int main() {
     TA ta;
     fill_ta_struct(&ta);
     State* init_state = compute_init_state(&ta);
-    // printf("\n location: %d",init_state->location);
-    // printf("\n horloge: %d",init_state->clock_zone);
+    printf("\n location: %d",init_state->location);
+    printf("\n horloge: %d",init_state->clock_zone);
 
-    
+    print_state(init_state,ta.locations);
 
     GoalCondition g;
    // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
@@ -30,12 +30,16 @@ int main() {
     clock_t debut, fin;
     double temps_ecoule;
     debut = clock(); 
-    int c = EF_p(& ta,init_state->location,init_state->clock_zone,&g,check_p_sup,heuristique_checkp_max);
+    int c = EF_p(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
 
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
 
     printf("Temps d execution : %f secondes\n", temps_ecoule); 
+    State_space_TA state_space_ta;
+    build_state_space_ta(&ta, &state_space_ta);
+    printf("Nombre total d'états étendus : %d\n", state_space_ta.nb_etats);
+    printf("\n trouver? : %s ", c? "true" : "false");
 
 
 
