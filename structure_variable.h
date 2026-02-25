@@ -8,6 +8,7 @@
 
 typedef struct Variable {
     int v;
+    int x;
     int table[TABLE_SIZE];   // tableau d'int
     int table_size;          // nombre d’éléments utilisés
 

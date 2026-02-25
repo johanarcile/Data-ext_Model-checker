@@ -19,8 +19,8 @@ Constraint* constraints;         // Contraintes
 // ---------------------Instantiation TA ---------------------
 
 void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND HAVING ALL VARIABLES BE ARRAYS
-    int nb_locations = 9;
-    int nb_actions = 3;
+    int nb_locations = 12;
+    int nb_actions = 4;
 
     locations = malloc(nb_locations * sizeof(char*));
     invariants = malloc(nb_locations * sizeof(DBM*));
@@ -40,11 +40,15 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     locations[6] = "l0l5";
     locations[7] = "l1l5";
     locations[8] = "l2l5";
+    locations[9] = "l0l6";
+    locations[10] = "l1l6";
+    locations[11] = "l2l6";
 
 
     
     // Invariants
     static DBM i_0 = {{0,0,0},{4,0,infty},{4,infty,0}};
+    static DBM i_6 = {{0,0,0},{4,0,infty},{3,infty,0}};
     invariants[0] = &i_0;
     invariants[1] = &i_0;
     invariants[2] = &i_0;
@@ -54,12 +58,17 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     invariants[6] = &i_0;
     invariants[7] = &i_0;
     invariants[8] = &i_0;
+    invariants[9] = &i_6;
+    invariants[10] = &i_6;
+    invariants[11] = &i_6;
 
 
     // Actions
     actions[0] = "a";
     actions[1] = "b";
     actions[2] = "c";
+    actions[3] = "d";
+
 
     // Transitions
     nb_trans_par_location[0] = 4;
@@ -100,21 +109,45 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     transitions[5][0] = (Transition){.location_in = 4, .label_action = 1, .guard = {{0,0,-4},{infty,0,infty},{infty,infty,0}}, .reset = {infty,0}};
     transitions[5][1] = (Transition){.location_in = 1, .label_action = 1, .guard = {{0,-4,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};  
     
-    nb_trans_par_location[6] = 3;
+    nb_trans_par_location[6] = 4;
     transitions[6] = malloc(nb_trans_par_location[6] * sizeof(Transition));
     transitions[6][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,0,-4},{infty,0,infty},{infty,infty,0}}, .reset = {infty,0}};
     transitions[6][1] = (Transition){.location_in = 7, .label_action = 0, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
     transitions[6][2] = (Transition){.location_in = 8, .label_action = 0, .guard = {{0,-2,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+    transitions[6][3] = (Transition){.location_in = 9, .label_action = 3, .guard = {{0,0,-2},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
 
-    nb_trans_par_location[7] = 2;
+
+    nb_trans_par_location[7] = 3;
     transitions[7] = malloc(nb_trans_par_location[7] * sizeof(Transition));
     transitions[7][0] = (Transition){.location_in = 2, .label_action = 1, .guard = {{0,0,-4},{infty,0,infty},{infty,infty,0}}, .reset = {infty,0}};
     transitions[7][1] = (Transition){.location_in = 6, .label_action = 2, .guard = {{0,-4,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
+    transitions[7][2] = (Transition){.location_in = 10, .label_action = 3, .guard = {{0,0,-2},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
 
-    nb_trans_par_location[8] = 2;
+
+    nb_trans_par_location[8] = 3;
     transitions[8] = malloc(nb_trans_par_location[8] * sizeof(Transition));
     transitions[8][0] = (Transition){.location_in = 4, .label_action = 1, .guard = {{0,0,-4},{infty,0,infty},{infty,infty,0}}, .reset = {infty,0}};
     transitions[8][1] = (Transition){.location_in = 6, .label_action = 1, .guard = {{0,-4,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
+    transitions[8][2] = (Transition){.location_in = 11, .label_action = 3, .guard = {{0,0,-2},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+
+   nb_trans_par_location[9] = 3;
+   transitions[9] = malloc(nb_trans_par_location[9] * sizeof(Transition));
+   transitions[9][0] = (Transition){.location_in = 6, .label_action = 1, .guard = {{0,0,-4},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+   transitions[9][1] = (Transition){.location_in = 10, .label_action = 0, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+   transitions[9][2] = (Transition){.location_in = 11, .label_action = 0, .guard = {{0,-2,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+
+     nb_trans_par_location[10] = 2;
+    transitions[10] = malloc(nb_trans_par_location[10] * sizeof(Transition));
+    transitions[10][0] = (Transition){.location_in = 9, .label_action = 1, .guard = {{0,0,-4},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+    transitions[10][1] = (Transition){.location_in = 7, .label_action = 2, .guard = {{0,-4,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
+   
+
+     nb_trans_par_location[11] = 2;
+    transitions[11] = malloc(nb_trans_par_location[11] * sizeof(Transition));
+    transitions[11][0] = (Transition){.location_in = 9, .label_action = 1, .guard = {{0,-4,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
+    transitions[11][1] = (Transition){.location_in = 8, .label_action = 1, .guard = {{0,0,-4},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+
+
     
 
 }
@@ -123,6 +156,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
 void init_variables() { 
     variable.v = 0;
+    variable.x = 0;
     variable.active=false;
     variable.table_size = 3;
     variable.table[0] = 0;
@@ -141,6 +175,8 @@ Variable update_a(Variable var) {
 
     var.table[1] = var.v;
     if (var.v + 2 <= 100 && var.v + 2 >= -10){ var.table[0]++; var.v += 2;} 
+    if (var.x + 1 <= 500 && var.x + 1 >= -10){  var.x += 1;} 
+
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition a");
     return var;
@@ -151,6 +187,8 @@ Variable update_b(Variable var) {
    
     var.table[1] = var.v;
     if (var.v + 1 <= 100 && var.v + 1 >= -10){ var.table[0]++;var.v += 1;} 
+    if (var.x + 2 <= 500 ){  var.x += 2;} 
+
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition b");
     return var;
@@ -161,14 +199,30 @@ Variable update_c(Variable var) {
    
      var.table[1] = var.v;
     if (var.v * 2 <= 100 && var.v * 2 >= -10) {var.v *= 2; var.table[0]++;}
+    if (var.x + 3 <= 500 ){  var.x += 3;} 
+
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition c");
+    return var;
+}
+
+Variable update_d(Variable var) {
+    var.active = false;
+   
+     var.table[1] = var.v;
+    if (var.v + 2 <= 100 && var.v + 2 >= -10) {var.v += 2; var.table[0]++;}
+    if (var.x + 4 <= 500 ){  var.x += 4;} 
+
+    var.table[2] = var.v;
+    snprintf(var.name, NAME_SIZE, "transition d");
     return var;
 }
 void init_update_functions() {
     update_functions[0] = update_a;
     update_functions[1] = update_b;
     update_functions[2] = update_c;
+    update_functions[3] = update_d;
+
 }
 
 // --------------------- Contraintes ---------------------
@@ -181,6 +235,8 @@ void init_constraints() {
     constraints[0] = const_a;
     constraints[1] = const_b;
     constraints[2] = const_c;
+    constraints[3] = const_c;
+
 }
 
 // --------------------- Remplir la structure TA ---------------------

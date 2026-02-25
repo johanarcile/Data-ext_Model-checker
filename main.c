@@ -21,7 +21,7 @@ int main() {
 
     GoalCondition g;
    // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
-    g.mask = CHECK_V ;
+    g.mask = CHECK_V; //| CHECK_ACTIVE;
     g.active = true;
     g.v = 101;
     strcpy(  g.name, "transition b");
@@ -35,7 +35,7 @@ int main() {
 
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
 
-    printf("Temps d execution : %f secondes\n", temps_ecoule); 
+   printf("Temps d execution : %f secondes\n", temps_ecoule); 
     State_space_TA state_space_ta;
     build_state_space_ta(&ta, &state_space_ta);
     printf("Nombre total d'états étendus : %d\n", state_space_ta.nb_etats);

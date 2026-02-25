@@ -10,11 +10,12 @@
 
 typedef struct Variable {
     int v;
-     int table[TABLE_SIZE];   // tableau d'int
+    int table[TABLE_SIZE];   // tableau d'int
     int table_size;          // nombre d’éléments utilisés
 
     char name[NAME_SIZE];    // "string"
     bool active;             // booléen
+    int x;
     
 
 } Variable;
@@ -23,6 +24,9 @@ typedef struct Variable {
 bool equal_var(const Variable *v1, const Variable *v2) {
 
     if (v1->v != v2->v)
+        return false;
+
+      if (v1->x != v2->x)
         return false;
 
     if (v1->active != v2->active)
@@ -47,6 +51,8 @@ int compare_var(const Variable *v1, const Variable *v2) {
     if (v1->v < v2->v) return -1;
     if (v1->v > v2->v) return 1;
     // si ici donc v1.v == v2.V
+     if (v1->x < v2->x) return -1;
+    if (v1->x > v2->x) return 1;
     if (v1->active < v2->active) return -1;
     if (v1->active > v2->active) return 1;
      // si ici donc v1.v == v2.V et  v1.active = v2.active 
