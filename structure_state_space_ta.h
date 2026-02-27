@@ -41,13 +41,13 @@ typedef struct {
     int* nb_trans_by_state;   //Dynamic array of int giving the number of outgoing transition of state at index
 } State_space_TA;
 
-typedef struct {
-    Variable       key;
-    State          state;
-    double         weight;
-    bool           explored;   /* false = à explorer, true = déjà traité */
-    UT_hash_handle hh;
-} StateWeight;
+// typedef struct {
+//     Variable       key;
+//     State          state;
+//     double         weight;
+//     bool           explored;   /* false = à explorer, true = déjà traité */
+//     UT_hash_handle hh;
+// } StateWeight;
 
 
 

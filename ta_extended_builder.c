@@ -339,7 +339,7 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
                   GoalCondition *goal, int* num_finals, bool* found, bool (*check)(State* s, GoalCondition* goal, TA* ta))
 {
     /* ---------- Queue BFS ---------- */
-    int capacity = 10;
+    int capacity = 32;
     int head = 0;
     int tail = 0;
 
@@ -349,7 +349,7 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
     exploring[tail++] = state;
 
     /* ---------- Finals ---------- */
-    int capacity_finals = 4;
+    int capacity_finals = 32;
     State* finals = malloc(capacity_finals * sizeof(State));// trouver une optimisation sans le malloc
     if (!finals) {
         free(exploring);
@@ -443,8 +443,9 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
 
                     exploring = tmp;
                 }
-
+                //print_state(s, ta->locations);
                 exploring[tail++] = *s;
+
             }
         }
 
@@ -455,530 +456,166 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
     return finals;
 }
 
-/*==========================================Tester table hashage avec champs exploring ====================================================*/
-// /* ------------------------------------------------------------------ */
-// /*  Structure unique : frontière avec booleen explored (Variable uniquement) */
-// /* ------------------------------------------------------------------ */
-
-// typedef struct {
-//     Variable       key;
-//     double         weight;
-//     bool           explored;   /* false = à explorer, true = déjà traité */
-//     UT_hash_handle hh;
-// } StateWeight;
-
-// static void sw_add(StateWeight** table, Variable var, double w) {
-//     StateWeight* e = NULL;
-//     HASH_FIND(hh, *table, &var, sizeof(Variable), e);
-//     if (e == NULL) {
-//         e = malloc(sizeof(StateWeight));
-//         e->key      = var;
-//         e->weight   = w;
-//         e->explored = false;
-//         HASH_ADD(hh, *table, key, sizeof(Variable), e);
-//     } 
-// }
-
-// static StateWeight* sw_find_by_var(StateWeight** table, Variable var) {
-//     StateWeight* e = NULL;
-//     HASH_FIND(hh, *table, &var, sizeof(Variable), e);
-//     return e;
-// }
-
-// static void sw_destroy(StateWeight** table) {
-//     StateWeight *cur, *tmp;
-//     HASH_ITER(hh, *table, cur, tmp) {  
-//         HASH_DEL(*table, cur);
-//         free(cur);
-//     }
-// }
-
-// /* Fonction pour reconstruire un état à partir de sa variable */
-// static void reconstruct_state(State* s, Variable var, int location, DBM clock) {
-//     s->var = var;
-//     s->location = location;
-//     memcpy(s->clock_zone, clock, sizeof(DBM));
-// }
-
-/* ------------------------------------------------------------------ */
-/*  EF_p                                                              */
-/* ------------------------------------------------------------------ */
-
-// int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
-//          bool (*check)(State* s, GoalCondition* goal, TA* ta), int (*heuristique_check)(State* s, GoalCondition* goal)) {
-
-//     bool   found      = false;
-//     State* init_state = compute_init_state(ta);
-
-//     /* Sécuriser le padding de Variable pour que HASH_FIND soit fiable */
-//    // memset(&init_state->var, 0, sizeof(Variable));
-
-//     StateWeight* states = NULL;  /* Table unique */
-
-//     double init_weight = heuristique_check(init_state, goal);
-//     sw_add(&states, init_state->var, init_weight);
-    
-//     StateWeight* best = sw_find_by_var(&states, init_state->var);
-    
-//     while (best != NULL) {
-        
-//         /* Reconstruire l'état complet à partir de la variable */
-//          State current;
-//          reconstruct_state(&current, best->key, location, clock);
-//         double cur_weight = best->weight;
-
-//         if (check(&current, goal, ta)) {
-//             sw_destroy(&states);
-//             return 1;
-//         }
-
-//         best->explored = true;
-
-//         int    num_succ  = 0;
-//         State* successors = NextBorder(ta, current, location, clock,
-//                                        goal, &num_succ, &found, check);
-
-//         if (found) {
-//             free(successors);
-//             sw_destroy(&states);
-//             return 1;
-//         }
-
-
-//         if (!((num_succ == 1) && equal_var(&current.var, &successors[0].var))) {
-         
-//             for (int i = 0; i < num_succ; i++) {
-//                 State* s = &successors[i];
-               
-//                 /* Sécuriser le padding avant recherche */
-//                 //memset(&s->var, 0, sizeof(Variable));
-                
-//                 StateWeight* existing = sw_find_by_var(&states, s->var);
-
-//                 /* Traiter uniquement si non exploré */
-//                 if (existing == NULL || !existing->explored) {
-                    
-                    
-
-//                     if (check(s, goal, ta)) {
-//                         free(successors);
-//                         sw_destroy(&states);
-                        
-//                         return 1;
-//                     }
-
-
-//                     double w = heuristique_check(s, goal);
-                 
-
-//                     sw_add(&states, s->var, w);  /* Stocker uniquement la variable */
-//                 }
-//             }
-//         }
-
-//         if (num_succ > 0)
-//             free(successors);
-
-//         /* Chercher le prochain meilleur état non exploré */
-//         best = NULL;
-//         StateWeight *cur, *tmp;
-//         HASH_ITER(hh, states, cur, tmp) {
-//             if (!cur->explored) {
-//                 if (best == NULL || cur->weight < best->weight)
-//                     best = cur;
-//             }
-//         }
-//     }
-
-//     sw_destroy(&states);
-  
-//     return 0;
-// }
-
-
-
-// // /*==========================================Tester table hashage avec champs exploring ====================================================*/
-/* ------------------------------------------------------------------ */
-/*  Structure unique : frontière avec booleen explored                   */
-/* ------------------------------------------------------------------ */
-
-
-//  void sw_add(StateWeight** table, State s, double w) {
-//     StateWeight* e = NULL;
-//     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-//     if (e == NULL) {
-//         e = malloc(sizeof(StateWeight));
-//         e->key      = s.var;
-//         e->state    = s;
-//         e->weight   = w;
-//         e->explored = false;
-//         HASH_ADD(hh, *table, key, sizeof(Variable), e);
-       
-
-//     } 
-// }
-
-// StateWeight* sw_find(StateWeight** table, State s) {
-//     StateWeight* e = NULL;
-//     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-//     return e;
-// }
-
-//  void sw_destroy(StateWeight** table) {
-//     StateWeight *cur, *tmp;
-//     HASH_ITER(hh, *table, cur, tmp) {  //Pourquoi tmp ? Parce que HASH_DEL modifie les pointeurs internes de cur. Sans tmp, on perdrait le lien vers le reste de la liste.
-//         HASH_DEL(*table, cur);
-//         free(cur);
-//     }
-// }
-
-// /* ------------------------------------------------------------------ */
-// /*  EF_p                                                              */
-// /* ------------------------------------------------------------------ */
-
-// int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
-//          bool (*check)(State* s, GoalCondition* goal, TA* ta), int (*heuristique_check)(State* s,GoalCondition* goal)) {
-
-//     bool   found      = false;
-//     State* init_state = compute_init_state(ta);
-
-//     /* Sécuriser le padding de Var pour que HASH_FIND soit fiable */
-//    // memset(&init_state->var, 0, sizeof(Variable));
-
-//     StateWeight* states = NULL;  /* Table unique */
-
-//     double init_weight = heuristique_check(init_state, goal);
-//     sw_add(&states, *init_state, init_weight);
-    
-//     StateWeight *best = sw_find(&states, *init_state);
-//       while (best != NULL) {
-        
-//         State  current    = best->state;
-//         double cur_weight = best->weight;
-
-
-//         if (check(&current, goal, ta)) {
-                       
-//                         sw_destroy(&states);
-                     
-//                         return 1;
-//                     }
-
-//         best->explored = true;
-
-//         int    num_succ  = 0;
-//         State* successors = NextBorder(ta, current, location, clock,
-//                                        goal, &num_succ, &found, check);
-
-//         if (found) {
-          
-//             free(successors);
-//             sw_destroy(&states);
-//             return 1;
-//         }
-
-
-
-//         if (!((num_succ == 1) &&
-//                        equal_var(&current.var, &successors[0].var))) {
-//             for (int i = 0; i < num_succ; i++) {// parallelFor??????????
-//                 State* s = &successors[i];
-
-//                 StateWeight* existing = sw_find(&states, *s);
-
-//                 /* Traiter uniquement si non exploré */
-//                 if (existing == NULL){// || !existing->explored) {
-                    
-
-//                     if (check(s, goal, ta)) {
-//                         free(successors);
-//                         sw_destroy(&states);
-//                         return 1;
-//                     }
-
-
-//                     double w = heuristique_check(s, goal);
-
-//                     sw_add(&states, *s, w);
-//                 }
-//             }
-//         }
-
-//         if (num_succ > 0)
-//             free(successors);
-
-//         /* Chercher le prochain meilleur état non exploré */
-//         best = NULL;
-//         StateWeight *cur, *tmp;
-//         HASH_ITER(hh, states, cur, tmp) {
-//             if (!cur->explored) {//A améliorer
-//                 if (best == NULL || cur->weight < best->weight)
-//                     best = cur;
-//             }
-//         }
-//     }
-
-//     sw_destroy(&states);
-//     return 0;
-// }
-
-
-
-
-
-
-
-
-
-
-
-// /*==========================================tester tabele hashage (2 tables comme prmeière approche avec list et table) ===================*/
-
-
-// /* ------------------------------------------------------------------ */
-// /*  Structure 1 : frontière  (état + weight)                          */
-// /* ------------------------------------------------------------------ */
-
-// typedef struct {
-//     Variable            key;    /* clé = state.var, seul champ discriminant */
-//     State          state;
-//     double         weight;
-//     UT_hash_handle hh;
-// } StateWeight;
-
-
-
-
-// static void sw_add(StateWeight** table, State s, double w) {
-//     StateWeight* e = NULL;
-//     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-//     if (e == NULL) {
-//         e = malloc(sizeof(StateWeight));
-//         e->key    = s.var;
-//         e->state  = s;
-//         e->weight = w;
-//         HASH_ADD(hh, *table, key, sizeof(Variable), e);
-//     }
-// }
-
-// static StateWeight* sw_find(StateWeight** table, State s) {
-//     StateWeight* e = NULL;
-//     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-//     return e;
-// }
-
-// static void sw_destroy(StateWeight** table) {
-//     StateWeight *cur, *tmp;
-//     HASH_ITER(hh, *table, cur, tmp) {
-//         HASH_DEL(*table, cur);
-//         free(cur);
-//     }
-// }
-
-// int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
-//          bool (*check)(State* s, GoalCondition* goal, TA* ta),
-//          int (*heuristique_check)(State* s, GoalCondition* goal)) {
-
-//     //if (!ta) return 0;
-
-//     bool   found      = false;
-//     State* init_state = compute_init_state(ta);
-//     //if (!init_state) return 0;
-
-//     StateWeight* visiting = NULL;  /* frontier  */
-//     StateWeight* visited  = NULL;  /* seen set  */
-
-//     int init_weight = heuristique_check(init_state, goal);
-//     sw_add(&visiting, *init_state, init_weight);
-//     sw_add(&visited,  *init_state, init_weight);
-//     free(init_state);
-
-//     while (HASH_COUNT(visiting) > 0) {
-
-//         /* --- Extract state with lowest weight --- */
-//         StateWeight *best = NULL, *cur, *tmp;
-//         HASH_ITER(hh, visiting, cur, tmp) {
-//             if (best == NULL || cur->weight < best->weight)
-//                 best = cur;
-//         }
-
-//         State current = best->state;
-//         HASH_DEL(visiting, best);
-//         free(best);
-
-//         /* --- Compute successors --- */
-//         int    num_succ  = 0;
-//         State* successors = NextBorder(ta, current, location, clock,
-//                                        goal, &num_succ, &found, check);
-
-//         if (found) {
-//             free(successors);
-//             sw_destroy(&visiting);
-//             sw_destroy(&visited);
-//             return 1;
-//         }
-
-//         if (!successors) continue;
-
-//         bool boucle = (num_succ == 1) &&
-//                        equal_var(&current.var, &successors[0].var);
-
-//         if (!boucle) {
-//             for (int i = 0; i < num_succ; i++) {
-//                 State* s = &successors[i];
-
-//                 /* Skip if already seen */
-//                 if (sw_find(&visited, *s) != NULL)
-//                     continue;
-
-//                 if (check(s, goal, ta)) {
-//                     free(successors);
-//                     sw_destroy(&visiting);
-//                     sw_destroy(&visited);
-//                     return 1;
-//                 }
-
-//                 int w = heuristique_check(s, goal);
-//                 sw_add(&visiting, *s, w);
-//                 sw_add(&visited,  *s, w);  /* mark as seen immediately */
-//             }
-//         }
-
-//         free(successors);
-//     }
-
-//     sw_destroy(&visiting);
-//     sw_destroy(&visited);
-//     return 0;
-// }
-
-
-
-
-
-// /*==============Approche initiale =================================================================*/
-typedef struct ListNode {
-    State state;
-    struct ListNode* next;
-} ListNode;
-
-
-void list_add(ListNode** list, State s) {
-    ListNode* node = malloc(sizeof(ListNode));
-    node->state = s;
-    node->next = *list;
-    *list = node;
-}
-
-State list_extract_best(ListNode** list, GoalCondition* goal) {
-    ListNode* prev_best = NULL;
-    ListNode* best = *list;
-    ListNode* prev = NULL;
-    ListNode* cur = *list;
-
-    while (cur != NULL) {
-        if( heuristique_checkp(&(cur->state),goal) <  heuristique_checkp(&(best->state), goal)){// (equal_var(cur->state.var,best->state.var)) { // HEURISTIQUE    (cur->state.var.v > best->state.var.v)
-            best = cur;
-            prev_best = prev;
-        }
-        prev = cur;
-        cur = cur->next;
+/* ==========================================================================================EF(p)====================*/
+
+
+/* ================================================================== */
+/*  Visited hash table (table pour enregistrer les états visités)     */
+/* ================================================================== */
+
+typedef struct {
+    Variable       key;
+    //bool          explored;
+    UT_hash_handle hh;
+} visit;
+
+void visit_add(visit** table, State s) {
+    visit* e = NULL;
+    HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
+    if (e == NULL) {
+        e = malloc(sizeof(visit));
+        e->key    = s.var;
+        //e->explored  = true;
+        HASH_ADD(hh, *table, key, sizeof(Variable), e);
     }
+}
 
-    // retirer de la liste
-    if (prev_best == NULL)
-        *list = best->next;
-    else
-        prev_best->next = best->next;
+visit* visit_find(visit** table, State s) {
+    visit* e = NULL;
+    HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
+    return e;
+}
 
-    State s = best->state;
-    free(best);
-
-    return s;
+void visit_destroy(visit** table) {
+    visit *cur, *tmp;
+    HASH_ITER(hh, *table, cur, tmp) {
+        HASH_DEL(*table, cur);
+        free(cur);
+    }
 }
 
 
- void sw_add(StateWeight** table, State s, double w) {
+
+
+
+
+// // // /*==========================================tester tabele hashage (2 tables comme prmeière approche avec list et table) ===================*/
+
+
+/* ------------------------------------------------------------------ */
+/*  Structure 1 : frontière  (état + weight)                          */
+/* ------------------------------------------------------------------ */
+
+typedef struct {
+    Variable            key;    /* clé = state.var */
+    State          state;
+    int         weight;
+    UT_hash_handle hh;
+} StateWeight;
+
+
+
+
+static void sw_add(StateWeight** table, State s, int w) {
     StateWeight* e = NULL;
     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
     if (e == NULL) {
         e = malloc(sizeof(StateWeight));
-        e->key      = s.var;
-        e->state    = s;
-        e->weight   = w;
-        e->explored = false;
+        e->key    = s.var;
+        e->state  = s;
+        e->weight = w;
         HASH_ADD(hh, *table, key, sizeof(Variable), e);
-
-    } 
+    }
 }
 
-StateWeight* sw_find(StateWeight** table, State s) {
+static StateWeight* sw_find(StateWeight** table, State s) {
     StateWeight* e = NULL;
     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
     return e;
 }
 
- void sw_destroy(StateWeight** table) {
+static void sw_destroy(StateWeight** table) {
     StateWeight *cur, *tmp;
-    HASH_ITER(hh, *table, cur, tmp) {  //Pourquoi tmp ? Parce que HASH_DEL modifie les pointeurs internes de cur. Sans tmp, on perdrait le lien vers le reste de la liste.
+    HASH_ITER(hh, *table, cur, tmp) {
         HASH_DEL(*table, cur);
         free(cur);
     }
 }
 
 int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
-           bool (*check)(State* s, GoalCondition* goal, TA* ta),int (*heuristique_check)(State* s,GoalCondition* goal)) {
+         bool (*check)(State* s, GoalCondition* goal, TA* ta),
+         int (*heuristique_check)(State* s, GoalCondition* goal)) {
 
-    bool found = false;
-    ListNode* exploring = NULL;
+    //if (!ta) return 0;
+
+    bool   found      = false;
     State* init_state = compute_init_state(ta);
-   // State *hash_table = NULL;
-    // Table de hachage pour suivre les états déjà visités/explorés
-    //StateWeight* visited = hash_table_create();
-     StateWeight* visited = NULL;
-    list_add(&exploring, *init_state);
-    //hash_table_add(visited, *init_state);  // Marquer l'état initial
-    int init_weight = heuristique_check(init_state,goal);
-    sw_add(&visited, *init_state, init_weight);
-    
-    while (exploring != NULL) {
-        State current = list_extract_best(&exploring, goal);
-        
-        int num_succ = 0;
-        State* successors = NextBorder(ta, current, location,clock, goal, &num_succ, &found, check);
-        
+    //if (!init_state) return 0;
+
+    StateWeight* visiting = NULL;  /* frontier  */
+    visit* visited  = NULL;  /* seen set  */
+
+    int init_weight = heuristique_check(init_state, goal);
+    sw_add(&visiting, *init_state, init_weight);
+    visit_add(&visited,  *init_state);
+    free(init_state);
+
+    while (HASH_COUNT(visiting) > 0) {
+
+        /* --- Extract state with lowest weight --- */
+        StateWeight *best = NULL, *cur, *tmp;
+        HASH_ITER(hh, visiting, cur, tmp) {
+            if (best == NULL || cur->weight < best->weight)
+                best = cur;
+        }
+
+        State current = best->state;
+        HASH_DEL(visiting, best);
+        free(best);
+
+        /* --- Compute successors --- */
+        int    num_succ  = 0;
+        State* successors = NextBorder(ta, current, location, clock,
+                                       goal, &num_succ, &found, check);
+
         if (found) {
             free(successors);
-            sw_destroy(&visited);
+            sw_destroy(&visiting);
+            visit_destroy(&visited);
             return 1;
         }
-        
-        
-        if (!((num_succ == 1) &&(equal_var(&current.var,&successors[0].var)) )) {
+
+        if (!successors) continue;
+
+        bool boucle = (num_succ == 1) &&
+                       equal_var(&current.var, &successors[0].var);
+
+        if (!boucle) {
             for (int i = 0; i < num_succ; i++) {
                 State* s = &successors[i];
-                
-                // Vérifier si l'état n'a pas déjà été visité/exploré
-                if (!sw_find(&visited, *s)) {
-                    
-                    if (check(s, goal, ta)) {
-                        free(successors);
-                       sw_destroy(&visited);
-                        return 1;
-                    }
-                    int w = heuristique_check(s,goal);
-                    list_add(&exploring, *s);
-                   sw_add(&visited, *s,w);  // Marquer comme visité
+
+                /* Skip if already seen */
+                if (visit_find(&visited, *s) != NULL)
+                    continue;
+
+                if (check(s, goal, ta)) {
+                    free(successors);
+                    sw_destroy(&visiting);
+                    visit_destroy(&visited);
+                    return 1;
                 }
-            }
-            
-            if (num_succ > 0) {
-                free(successors);
+
+                int w = heuristique_check(s, goal);
+                sw_add(&visiting, *s, w);
+                visit_add(&visited,  *s);  /* mark as seen immediately */
             }
         }
+
+        free(successors);
     }
-    
-    sw_destroy(&visited);
+
+    sw_destroy(&visiting);
+    visit_destroy(&visited);
     return 0;
 }
 
@@ -986,19 +623,22 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
 
 
 
-// /* ================================================================== */
-// /*  Min-Heap (priority queue)                                         */
-// /* ================================================================== */
+
+
+
+// /* ================================================================================= */
+// /*  Min-Heap (priority queue)   pour sauvegarder les états ordonés selon le weight   */
+// /* ================================================================================ */
 
 // typedef struct {
 //     State  state;
-//     double weight;
+//     int weight;
 // } HeapNode;
 
 // typedef struct {
 //     HeapNode* data;
-//     int       size;
-//     int       capacity;
+//     int       size;// nbr d'elément actuel dans le heap
+//     int       capacity;// nbr d'element qu'on peut stocker
 // } MinHeap;
 
 // static MinHeap* heap_create(int capacity) {
@@ -1016,39 +656,39 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
 //     }
 // }
 
-// static void heap_swap(MinHeap* h, int i, int j) {
+//  void heap_swap(MinHeap* h, int i, int j) {
 //     HeapNode tmp  = h->data[i];
 //     h->data[i]    = h->data[j];
 //     h->data[j]    = tmp;
 // }
 
-// static void heap_sift_up(MinHeap* h, int i) {
-//     while (i > 0) {
-//         int parent = (i - 1) / 2;
-//         if (h->data[parent].weight <= h->data[i].weight) break;
-//         heap_swap(h, parent, i);
-//         i = parent;
+//  void heap_sift_up(MinHeap* h, int i) { // pour insérer nouveau élémnt dans sa place
+//     while (i > 0) { // jusqu'au premier élément
+//         int parent = (i - 1) / 2; // rend la partie décimal parent de 4 =>3/2=1
+//         if (h->data[parent].weight <= h->data[i].weight) break; // c ordonné
+//         heap_swap(h, parent, i);// swap si pas pas ordonné
+//         i = parent; // passer à l'élément au dessus
 //     }
 // }
 
-// static void heap_sift_down(MinHeap* h, int i) {
+// void heap_sift_down(MinHeap* h, int i) { // pour réordonner après pop du premier élément 
 //     while (1) {
 //         int smallest = i;
 //         int left     = 2 * i + 1;
 //         int right    = 2 * i + 2;
 
-//         if (left  < h->size && h->data[left].weight  < h->data[smallest].weight)
+//         if (left  < h->size && h->data[left].weight  < h->data[smallest].weight) // si le fils gauche existe et est plus petit que la parent 
 //             smallest = left;
 //         if (right < h->size && h->data[right].weight < h->data[smallest].weight)
 //             smallest = right;
 
-//         if (smallest == i) break;
+//         if (smallest == i) break; // i est donc plus petit que ses deux fils donc c cordonné
 //         heap_swap(h, i, smallest);
-//         i = smallest;
+//         i = smallest; // continuer avec l'element prochain
 //     }
 // }
 
-// static void heap_push(MinHeap* h, State s, double w) {
+// void heap_push(MinHeap* h, State s, int w) {
 //     /* Grow if needed */
 //     if (h->size == h->capacity) {
 //         h->capacity *= 2;
@@ -1056,54 +696,18 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
 //     }
 //     h->data[h->size].state  = s;
 //     h->data[h->size].weight = w;
-//     heap_sift_up(h, h->size);
+//     heap_sift_up(h, h->size); // on le place comme dernier élément et on monte
 //     h->size++;
 // }
 
-// static HeapNode heap_pop(MinHeap* h) {
-//     HeapNode best    = h->data[0];
-//     h->data[0]       = h->data[h->size - 1];
+//  HeapNode heap_pop(MinHeap* h) {
+//     HeapNode best  = h->data[0];// on retourne le premier élément
+
+//     h->data[0] = h->data[h->size - 1];// on met le dernier element comme premier 
 //     h->size--;
 //     if (h->size > 0)
-//         heap_sift_down(h, 0);
+//         heap_sift_down(h, 0);//réordonner
 //     return best;
-// }
-
-// /* ================================================================== */
-// /*  Visited hash table (unchanged)                                    */
-// /* ================================================================== */
-
-// typedef struct {
-//     Variable       key;
-//     State          state;
-//     double         weight;
-//     UT_hash_handle hh;
-// } StateWeight;
-
-// static void sw_add(StateWeight** table, State s, double w) {
-//     StateWeight* e = NULL;
-//     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-//     if (e == NULL) {
-//         e = malloc(sizeof(StateWeight));
-//         e->key    = s.var;
-//         e->state  = s;
-//         e->weight = w;
-//         HASH_ADD(hh, *table, key, sizeof(Variable), e);
-//     }
-// }
-
-// static StateWeight* sw_find(StateWeight** table, State s) {
-//     StateWeight* e = NULL;
-//     HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-//     return e;
-// }
-
-// static void sw_destroy(StateWeight** table) {
-//     StateWeight *cur, *tmp;
-//     HASH_ITER(hh, *table, cur, tmp) {
-//         HASH_DEL(*table, cur);
-//         free(cur);
-//     }
 // }
 
 // /* ================================================================== */
@@ -1118,31 +722,31 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
 
 //     bool   found      = false;
 //     State* init_state = compute_init_state(ta);
-//     if (!init_state) return 0;
+//     if (!init_state) return 0;//Vérifiecation
 
 //     MinHeap*     heap    = heap_create(64);
-//     StateWeight* visited = NULL;
+//     visit* visited = NULL;
 
 //     int init_weight = heuristique_check(init_state, goal);
 //     heap_push(heap, *init_state, init_weight);
-//     sw_add(&visited, *init_state, init_weight);
+//     visit_add(&visited, *init_state);
 //     free(init_state);
-
-//     while (heap->size > 0) {
+//     int    num_succ  = 0;
+//     while (heap->size > 0) {// tq y'a encore des éléments 
 
 //         /* O(log n) extraction of best state */
 //         HeapNode best    = heap_pop(heap);
 //         State    current = best.state;
 
 //         /* Compute successors */
-//         int    num_succ  = 0;
+       
 //         State* successors = NextBorder(ta, current, location, clock,
 //                                        goal, &num_succ, &found, check);
 
 //         if (found) {
 //             free(successors);
 //             heap_destroy(heap);
-//             sw_destroy(&visited);
+//             visit_destroy(&visited);
 //             return 1;
 //         }
 
@@ -1155,19 +759,19 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
 //             for (int i = 0; i < num_succ; i++) {
 //                 State* s = &successors[i];
 
-//                 if (sw_find(&visited, *s) != NULL)
+//                 if (visit_find(&visited, *s) != NULL)
 //                     continue;
 
 //                 if (check(s, goal, ta)) {
 //                     free(successors);
 //                     heap_destroy(heap);
-//                     sw_destroy(&visited);
+//                     visit_destroy(&visited);
 //                     return 1;
 //                 }
 
-//                 double w = heuristique_check(s, goal);
+//                 int w = heuristique_check(s, goal);
 //                 heap_push(heap, *s, w);
-//                 sw_add(&visited, *s, w);
+//                 visit_add(&visited, *s);
 //             }
 //         }
 
@@ -1175,7 +779,7 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
 //     }
 
 //     heap_destroy(heap);
-//     sw_destroy(&visited);
+//     visit_destroy(&visited);
 //     return 0;
 // }
 

@@ -18,6 +18,7 @@ int main() {
     printf("\n horloge: %d",init_state->clock_zone);
 
     print_state(init_state,ta.locations);
+ 
 
     GoalCondition g;
    // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
@@ -27,18 +28,24 @@ int main() {
     strcpy(  g.name, "transition b");
 
 
-    clock_t debut, fin;
-    double temps_ecoule;
+     clock_t debut, fin;
+     double temps_ecoule;
     debut = clock(); 
     int c = EF_p(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
-
-    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+ temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+        printf("Temps d execution : %f secondes\n", temps_ecoule);
+    
 
    printf("Temps d execution : %f secondes\n", temps_ecoule); 
-    State_space_TA state_space_ta;
+   State_space_TA state_space_ta;
+   debut = clock(); 
     build_state_space_ta(&ta, &state_space_ta);
+     fin = clock();
+       temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
     printf("Nombre total d'états étendus : %d\n", state_space_ta.nb_etats);
+     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+        printf("Temps d execution : %f secondes\n", temps_ecoule);
     printf("\n trouver? : %s ", c? "true" : "false");
 
 
@@ -46,12 +53,11 @@ int main() {
 
 
     // explore_state_space_ta(&ta);
-    // bool c = c_EFP(& ta);
-    // printf("%d\n",c);
+    
 
     // State_space_TA state_space_ta;
     // build_state_space_ta(&ta, &state_space_ta);
-    // // print_state_space_ta(&state_space_ta, ta.locations, ta.actions);
+    // print_state_space_ta(&state_space_ta, ta.locations, ta.actions);
     // printf("Nombre total d'états étendus : %d\n", state_space_ta.nb_etats);
     return 0;
     

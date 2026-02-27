@@ -47,8 +47,8 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
     
     // Invariants
-    static DBM i_0 = {{0,0,0},{4,0,infty},{4,infty,0}};
-    static DBM i_6 = {{0,0,0},{4,0,infty},{3,infty,0}};
+    static DBM i_0 = {{0,0,0},{8,0,infty},{8,infty,0}};
+    static DBM i_6 = {{0,0,0},{8,0,infty},{6,infty,0}};
     invariants[0] = &i_0;
     invariants[1] = &i_0;
     invariants[2] = &i_0;
@@ -174,8 +174,8 @@ Variable update_a(Variable var) {
     var.active = true;
 
     var.table[1] = var.v;
-    if (var.v + 2 <= 100 && var.v + 2 >= -10){ var.table[0]++; var.v += 2;} 
-    if (var.x + 1 <= 500 && var.x + 1 >= -10){  var.x += 1;} 
+    if (var.v + 2 <= 80 && var.v + 2 >= -10){ var.table[0]++; var.v += 2;} 
+    if (var.x + 1 <= 80 && var.x + 1 >= -10){  var.x += 1;} 
 
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition a");
@@ -186,8 +186,8 @@ Variable update_b(Variable var) {
     var.active = true;
    
     var.table[1] = var.v;
-    if (var.v + 1 <= 100 && var.v + 1 >= -10){ var.table[0]++;var.v += 1;} 
-    if (var.x + 2 <= 500 ){  var.x += 2;} 
+    if (var.v + 1 <= 80 && var.v + 1 >= -10){ var.table[0]++;var.v += 1;} 
+    if (var.x + 2 <= 80 ){  var.x += 2;} 
 
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition b");
@@ -198,8 +198,8 @@ Variable update_c(Variable var) {
     var.active = false;
    
      var.table[1] = var.v;
-    if (var.v * 2 <= 100 && var.v * 2 >= -10) {var.v *= 2; var.table[0]++;}
-    if (var.x + 3 <= 500 ){  var.x += 3;} 
+    if (var.v * 2 <= 80 && var.v * 2 >= -10) {var.v *= 2; var.table[0]++;}
+    if (var.x + 3 <= 80 ){  var.x += 3;} 
 
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition c");
@@ -210,8 +210,8 @@ Variable update_d(Variable var) {
     var.active = false;
    
      var.table[1] = var.v;
-    if (var.v + 2 <= 100 && var.v + 2 >= -10) {var.v += 2; var.table[0]++;}
-    if (var.x + 4 <= 500 ){  var.x += 4;} 
+    if (var.v + 2 <= 80 && var.v + 2 >= -10) {var.v += 2; var.table[0]++;}
+    if (var.x + 4 <= 80 ){  var.x += 4;} 
 
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition d");
@@ -230,12 +230,14 @@ void init_update_functions() {
 bool const_a(Variable var) { return true; }
 bool const_b(Variable var) { return true; }
 bool const_c(Variable var) { return true; }
+bool const_d(Variable var) { return true; }
+
 
 void init_constraints() {
     constraints[0] = const_a;
     constraints[1] = const_b;
     constraints[2] = const_c;
-    constraints[3] = const_c;
+    constraints[3] = const_d;
 
 }
 
