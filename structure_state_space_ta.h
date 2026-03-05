@@ -41,14 +41,29 @@ typedef struct {
     int* nb_trans_by_state;   //Dynamic array of int giving the number of outgoing transition of state at index
 } State_space_TA;
 
-// typedef struct {
-//     Variable       key;
-//     State          state;
-//     double         weight;
-//     bool           explored;   /* false = à explorer, true = déjà traité */
-//     UT_hash_handle hh;
-// } StateWeight;
+typedef struct {
+    Variable       key;
+    UT_hash_handle hh;
+} visit;
 
+typedef struct {
+    Variable            key;    /* clé = state.var */
+    State          state;
+    int         weight;
+    UT_hash_handle hh;
+} StateWeight;
+
+
+typedef struct {
+    State state;
+    int weight;
+} HeapNode;
+
+typedef struct {
+    HeapNode* data;
+    int       size;// nbr d'elément actuel dans le heap
+    int       capacity;// nbr d'element qu'on peut stocker
+} MinHeap;
 
 
 
@@ -59,10 +74,20 @@ void print_state(State* etat, char** locations);
 State* compute_init_state(TA* ta);
 int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
          bool (*check)(State* s, GoalCondition* goal, TA* ta), int (*heuristique_check)(State* s,GoalCondition* goal));
+
+int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,
+         bool (*check)(State* s, GoalCondition* goal, TA* ta), int  (*heuristique_check)(State* s, GoalCondition* goal));
+
+int EF_p_HV_Pool(TA* ta, int location, DBM clock, GoalCondition* goal,
+         bool (*check)(State* s, GoalCondition* goal, TA* ta),
+         int  (*heuristique_check)(State* s, GoalCondition* goal));
+
 bool check_p(State* s, GoalCondition* goal, TA* ta);
 bool check_p_sup(State* s, GoalCondition* goal,TA* ta);
 bool check_p_inf(State* s, GoalCondition* goal,TA* ta);
 int heuristique_checkp(State* s,GoalCondition* goal);
 int heuristique_checkp_inf(State* s, GoalCondition* goal);
 int heuristique_checkp_max(State* s, GoalCondition* goal);
+
+
 #endif

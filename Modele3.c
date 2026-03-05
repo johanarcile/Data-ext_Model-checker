@@ -5,6 +5,21 @@
 #include "structure_ta.h"
 
 
+/*---------Description du modèle----------------------------------*/
+/*
+Nb_loclité = 12
+                  X>=1        X>=1         x>=4       x>=4
+AUTOMATE 01 : L0 --a-->l1; l0 --a-->l2; l1--c--l0; l2--c--l0
+                                           x=0         x=0
+
+                  y>=1         y>=1          y>=4        y>=4          y>=2         y>=4
+AUTOMATE 02 : l3 --c-->l4; l3 --c-->l5;  l4 --b-->l3; l5 --b-->l3; l5 --d-->l6; l6 --b-->l5;
+                                            y=0            y=0
+INVARIANTS
+x<=4; y<=4   apart dans l6 y<=3
+
+*/
+
 // --------------------- Variables globales ---------------------
 
 char** locations;                 // Locations du TA
@@ -47,8 +62,8 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
     
     // Invariants
-    static DBM i_0 = {{0,0,0},{8,0,infty},{8,infty,0}};
-    static DBM i_6 = {{0,0,0},{8,0,infty},{6,infty,0}};
+    static DBM i_0 = {{0,0,0},{4,0,infty},{4,infty,0}};
+    static DBM i_6 = {{0,0,0},{4,0,infty},{3,infty,0}};
     invariants[0] = &i_0;
     invariants[1] = &i_0;
     invariants[2] = &i_0;
@@ -136,7 +151,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
    transitions[9][1] = (Transition){.location_in = 10, .label_action = 0, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
    transitions[9][2] = (Transition){.location_in = 11, .label_action = 0, .guard = {{0,-2,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
 
-     nb_trans_par_location[10] = 2;
+    nb_trans_par_location[10] = 2;
     transitions[10] = malloc(nb_trans_par_location[10] * sizeof(Transition));
     transitions[10][0] = (Transition){.location_in = 9, .label_action = 1, .guard = {{0,0,-4},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
     transitions[10][1] = (Transition){.location_in = 7, .label_action = 2, .guard = {{0,-4,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
@@ -174,8 +189,8 @@ Variable update_a(Variable var) {
     var.active = true;
 
     var.table[1] = var.v;
-    if (var.v + 2 <= 80 && var.v + 2 >= -10){ var.table[0]++; var.v += 2;} 
-    if (var.x + 1 <= 80 && var.x + 1 >= -10){  var.x += 1;} 
+    if (var.v + 2 <= 500 && var.v + 2 >= -10){ var.table[0]++; var.v += 2;} 
+   if (var.x + 1 <= 500 && var.x + 1 >= -10){  var.x += 1;} 
 
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition a");
@@ -183,11 +198,12 @@ Variable update_a(Variable var) {
 }
 
 Variable update_b(Variable var) {
-    var.active = true;
+     var.active = true;
    
-    var.table[1] = var.v;
-    if (var.v + 1 <= 80 && var.v + 1 >= -10){ var.table[0]++;var.v += 1;} 
-    if (var.x + 2 <= 80 ){  var.x += 2;} 
+     var.table[1] = var.v;
+    if (var.v + 1 <= 500 && var.v + 1 >= -10){ var.table[0]++;var.v += 1;} 
+ 
+    if (var.x + 2 <= 500 ){  var.x += 2;} 
 
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition b");
@@ -195,11 +211,11 @@ Variable update_b(Variable var) {
 }
 
 Variable update_c(Variable var) {
-    var.active = false;
+     var.active = false;
    
-     var.table[1] = var.v;
-    if (var.v * 2 <= 80 && var.v * 2 >= -10) {var.v *= 2; var.table[0]++;}
-    if (var.x + 3 <= 80 ){  var.x += 3;} 
+      var.table[1] = var.v;
+    if (var.v * 2 <= 500 && var.v * 2 >= -10) {var.v *= 2; var.table[0]++;}
+    if (var.x + 3 <= 500 ){  var.x += 3;} 
 
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition c");
@@ -207,11 +223,11 @@ Variable update_c(Variable var) {
 }
 
 Variable update_d(Variable var) {
-    var.active = false;
+     var.active = false;
    
-     var.table[1] = var.v;
-    if (var.v + 2 <= 80 && var.v + 2 >= -10) {var.v += 2; var.table[0]++;}
-    if (var.x + 4 <= 80 ){  var.x += 4;} 
+      var.table[1] = var.v;
+    if (var.v + 2 <= 500 && var.v + 2 >= -10) {var.v += 2; var.table[0]++;}
+    if (var.x + 4 <= 500 ){  var.x += 4;} 
 
     var.table[2] = var.v;
     snprintf(var.name, NAME_SIZE, "transition d");
