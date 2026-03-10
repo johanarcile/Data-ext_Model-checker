@@ -694,7 +694,7 @@ HeapNodeP heap_popP(MinHeapP* h) {
 
  /*==========================================   2 tabeles de hashage   ===================*/
 
-int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
+int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
          bool (*check)(State* s, GoalCondition* goal, TA* ta),
          int (*heuristique_check)(State* s, GoalCondition* goal)) {
 
@@ -703,7 +703,9 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
     bool   found      = false;
     State* init_state = compute_init_state(ta);
     //if (!init_state) return 0;
-   if (check(init_state, goal, ta)) {   
+    *result= NULL;
+   if (check(init_state, goal, ta)) {  
+                        *result = init_state; 
                         return 1;
                     }
     StateWeight* visiting = NULL;  /* frontier  */
@@ -714,7 +716,7 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
     visit_add(&visited,  *init_state);
    nbr_border_state ++;
 
-    free(init_state);
+    //free(init_state);
 
     while (HASH_COUNT(visiting) > 0) {
 
@@ -734,6 +736,8 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
         State* successors = NextBorder(ta, current, location, clock,
                                        goal, &num_succ, &found, check);
         if (found) {
+              *result = malloc(sizeof(State));
+              **result = *successors;
             free(successors);
             sw_destroy(&visiting);
             visit_destroy(&visited);
@@ -754,6 +758,8 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
                         continue;}
 
                 if (check(s, goal, ta)) {
+                    *result = malloc(sizeof(State));
+                    **result = *s;
                     free(successors);
                     sw_destroy(&visiting);
                     visit_destroy(&visited);
@@ -786,7 +792,7 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
                                                
 /* ============================ EF_p avec min-heap ====================================== */
 
-int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,
+int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
          bool (*check)(State* s, GoalCondition* goal, TA* ta),
          int  (*heuristique_check)(State* s, GoalCondition* goal)) 
 {
@@ -796,7 +802,9 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,
     bool   found      = false;
     State* init_state = compute_init_state(ta);
    // if (!init_state) return 0;//Vérifiecation
-   if (check(init_state, goal, ta)) {   
+   *result= NULL;
+   if (check(init_state, goal, ta)) { 
+                       *result= init_state;  
                         return 1;
                     }
     MinHeap*     heap    = heap_create(64);
@@ -807,7 +815,7 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,
     visit_add(&visited, *init_state);                
     nbr_border_state ++;
 
-    free(init_state);
+   // free(init_state);
     int    num_succ  = 0;
     HeapNode best; 
     State    current;
@@ -823,6 +831,8 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,
                                        goal, &num_succ, &found, check);
 
         if (found) {
+            *result = malloc(sizeof(State));
+            **result = *successors;
             free(successors);
             heap_destroy(heap);
             visit_destroy(&visited);
@@ -842,6 +852,8 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,
                     continue;
 
                 if (check(s, goal, ta)) {
+                    *result = malloc(sizeof(State));
+                    **result = *successors;
                     free(successors);
                     heap_destroy(heap);
                     visit_destroy(&visited);
@@ -869,14 +881,15 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,
 
 
 
-int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
+int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
          bool (*check)(State* s, GoalCondition* goal, TA* ta),
          int  (*heuristique_check)(State* s, GoalCondition* goal))
 {
     bool found = false;
-
+    *result= NULL;
     State* init_state = compute_init_state(ta);
-      if (check(init_state, goal, ta)) {   
+      if (check(init_state, goal, ta)) { 
+                        *result = init_state;  
                         return 1;
                     }
 
@@ -899,6 +912,8 @@ int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
                                        goal, &num_succ, &found, check);
 
         if (found) {
+            *result = malloc(sizeof(State));
+            **result = *successors;
             free(current);
             free(successors);
             heap_destroyP(heap);
@@ -921,6 +936,8 @@ int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
                         continue;
 
                     if (check(temp, goal, ta)) {
+                         *result = malloc(sizeof(State));
+                        **result = *temp;
                         free(current);
                         free(successors);
                         heap_destroyP(heap);
@@ -1054,7 +1071,7 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
     heap_destroyP(heap);
     visit_destroy(&visited);
     printf("la propriet pas verifie");
-    print_state(last,ta->locations);
+   // print_state(last,ta->locations);
     return 0;
 }
 

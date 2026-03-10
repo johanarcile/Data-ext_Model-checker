@@ -73,7 +73,7 @@ void print_state_space_ta(State_space_TA* state_space_ta, char** locations, char
 void print_state(State* etat, char** locations);
 State* compute_init_state(TA* ta);
 
-void fill_ta_struct(TA* ta);
+
 
 bool check_p(State* s, GoalCondition* goal, TA* ta);
 bool check_p_sup(State* s, GoalCondition* goal,TA* ta);
@@ -83,12 +83,12 @@ int heuristique_checkp(State* s,GoalCondition* goal);
 int heuristique_checkp_inf(State* s, GoalCondition* goal);
 int heuristique_checkp_max(State* s, GoalCondition* goal);
 
-int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
+int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
          bool (*check)(State* s, GoalCondition* goal, TA* ta), int (*heuristique_check)(State* s,GoalCondition* goal));
 
-int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,
+int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
          bool (*check)(State* s, GoalCondition* goal, TA* ta), int  (*heuristique_check)(State* s, GoalCondition* goal));
-int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
+int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
          bool (*check)(State* s, GoalCondition* goal, TA* ta),
          int  (*heuristique_check)(State* s, GoalCondition* goal));
 
