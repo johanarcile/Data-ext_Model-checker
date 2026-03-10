@@ -72,22 +72,35 @@ void build_state_space_ta(TA* ta, State_space_TA* state_space_ta);
 void print_state_space_ta(State_space_TA* state_space_ta, char** locations, char** actions);
 void print_state(State* etat, char** locations);
 State* compute_init_state(TA* ta);
+
+void fill_ta_struct(TA* ta);
+
+bool check_p(State* s, GoalCondition* goal, TA* ta);
+bool check_p_sup(State* s, GoalCondition* goal,TA* ta);
+bool check_p_inf(State* s, GoalCondition* goal,TA* ta);
+
+int heuristique_checkp(State* s,GoalCondition* goal);
+int heuristique_checkp_inf(State* s, GoalCondition* goal);
+int heuristique_checkp_max(State* s, GoalCondition* goal);
+
 int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,
          bool (*check)(State* s, GoalCondition* goal, TA* ta), int (*heuristique_check)(State* s,GoalCondition* goal));
 
 int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,
          bool (*check)(State* s, GoalCondition* goal, TA* ta), int  (*heuristique_check)(State* s, GoalCondition* goal));
-
-int EF_p_HV_Pool(TA* ta, int location, DBM clock, GoalCondition* goal,
+int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
          bool (*check)(State* s, GoalCondition* goal, TA* ta),
          int  (*heuristique_check)(State* s, GoalCondition* goal));
 
-bool check_p(State* s, GoalCondition* goal, TA* ta);
-bool check_p_sup(State* s, GoalCondition* goal,TA* ta);
-bool check_p_inf(State* s, GoalCondition* goal,TA* ta);
-int heuristique_checkp(State* s,GoalCondition* goal);
-int heuristique_checkp_inf(State* s, GoalCondition* goal);
-int heuristique_checkp_max(State* s, GoalCondition* goal);
 
+int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
+          bool (*check)(State* s, GoalCondition* goal, TA* ta),
+          int  (*heuristique_check)(State* s, GoalCondition* goal));
+int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
+                 bool (*check)(State* s, GoalCondition* goal, TA* ta),
+                 int  (*heuristique_check)(State* s, GoalCondition* goal));
+
+
+void print_all_exist(State_space_TA* ss_ta, TA* ta, GoalCondition* goal);
 
 #endif
