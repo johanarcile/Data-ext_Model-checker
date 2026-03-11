@@ -458,6 +458,125 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
 }
 
 
+
+
+/*---------------------------Next border pour EG ---------------------------------------------------------*/
+
+State* EGNextBorder(TA* ta, State state, int location, DBM clock,
+                  GoalCondition *goal, int* num_finals, bool* found, bool (*check)(State* s, GoalCondition* goal, TA* ta))
+{
+    /* ---------- Queue BFS ---------- */
+    int capacity = 32;
+    int head = 0;
+    int tail = 0;
+
+    State* exploring = malloc(capacity * sizeof(State));// trouver une optimisation sans le malloc
+    if (!exploring) return NULL;
+
+    exploring[tail++] = state;
+
+    /* ---------- Finals ---------- */
+    int capacity_finals = 32;
+    State* finals = malloc(capacity_finals * sizeof(State));// trouver une optimisation sans le malloc
+    if (!finals) {
+        free(exploring);
+        return NULL;
+    }
+
+    *num_finals = 0;
+    *found = false;
+
+
+    /* ---------- BFS ---------- */
+    while (head < tail) {   // tq y'a des etats a explorer
+
+        State current = exploring[head++];
+
+        int num_succ = 0;
+        State* succs = get_successors(ta, &current, &num_succ);
+
+        for (int j = 0; j < num_succ; j++) { // pour chaque successeur
+
+            State* s = &succs[j];
+            bool present = false;
+            if (check(s,goal, ta)){ // si il satsfat la propriete
+
+                 /* ----- Border state ----- */
+            if ((s->location == location) &&
+                clock_zones_equal(s->clock_zone, clock, DBM_DIM))  //si il est un etat border
+            {
+                
+               
+                /* vérifier doublon */
+                for (int k = 0; k < *num_finals; k++) {
+                    if (equal_var(&(s->var),&(finals[k].var))) {  //(s->var.v == finals[k].var.v)
+                        present = true;
+                        break;
+                    }
+                }
+                // vu que j'ai visited esq cette verification est necessaire
+                if (!present) { // si il n'exite pas déja on l'ajoute à finals
+                   
+                    if (*num_finals >= capacity_finals) {
+                        capacity_finals *= 2;
+                        // printf("\n capacite augmente:\n");
+                        State* tmp =
+                            realloc(finals,
+                                    capacity_finals * sizeof(State));// finals = realloc ()
+
+                        if (!tmp) {
+                            free(finals);
+                            free(exploring);
+                            free(succs);
+                            return NULL;
+                        }
+
+                        finals = tmp;
+                    }
+                  
+                    finals[*num_finals] = *s;
+                    (*num_finals)++;
+                }
+
+            }
+            /* ----- Continue BFS ----- */
+            else {
+
+                if (tail >= capacity) {
+                    capacity *= 2;
+                    
+                    State* tmp =
+                        realloc(exploring,
+                                capacity * sizeof(State));
+
+                    if (!tmp) {
+                        free(finals);
+                        free(exploring);
+                        free(succs);
+                        printf("\n Erreur: Memoire depasse!!");
+                        return NULL;
+                    }
+
+                    exploring = tmp;
+                    //free (tmp);
+                  
+                }
+                //print_state(s, ta->locations);
+                exploring[tail++] = *s;
+
+            }
+
+            }
+           
+        }
+
+        free(succs);
+    }
+
+    free(exploring);
+    return finals;
+}
+
 /* ==========================================================================================EF(p)====================*/
 
 
@@ -1002,18 +1121,11 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
 
         bool found = false;
         int  num_succ = 0;
-        State* successors = NextBorder(ta, *current, location, clock,
+        State* successors = EGNextBorder(ta, *current, location, clock,
                                        goal, &num_succ, &found, check);
         //printf("\n Num successors : %d", num_succ);
 
-        /* Cas 1 : feuille → chemin infini satisfaisant trouvé        */
-        if (num_succ == 0 ) {
-            free(current);
-            heap_destroyP(heap);
-            visit_destroy(&visited);
-            printf("\n pas de successors");
-            return 1;
-        }
+        
 
         /* Cas 2 : boucle sur soi-même → chemin infini où check est vrai */
          bool boucle = (num_succ == 1) &&
@@ -1119,15 +1231,10 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
         /* --- Calculer les successeurs --- */
         bool   found    = false;
         int    num_succ = 0;
-        State* successors = NextBorder(ta, current, location, clock,
+        State* successors = EGNextBorder(ta, current, location, clock,
                                        goal, &num_succ, &found, check);
        
-        /* Cas 1 : feuille → chemin infini satisfaisant trouvé */
-        // if (num_succ == 0 ) {
-        //     sw_destroy(&visiting);
-        //     visit_destroy(&visited);// retourner false psq chemin fini
-        //     return 1;
-        // }
+        
 
         /* Cas 2 : boucle sur soi-même → chemin infini trouvé */
          bool boucle = (num_succ == 1) && equal_var(&current.var, &successors[0].var);

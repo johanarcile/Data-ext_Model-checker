@@ -97,7 +97,7 @@ void init_variables() {
 
 
 Variable update_a(Variable var) {
-    var.active = true;
+    var.active = false;
 
     var.table[1] = var.v;
      if (var.v + 2 <= 500 && var.v + 2 >= -10){ var.table[0]++; var.v += 2;} 
