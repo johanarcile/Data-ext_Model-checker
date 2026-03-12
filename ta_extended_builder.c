@@ -239,6 +239,11 @@ bool check_p(State* s, GoalCondition* goal, TA* ta) {
                 return false;}
     }
 
+    if (goal->mask & CHECK_X) { // pour tester v il faut 001 et goal.mask !=0 
+        if (s->var.x != goal->x)
+            return false;
+    }
+
     if (goal->mask & CHECK_NAME) {// pour tester v il faut 100 et goal.mask !=0 
        // printf("\n checking Name");
         if (strcmp(s->var.name, goal->name) != 0)
@@ -1100,7 +1105,7 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
           int  (*heuristique_check)(State* s, GoalCondition* goal))
 {
     State* init_state = compute_init_state(ta);
-    State * last;
+    //State * last;
     /* L'état initial doit satisfaire la propriété */
     if (!check(init_state, goal, ta)) {
         free(init_state);
@@ -1113,14 +1118,14 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
     int init_weight = heuristique_check(init_state, goal);
     heap_pushP(heap, init_state, init_weight);
     visit_add(&visited, *init_state);
-
+     int  num_succ = 0;
     while (heap->size > 0) {
 
         HeapNodeP best    = heap_popP(heap);
         State*    current = best.state;
 
         bool found = false;
-        int  num_succ = 0;
+        
         State* successors = EGNextBorder(ta, *current, location, clock,
                                        goal, &num_succ, &found, check);
         //printf("\n Num successors : %d", num_succ);
@@ -1137,27 +1142,22 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
             free(successors);
             heap_destroyP(heap);
             visit_destroy(&visited);
-            printf("\n Boucle");
+            printf("\n boucle");
             return 1;
         }
 
-        /* Cas général : on n'ajoute que les successeurs qui satisfont check */
+      
+
+
         for (int i = 0; i < num_succ; i++) {
 
             State* temp = &successors[i];
 
             /* EG : inutile d'explorer un état qui viole la propriété */
-            if (!check(temp, goal, ta))
-                continue;
-               /* Si l'un des successor est lui mm (boucle)*/
-            if (equal_var(&current->var, &successors[i].var)){
-              free(current);
-            free(successors);
-            heap_destroyP(heap);
-            visit_destroy(&visited);
-            printf("\n Boucle");
-            return 1;
-            }
+            // if (!check(temp, goal, ta))
+            //     continue;
+             
+         
             /* Déjà visité */
             if (visit_find(&visited, *temp) != NULL)
                 continue;
@@ -1175,16 +1175,14 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
         }
 
         free(successors);
-        last = current; 
         free(current);
     }
 
     /* Heap vide : aucun chemin infini satisfaisant trouvé */
     heap_destroyP(heap);
     visit_destroy(&visited);
-    printf("la propriet pas verifie");
-   // print_state(last,ta->locations);
     return 0;
+    
 }
 
  /*==========================================  EG(p) avec 2 tabeles de hashage   ===================*/
@@ -1195,6 +1193,7 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
 {
 
     State* init_state = compute_init_state(ta);
+
 
     /* EG : l'état initial doit satisfaire la propriété */
     if (!check(init_state, goal, ta)) {
@@ -1212,7 +1211,7 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
     visit_add(&visited,  *init_state);
 
     free(init_state);
-
+     int    num_succ = 0;
     while (HASH_COUNT(visiting) > 0) {
 
         /* --- Extraire le meilleur état de visiting --- */
@@ -1230,13 +1229,13 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
 
         /* --- Calculer les successeurs --- */
         bool   found    = false;
-        int    num_succ = 0;
+      
         State* successors = EGNextBorder(ta, current, location, clock,
                                        goal, &num_succ, &found, check);
        
         
 
-        /* Cas 2 : boucle sur soi-même → chemin infini trouvé */
+        /*  boucle sur soi-même → chemin infini trouvé */
          bool boucle = (num_succ == 1) && equal_var(&current.var, &successors[0].var);
 
 
@@ -1244,9 +1243,104 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
             free(successors);
             sw_destroy(&visiting);
             visit_destroy(&visited);
+             printf("\n boucle");
             return 1;
         }
+      
+        /* Cas général : on n'ajoute que les successeurs qui satisfont check */
+        for (int i = 0; i < num_succ; i++) {
+            State* s = &successors[i];
+           
 
+            /* EG : inutile d'explorer un état qui viole la propriété */
+            // if (!check(s, goal, ta))
+            //     continue;
+
+           
+           
+            /* un successor déja visité */
+            if (visit_find(&visited, *s) != NULL)
+                  continue;
+          
+           
+
+            int w = heuristique_check(s, goal);
+           
+            sw_add(&visiting, *s, w);
+            visit_add(&visited, *s);
+            
+        }
+
+        free(successors);
+    }
+
+    /* open vide : aucun chemin infini satisfaisant trouvé */
+    sw_destroy(&visiting);
+    visit_destroy(&visited);
+
+     return 0 ;
+}
+
+ /*==========================================  EFEG(p) avec 2 tabeles de hashage   ===================*/
+
+int EFEG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
+                 bool (*check)(State* s, GoalCondition* goal, TA* ta),
+                 int  (*heuristique_check)(State* s, GoalCondition* goal))
+{
+
+    State* init_state = compute_init_state(ta);
+
+
+    int    init_weight = heuristique_check(init_state, goal);
+
+    StateWeight* visiting   = NULL;   /* à explorer  (frontier) */
+    visit*       visited = NULL;   /* déjà expansés           */
+
+    sw_add(&visiting, *init_state, init_weight);
+    visit_add(&visited,  *init_state);
+
+    free(init_state);
+     int    num_succ = 0;
+    while (HASH_COUNT(visiting) > 0) {
+
+        /* --- Extraire le meilleur état de visiting --- */
+        StateWeight *best = NULL, *cur, *tmp;
+        HASH_ITER(hh, visiting, cur, tmp) {
+            if (best == NULL || cur->weight < best->weight)
+                best = cur;
+        }
+
+        State current = best->state;
+        HASH_DEL(visiting, best);
+        free(best);
+
+       
+
+        /* --- Calculer les successeurs --- */
+        bool   found    = false;
+       // Next border de EF sans le check dedans
+        State* successors = NextBorder(ta, current, location, clock,
+                                       goal, &num_succ, &found, check);
+       
+        
+        /*  boucle sur soi-même → chemin infini trouvé */
+         bool boucle = (num_succ == 1) && equal_var(&current.var, &successors[0].var);
+
+
+        if (boucle) {  
+
+            if  (check(&current, goal, ta)){ // si la propriete est verifié
+
+                free(successors);
+                sw_destroy(&visiting);
+                visit_destroy(&visited);
+                printf("\n boucle");
+                return 1;
+
+            }
+            
+        }
+      
         /* Cas général : on n'ajoute que les successeurs qui satisfont check */
         for (int i = 0; i < num_succ; i++) {
             State* s = &successors[i];
@@ -1257,29 +1351,27 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
                 continue;
 
            
-            
-            /* ignorer si déjà exploré */
+           
+            /* un successor déja visité c un cucle */
             if (visit_find(&visited, *s) != NULL)
-                continue;
+            continue;
            
 
             int w = heuristique_check(s, goal);
-            sw_add(&visiting, *s, w);
             visit_add(&visited, *s);
+            sw_add(&visiting, *s, w);
+            
         }
 
         free(successors);
     }
 
-    /* open vide : aucun chemin infini satisfaisant trouvé */
+
     sw_destroy(&visiting);
     visit_destroy(&visited);
-   
-    return 0;
+
+     return 0 ;
 }
-
-
-
 
  /*==========================================  Fonction pour test   ===================*/
 

@@ -20,6 +20,8 @@ typedef struct Variable {
 #define CHECK_V      1   // 001
 #define CHECK_ACTIVE 2   // 010
 #define CHECK_NAME   4   // 100
+#define CHECK_X      8   // 1000
+
 //void fill_ta_struct(TA* ta);
 typedef struct {
     int mask;      // indique quoi vérifier
@@ -27,6 +29,7 @@ typedef struct {
     int v;
     bool active;
     char name[50];
+    int x;
 
 } GoalCondition;
 /* ------------------------------------  */

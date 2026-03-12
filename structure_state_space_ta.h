@@ -100,7 +100,9 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
                  bool (*check)(State* s, GoalCondition* goal, TA* ta),
                  int  (*heuristique_check)(State* s, GoalCondition* goal));
 
-
+int EFEG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
+                 bool (*check)(State* s, GoalCondition* goal, TA* ta),
+                 int  (*heuristique_check)(State* s, GoalCondition* goal));
 void print_all_exist(State_space_TA* ss_ta, TA* ta, GoalCondition* goal);
 
 #endif
