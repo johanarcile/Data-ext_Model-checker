@@ -37,4 +37,5 @@ typedef struct {
 bool equal_var(Variable* v1, Variable* v2);
 bool v1_inf_v2(Variable* v1, Variable* v2);
 bool v1_sup_v2(Variable* v1, Variable* v2);
+void print_variable(Variable * v);
 #endif

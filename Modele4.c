@@ -84,6 +84,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 // --------------------- Initialisation des variables ---------------------
 
 void init_variables() { 
+    
     variable.v = 0;
     variable.x = 0;
     variable.active=true;
@@ -104,12 +105,12 @@ Variable update_a(Variable var) {
      if (var.v + 2 <= 500 && var.v + 2 >= -10){ 
         
         var.v += 2;
-        var.x = 0; 
+        var.x += 1;
         var.active = true;
-        // var.table[0]++;
-        // var.table[1] = var.v;
-        // var.table[2] = var.v;
-    // snprintf(var.name, NAME_SIZE, "transition a");
+        var.table[0]++;
+        var.table[1] = var.v;
+        var.table[2] = var.v;
+        snprintf(var.name, NAME_SIZE, "transition a");
     } 
   
     return var;
@@ -122,12 +123,12 @@ Variable update_b(Variable var) {
     if (var.v + 1 <= 500 && var.v + 1 >= -10){
         
         var.v += 1;
-        var.x = 0;
+        var.x += 1;
         var.active = true;
-        //  var.table[0]++;
-        // var.table[1] = var.v;
-        // var.table[2] = var.v;
-        // snprintf(var.name, NAME_SIZE, "transition b");
+         var.table[0]++;
+        var.table[1] = var.v;
+        var.table[2] = var.v;
+        snprintf(var.name, NAME_SIZE, "transition b");
     } 
 
     
@@ -139,12 +140,12 @@ Variable update_c(Variable var) {
     if (var.v * 2 <= 500 && var.v * 2 >= -10) {
 
       var.v *= 2;
-      var.x = 0;
+      var.x += 1;
       var.active = false;
-    //   var.table[0]++;
-    //   var.table[1] = var.v;
-    //   var.table[2] = var.v;
-    //   snprintf(var.name, NAME_SIZE, "transition c");
+      var.table[0]++;
+      var.table[1] = var.v;
+      var.table[2] = var.v;
+      snprintf(var.name, NAME_SIZE, "transition c");
     }
  
     return var;

@@ -20,14 +20,14 @@ int main() {
 
 
     State* init_state = compute_init_state(&ta);
-   // print_state(init_state,ta.locations);
+    //print_state(init_state,ta.locations);
  
  /*--------------------------- Goal cherche ----------------------------*/
     GoalCondition g;
    // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
-    g.mask = CHECK_ACTIVE  ; 
+    g.mask = CHECK_V   ; 
     g.active = true;
-    g.v = 100;
+    g.v = 500;
     g.x = 1;
     strcpy(  g.name, "transition b");
 
@@ -42,7 +42,8 @@ int main() {
     // printf("\n Temps d execution : %f secondes\n", temps_ecoule);
 
  /*--------------------------- EF(p) ----------------------------*/
-     
+ printf("\n \n EF: \n ");
+ 
     debut = clock(); 
     c = EF_p(& ta,init_state->location,init_state->clock_zone,&g, &result, check_p,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
@@ -84,7 +85,7 @@ int main() {
     }
     
  /*--------------------------- EG(p) ----------------------------*/
-
+ printf("\n \n EG:\n");
     debut = clock(); 
     c = EG_p_2tables(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
@@ -103,8 +104,8 @@ int main() {
    
     
  /*--------------------------- Requete imbriques EF(EG(p)) ----------------------------*/
-
-      debut = clock(); 
+   printf("\n \n EFEG:\n");
+   debut = clock(); 
     c = EGEF_p_2tables(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
