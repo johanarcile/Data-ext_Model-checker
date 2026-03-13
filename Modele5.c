@@ -96,35 +96,55 @@ void init_variables() {
 
 
 Variable update_a(Variable var) {
-    var.active = true;
+    
 
-    var.table[1] = var.v;
-    if (var.v + 2 <= 500 && var.v + 2 >= -10){ var.table[0]++; var.v += 2;} 
-    if (var.x + 1 <= 500 && var.x + 1 >= -10){  var.x += 1;} 
-    var.table[2] = var.v;
-    snprintf(var.name, NAME_SIZE, "transition a");
+   
+     if (var.v + 2 <= 500 && var.v + 2 >= -10){ 
+        
+        var.v += 2;
+        var.x += 1;
+        var.active = true;
+        var.table[0]++;
+        var.table[1] = var.v;
+        var.table[2] = var.v;
+        snprintf(var.name, NAME_SIZE, "transition a");
+    } 
+  
     return var;
 }
 
 Variable update_b(Variable var) {
-    var.active = true;
    
-    var.table[1] = var.v;
-    if (var.v + 1 <= 500 && var.v + 1 >= -10){ var.table[0]++;var.v += 1;} 
-    if (var.x + 1 <= 500 && var.x + 1 >= -10){  var.x += 1;} 
-    var.table[2] = var.v;
-    snprintf(var.name, NAME_SIZE, "transition b");
+   
+   
+    if (var.v + 1 <= 500 && var.v + 1 >= -10){
+        
+        var.v += 1;
+        var.x += 1;
+        var.active = true;
+         var.table[0]++;
+        var.table[1] = var.v;
+        var.table[2] = var.v;
+        snprintf(var.name, NAME_SIZE, "transition b");
+    } 
+
+    
     return var;
 }
 
 Variable update_c(Variable var) {
-    var.active = false;
-   
-     var.table[1] = var.v;
-    if (var.v * 2 <= 500 && var.v * 2 >= -10) {var.v *= 2; var.table[0]++;}
-    if (var.x + 1 <= 500 && var.x + 1 >= -10){  var.x += 1;} 
-    var.table[2] = var.v;
-    snprintf(var.name, NAME_SIZE, "transition c");
+  
+    if (var.v * 2 <= 500 && var.v * 2 >= -10) {
+
+      var.v *= 2;
+      var.x += 1;
+      var.active = false;
+      var.table[0]++;
+      var.table[1] = var.v;
+      var.table[2] = var.v;
+      snprintf(var.name, NAME_SIZE, "transition c");
+    }
+ 
     return var;
 }
 void init_update_functions() {

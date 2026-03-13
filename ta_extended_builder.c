@@ -114,7 +114,7 @@ void print_state_space_ta(State_space_TA* ss_ta, char** locations, char** action
         printf("\t Location    : %s (ID %d)\n", locations[ss_ta->etats[i].location], ss_ta->etats[i].location);
         printf("\t Clock zone :\n");
         print_dbm(ss_ta->etats[i].clock_zone);
-        // printf("\t Variables       : v = %d\n", ss_ta->etats[i].var.v);
+        printf("\t Variables       : v = %d\n", ss_ta->etats[i].var.v);
        
         // printf("\t Variables       : t[0] = %d\n", ss_ta->etats[i].var.table[0]);
         // printf("\t Variables       : t[1] = %d\n", ss_ta->etats[i].var.table[1]);
@@ -195,14 +195,14 @@ void print_state(State* etat, char** locations) {
         printf("\t Location    : %s (ID %d)\n", locations[etat->location], etat->location);
         printf("\t Clock zone :\n");
         print_dbm(etat->clock_zone);
-        printf("\t Variables       : v = %d\n", etat->var.v);
-       printf("\t Variables       : X = %d\n", etat->var.x);
+    //     printf("\t Variables       : v = %d\n", etat->var.v);
+    //    printf("\t Variables       : X = %d\n", etat->var.x);
 
-        printf("\t Variables       : Active = %d\n", etat->var.active);
-        printf("\t Variables       : name = %s\n", etat->var.name);
-         printf("\t Variables       : table = [ %d, %d, %d,] \n", etat->var.table[0], etat->var.table[1],etat->var.table[2]);
+    //     printf("\t Variables       : Active = %d\n", etat->var.active);
+    //     printf("\t Variables       : name = %s\n", etat->var.name);
+    //      printf("\t Variables       : table = [ %d, %d, %d,] \n", etat->var.table[0], etat->var.table[1],etat->var.table[2]);
         
-      // print_variable(&(etat->var));
+         print_variable(&(etat->var));
 
         printf("\n");
 }
@@ -405,7 +405,7 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
                 //         break;
                 //     }
                 // }
-                // vu que j'ai visited esq cette verification est necessaire
+                // Pas necessaire car on garde tout les etats borders en memoire
                 if (!present) {
                    
                     if (*num_finals >= capacity_finals) {

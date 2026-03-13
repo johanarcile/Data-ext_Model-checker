@@ -84,10 +84,10 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 // --------------------- Initialisation des variables ---------------------
 
 void init_variables() { 
-    
+    //memset(&variable, 0, sizeof(Variable)); 
     variable.v = 0;
     variable.x = 0;
-    variable.active=true;
+    variable.active=false;
     variable.table_size = 3;
     variable.table[0] = 0;
     variable.table[1] = 0;
