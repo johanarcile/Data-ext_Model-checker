@@ -71,7 +71,7 @@ bool equal_var(const Variable *v1, const Variable *v2) {
     return true;
 
 
-    //return memcmp(v1, v2,sizeof(Variable)) == 0;
+    return memcmp(v1, v2,sizeof(Variable)) == 0;
 }
 
 int compare_var(const Variable *v1, const Variable *v2) {

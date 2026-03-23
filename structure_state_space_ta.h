@@ -105,4 +105,17 @@ int EGEF_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
                  int  (*heuristique_check)(State* s, GoalCondition* goal));
 void print_all_exist(State_space_TA* ss_ta, TA* ta, GoalCondition* goal);
 
+/*-------------tests------------------------------------------------------*/
+
+int EFEF_pn_2tables(TA* ta, int location, DBM clock, GoalCondition* goal, int nbr_prop,
+                    bool (*check)(State* s, GoalCondition* goal, TA* ta),
+                    int  (*heuristique_check)(State* s, GoalCondition* goal));
+
+int EFEG_pn(TA* ta, int location, DBM clock, GoalCondition* goal,
+            bool (*check)(State* s, GoalCondition* goal, TA* ta),
+            int  (*heuristique_check)(State* s, GoalCondition* goal));
+
+            
+GoalCondition* build_EFEG_goals(GoalCondition* props, int nbr_prop);
+
 #endif

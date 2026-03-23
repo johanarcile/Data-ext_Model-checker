@@ -51,7 +51,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
     
     // Invariants
-    static DBM i_0 = {{0,0,0},{8,0,infty},{8,infty,0}};
+    static DBM i_0 = {{0,0,0},{2,0,infty},{2,infty,0}};
     invariants[0] = &i_0;
     invariants[1] = &i_0;
    
@@ -102,15 +102,15 @@ Variable update_a(Variable var) {
     
 
    
-     if (var.v + 2 <= 500 && var.v + 2 >= -10){ 
+     if (var.v + 2 <= 5 && var.v + 2 >= -10){ 
         
         var.v += 2;
         var.x += 1;
         var.active = true;
-        var.table[0]++;
-        var.table[1] = var.v;
-        var.table[2] = var.v;
-        snprintf(var.name, NAME_SIZE, "transition a");
+        // var.table[0]++;
+        // var.table[1] = var.v;
+        // var.table[2] = var.v;
+        // snprintf(var.name, NAME_SIZE, "transition a");
     } 
   
     return var;
@@ -120,15 +120,15 @@ Variable update_b(Variable var) {
    
    
    
-    if (var.v + 1 <= 500 && var.v + 1 >= -10){
+    if (var.v + 1 <= 5 && var.v + 1 >= -10){
         
         var.v += 1;
         var.x += 1;
         var.active = true;
-         var.table[0]++;
-        var.table[1] = var.v;
-        var.table[2] = var.v;
-        snprintf(var.name, NAME_SIZE, "transition b");
+        //  var.table[0]++;
+        // var.table[1] = var.v;
+        // var.table[2] = var.v;
+        // snprintf(var.name, NAME_SIZE, "transition b");
     } 
 
     
@@ -137,15 +137,15 @@ Variable update_b(Variable var) {
 
 Variable update_c(Variable var) {
   
-    if (var.v * 2 <= 500 && var.v * 2 >= -10) {
+    if (var.v * 2 <= 5 && var.v * 2 >= -10) {
 
       var.v *= 2;
       var.x += 1;
       var.active = false;
-      var.table[0]++;
-      var.table[1] = var.v;
-      var.table[2] = var.v;
-      snprintf(var.name, NAME_SIZE, "transition c");
+    //   var.table[0]++;
+    //   var.table[1] = var.v;
+    //   var.table[2] = var.v;
+    //   snprintf(var.name, NAME_SIZE, "transition c");
     }
  
     return var;
