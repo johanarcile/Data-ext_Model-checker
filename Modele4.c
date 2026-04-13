@@ -102,11 +102,11 @@ Variable update_a(Variable var) {
     
 
    
-     if (var.v + 2 <= 5 && var.v + 2 >= -10){ 
+     if (var.v + 2 <= 50 && var.v + 2 >= -10){ 
         
         var.v += 2;
+        var.active = false;
         var.x += 1;
-        var.active = true;
         // var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -120,11 +120,11 @@ Variable update_b(Variable var) {
    
    
    
-    if (var.v + 1 <= 5 && var.v + 1 >= -10){
+    if (var.v + 1 <= 50 && var.v + 1 >= -10){
         
         var.v += 1;
+        var.active = false;
         var.x += 1;
-        var.active = true;
         //  var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -137,11 +137,12 @@ Variable update_b(Variable var) {
 
 Variable update_c(Variable var) {
   
-    if (var.v * 2 <= 5 && var.v * 2 >= -10) {
+    if (var.v * 2 <= 50 && var.v * 2 >= -10) {
 
       var.v *= 2;
-      var.x += 1;
       var.active = false;
+      var.x += 1;
+     
     //   var.table[0]++;
     //   var.table[1] = var.v;
     //   var.table[2] = var.v;

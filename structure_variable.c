@@ -12,8 +12,9 @@
 // --------------------- Def de variables -------------------------
 
 typedef struct Variable {
-    int v;
+
     bool active;             // booléen
+    int v;
     int x;
     int table[TABLE_SIZE];   // tableau d'int
     int table_size;          // nombre d’éléments utilisés
@@ -71,7 +72,7 @@ bool equal_var(const Variable *v1, const Variable *v2) {
     return true;
 
 
-    return memcmp(v1, v2,sizeof(Variable)) == 0;
+    //return memcmp(v1, v2,sizeof(Variable)) == 0;
 }
 
 int compare_var(const Variable *v1, const Variable *v2) {
