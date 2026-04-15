@@ -1,32 +1,28 @@
-#ifndef STRUCTURE_VAR_H
-#define STRUCTURE_VAR_H
-
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 #include <stddef.h>
+#include "structure_variable.h"
 
-#define TABLE_SIZE 3
-#define NAME_SIZE 50
 
 // --------------------- Def de variables -------------------------
 
-typedef struct Variable {
+// typedef struct Variable {
 
-    bool active;             // booléen
-    int v;
-    int x;
-    int table[TABLE_SIZE];   // tableau d'int
-    int table_size;          // nombre d’éléments utilisés
+//     bool active;             // booléen
+//     int v;
+//     int x;
+//     int table[TABLE_SIZE];   // tableau d'int
+//     int table_size;          // nombre d’éléments utilisés
 
-    char name[NAME_SIZE];    // "string"
+//     char name[NAME_SIZE];    // "string"
   
     
 
-} Variable;
+// } Variable;
 
 // ----------------------Comparaison des variable----------------------------------
-bool equal_var(const Variable *v1, const Variable *v2) {
+bool equal_var( Variable *v1,  Variable *v2) {
 
   
   
@@ -121,4 +117,3 @@ void print_variable(Variable * v){
 
 
 
-#endif
