@@ -103,11 +103,11 @@ Variable update_a(Variable var) {
         
         var.v += 2;
         var.x += 1;
-        var.active = true;
-        var.table[0]++;
-        var.table[1] = var.v;
-        var.table[2] = var.v;
-        snprintf(var.name, NAME_SIZE, "transition a");
+        // var.active = true;
+        // var.table[0]++;
+        // var.table[1] = var.v;
+        // var.table[2] = var.v;
+        // snprintf(var.name, NAME_SIZE, "transition a");
     } 
   
     return var;
@@ -121,11 +121,11 @@ Variable update_b(Variable var) {
         
         var.v += 1;
         var.x += 1;
-        var.active = true;
-         var.table[0]++;
-        var.table[1] = var.v;
-        var.table[2] = var.v;
-        snprintf(var.name, NAME_SIZE, "transition b");
+        // var.active = true;
+        //  var.table[0]++;
+        // var.table[1] = var.v;
+        // var.table[2] = var.v;
+        // snprintf(var.name, NAME_SIZE, "transition b");
     } 
 
     
@@ -138,11 +138,11 @@ Variable update_c(Variable var) {
 
       var.v *= 2;
       var.x += 1;
-      var.active = false;
-      var.table[0]++;
-      var.table[1] = var.v;
-      var.table[2] = var.v;
-      snprintf(var.name, NAME_SIZE, "transition c");
+    //   var.active = false;
+    //   var.table[0]++;
+    //   var.table[1] = var.v;
+    //   var.table[2] = var.v;
+    //   snprintf(var.name, NAME_SIZE, "transition c");
     }
  
     return var;

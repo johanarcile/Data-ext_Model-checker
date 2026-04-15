@@ -27,7 +27,7 @@ int main() {
    // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
     g.mask =  CHECK_V; 
     g.active = false;
-    g.v = 501;
+    g.v = 1001000;
     g.x = 500;
     strcpy(  g.name, "transition b");
 
@@ -102,19 +102,7 @@ int main() {
          free (result);
     }
 
- printf("\n \n ****************EF No memory:****************** \n ");
- 
-    debut = clock(); 
-    c = EF_pNO_memory(& ta,init_state->location,init_state->clock_zone,&g, &result, check_p,heuristique_checkp);
-    fin = clock();            // Fin du chronomètre
-    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EFP 2 tables : %f secondes", temps_ecoule);
-    printf("\n trouver Avec  EFP 2 tables No emory? : %s ", c? "true" : "false \n");
-    if (result != NULL){
-         printf("\n Le state qui verifie\n");
-         print_state(result, ta.locations);
-         free (result);
-    }
+
 
 
   printf("\n \n **********************EF Full memory************************: \n ");
@@ -131,7 +119,19 @@ int main() {
          free (result);
     }
 
-
+ printf("\n \n ****************EF No memory:****************** \n ");
+ 
+    debut = clock(); 
+    c = EF_pNO_memory(& ta,init_state->location,init_state->clock_zone,&g, &result, check_p,heuristique_checkp);
+    fin = clock();            // Fin du chronomètre
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n Temps d execution EFP 2 tables : %f secondes", temps_ecoule);
+    printf("\n trouver Avec  EFP 2 tables No emory? : %s ", c? "true" : "false \n");
+    if (result != NULL){
+         printf("\n Le state qui verifie\n");
+         print_state(result, ta.locations);
+         free (result);
+    }
 
 
 //  /*--------------------------- EG(p) ----------------------------*/
