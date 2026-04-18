@@ -9,4 +9,7 @@ typedef struct Variable {
     int v;
 } Variable;
 
+bool equal_var(Variable* v1, Variable* v2);
+void print_variable(Variable* v);
+
 #endif

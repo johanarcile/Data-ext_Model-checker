@@ -12,12 +12,12 @@ int main() {
     TA ta;
     fill_ta_struct(&ta);
     
-    explore_state_space_ta(&ta);
+    //explore_state_space_ta(&ta);
 
-    //State_space_TA state_space_ta;
-    //build_state_space_ta(&ta, &state_space_ta);
-    //print_state_space_ta(&state_space_ta, ta.locations, ta.actions);
-    //printf("Nombre total d'états étendus : %d\n", state_space_ta.nb_etats);
+    State_space_TA state_space_ta;
+    build_state_space_ta(&ta, &state_space_ta);
+    print_state_space_ta(&state_space_ta, ta.locations, ta.actions);
+    printf("Nombre total d'états étendus : %d\n", state_space_ta.nb_etats);
     return 0;
     
 }
