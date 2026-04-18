@@ -19,6 +19,6 @@ ainsi que la déclaration des variables dans le header `structure_variable.h`
 
 ##  Compilation et Execution
 
-1. La compilation : gcc -o executable_name main.c ta_extended_builder.c DBM.c ta_ext_fig2a.c
+1. La compilation : gcc -o executable_name main.c ta_extended_builder.c DBM.c variable.c ta_ext_fig2a.c
 2. L'execution : ./executable_name 
 

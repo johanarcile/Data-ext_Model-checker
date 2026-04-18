@@ -111,7 +111,8 @@ void print_state_space_ta(State_space_TA* ss_ta, char** locations, char** action
         printf("\t Location    : %s (ID %d)\n", locations[ss_ta->etats[i].location], ss_ta->etats[i].location);
         printf("\t Clock zone :\n");
         print_dbm(ss_ta->etats[i].clock_zone);
-        printf("\t Variables       : v = %d\n", ss_ta->etats[i].var.v);
+        printf("\t Variables :\n");
+        print_variable(&(ss_ta->etats[i].var));
         printf("\t Transitions sortantes :\n");
 
         for (int j = 0; j < ss_ta->nb_trans_by_state[i]; j++) {
@@ -186,7 +187,8 @@ void print_state(State* etat, char** locations) {
         printf("\t Location    : %s (ID %d)\n", locations[etat->location], etat->location);
         printf("\t Clock zone :\n");
         print_dbm(etat->clock_zone);
-        printf("\t Variables       : v = %d\n", etat->var.v);
+        printf("\t Variables :\n");
+        print_variable(&(etat->var));
         printf("\n");
 }
 
