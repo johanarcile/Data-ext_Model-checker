@@ -51,7 +51,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
     
     // Invariants
-    static DBM i_0 = {{0,0,0},{2,0,infty},{2,infty,0}};
+    static DBM i_0 = {{0,0,0},{4,0,infty},{4,infty,0}};
     invariants[0] = &i_0;
     invariants[1] = &i_0;
    
@@ -64,14 +64,16 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     // Transitions
     nb_trans_par_location[0] = 2;
     transitions[0] = malloc(nb_trans_par_location[0] * sizeof(Transition));
-    transitions[0][0] = (Transition){.location_in = 0, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
+    transitions[0][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
     transitions[0][1] = (Transition){.location_in = 1, .label_action = 0, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
 
     
 
     nb_trans_par_location[1] = 1;
     transitions[1] = malloc(nb_trans_par_location[1] * sizeof(Transition));
-    transitions[1][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
+    transitions[1][0] = (Transition){.location_in = 0, .label_action = 0, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
+   // transitions[1][1] = (Transition){.location_in = 1, .label_action = 1, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+
    
 
 
@@ -105,8 +107,8 @@ Variable update_a(Variable var) {
      if (var.v + 2 <= vmax && var.v + 2 >= -10){ 
         
         var.v += 2;
-    if (var.v >= vmax) var.active = true;
-        var.x += 1;
+            if(var.v >= vmax - 2){var.active = true;}else {var.active = false;}
+        //var.x += 1;
         // var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -123,10 +125,9 @@ Variable update_b(Variable var) {
     if (var.v + 1 <= vmax && var.v + 1 >= -10){
         
         var.v += 1;
-    if (var.v >= vmax) var.active = true;
-    else
-      var.active = false;
-        var.x += 1;
+            if(var.v >= vmax - 2){var.active = true;}else {var.active = false;}
+   
+        //var.x += 1;
         //  var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -142,9 +143,9 @@ Variable update_c(Variable var) {
     if (var.v * 2 <= vmax && var.v * 2 >= -10) {
 
       var.v *= 2;
-     if (var.v >= vmax) var.active = true;
-     else var.active = false;
-      var.x += 1;
+    if(var.v >= vmax - 2){var.active = true;}else {var.active = false;}
+
+     // var.x += 1;
      
     //   var.table[0]++;
     //   var.table[1] = var.v;

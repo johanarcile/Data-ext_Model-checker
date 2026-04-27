@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include "structure_ta.h"
 
-
 /*---------Description du modèle----------------------------------*/
 /*
 Nb_loclité = 2 Action = 3
@@ -14,7 +13,7 @@ AUTOMATE 01 : L0 --c-->l0; L0 --a-->l1; L1 --b-->l0;
 
                 
 
-INVARIANT  x et y <= 8;
+INVARIANT  x et y <= 16;
 
 */
 
@@ -28,7 +27,7 @@ Transition** transitions;        // Transitions sortantes de chaque état
 Variable variable;               // Variable de données
 UpdateFunction* update_functions; // Fonctions d'update
 Constraint* constraints;         // Contraintes
-int vmax = 500;
+int vMax = 100;
 // ---------------------Instantiation TA ---------------------
 
 void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND HAVING ALL VARIABLES BE ARRAYS
@@ -51,7 +50,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
     
     // Invariants
-    static DBM i_0 = {{0,0,0},{2,0,infty},{2,infty,0}};
+    static DBM i_0 = {{0,0,0},{1024,0,infty},{1024,infty,0}};
     invariants[0] = &i_0;
     invariants[1] = &i_0;
    
@@ -71,7 +70,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
     nb_trans_par_location[1] = 1;
     transitions[1] = malloc(nb_trans_par_location[1] * sizeof(Transition));
-    transitions[1][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
+    transitions[1][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-15,-15},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
    
 
 
@@ -84,9 +83,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 // --------------------- Initialisation des variables ---------------------
 
 void init_variables() { 
-    //memset(&variable, 0, sizeof(Variable)); 
     variable.v = 0;
-    variable.x = 0;
     variable.active=false;
     variable.table_size = 3;
     variable.table[0] = 0;
@@ -102,11 +99,11 @@ Variable update_a(Variable var) {
     
 
    
-     if (var.v + 2 <= vmax && var.v + 2 >= -10){ 
+     if (var.v + 2 <= vMax && var.v + 2 >= -10){ 
         
         var.v += 2;
-    if (var.v >= vmax) var.active = true;
         var.x += 1;
+       if ( var.v>=vMax) var.active = true; else  var.active = false;
         // var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -120,13 +117,11 @@ Variable update_b(Variable var) {
    
    
    
-    if (var.v + 1 <= vmax && var.v + 1 >= -10){
+    if (var.v + 1 <= vMax && var.v + 1 >= -10){
         
         var.v += 1;
-    if (var.v >= vmax) var.active = true;
-    else
-      var.active = false;
         var.x += 1;
+       if ( var.v>=vMax) var.active = true; else  var.active = false;
         //  var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -139,13 +134,11 @@ Variable update_b(Variable var) {
 
 Variable update_c(Variable var) {
   
-    if (var.v * 2 <= vmax && var.v * 2 >= -10) {
+    if (var.v * 2 <= vMax && var.v * 2 >= -10) {
 
       var.v *= 2;
-     if (var.v >= vmax) var.active = true;
-     else var.active = false;
       var.x += 1;
-     
+     var.active = true;
     //   var.table[0]++;
     //   var.table[1] = var.v;
     //   var.table[2] = var.v;

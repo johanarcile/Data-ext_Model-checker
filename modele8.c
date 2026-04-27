@@ -81,7 +81,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
     nb_trans_par_location[3] = 2;
     transitions[3] = malloc(nb_trans_par_location[3] * sizeof(Transition));
-    transitions[3][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-1,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
+    transitions[3][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-8,-8},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
     transitions[3][1] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-1,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
 
 
@@ -111,11 +111,11 @@ Variable update_a(Variable var) {
     
 
    
-     if (var.v + 2 <= 250 && var.v + 2 >= -10){ 
+     if (var.v + 2 <= 30 && var.v + 2 >= -10){ 
         
         var.v += 2;
-        // var.x += 1;
-        // var.active = true;
+         var.x *= 2;
+         var.active = true;
         // var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -129,11 +129,11 @@ Variable update_b(Variable var) {
    
    
    
-    if (var.v *2 <= 250 && var.v + 1 >= -10){
+    if (var.v *2 <= 30 && var.v + 1 >= -10){
         
         var.v *= 2;
-        // var.x += 1;
-        //  var.active = true;
+        var.x += 2;
+        var.active = true;
         //  var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -146,11 +146,11 @@ Variable update_b(Variable var) {
 
 Variable update_c(Variable var) {
   
-    if (var.v + 1 <= 250 && var.v * 2 >= -10) {
+    if (var.v + 1 <= 30 && var.v * 2 >= -10) {
 
       var.v += 1;
-    //   var.x += 1;
-    //   var.active = true;
+      var.x += 1;
+      var.active = true;
     //   var.table[0]++;
     //   var.table[1] = var.v;
     //   var.table[2] = var.v;

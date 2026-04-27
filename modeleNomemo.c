@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include "structure_ta.h"
 
-
 /*---------Description du modèle----------------------------------*/
 /*
 Nb_loclité = 2 Action = 3
@@ -14,7 +13,7 @@ AUTOMATE 01 : L0 --c-->l0; L0 --a-->l1; L1 --b-->l0;
 
                 
 
-INVARIANT  x et y <= 8;
+INVARIANT  x et y <= 16;
 
 */
 
@@ -28,11 +27,11 @@ Transition** transitions;        // Transitions sortantes de chaque état
 Variable variable;               // Variable de données
 UpdateFunction* update_functions; // Fonctions d'update
 Constraint* constraints;         // Contraintes
-int vmax = 500;
+int vmax = 990000;
 // ---------------------Instantiation TA ---------------------
 
 void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND HAVING ALL VARIABLES BE ARRAYS
-    int nb_locations = 2;
+    int nb_locations = 4;
     int nb_actions = 3;
 
     locations = malloc(nb_locations * sizeof(char*));
@@ -46,6 +45,8 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     // Locations
     locations[0] = "l0";
     locations[1] = "l1";
+    locations[2] = "l2";
+    locations[3] = "l3";
    
 
 
@@ -54,6 +55,8 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     static DBM i_0 = {{0,0,0},{2,0,infty},{2,infty,0}};
     invariants[0] = &i_0;
     invariants[1] = &i_0;
+    invariants[2] = &i_0;
+    invariants[3] = &i_0;
    
 
     // Actions
@@ -64,15 +67,23 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     // Transitions
     nb_trans_par_location[0] = 2;
     transitions[0] = malloc(nb_trans_par_location[0] * sizeof(Transition));
-    transitions[0][0] = (Transition){.location_in = 0, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
-    transitions[0][1] = (Transition){.location_in = 1, .label_action = 0, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
-
+    transitions[0][0] = (Transition){.location_in = 1, .label_action = 0, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+    transitions[0][1] = (Transition){.location_in = 2, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
     
-
     nb_trans_par_location[1] = 1;
     transitions[1] = malloc(nb_trans_par_location[1] * sizeof(Transition));
-    transitions[1][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
-   
+    transitions[1][0] = (Transition){.location_in = 3, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+    
+    nb_trans_par_location[2] = 1;
+    transitions[2] = malloc(nb_trans_par_location[2] * sizeof(Transition));
+    transitions[2][0] = (Transition){.location_in = 3, .label_action = 0, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+    
+
+    nb_trans_par_location[3] = 1;
+    transitions[3] = malloc(nb_trans_par_location[3] * sizeof(Transition));
+    transitions[3][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-1,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
+    //transitions[3][1] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-1,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
+
 
 
     
@@ -84,9 +95,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 // --------------------- Initialisation des variables ---------------------
 
 void init_variables() { 
-    //memset(&variable, 0, sizeof(Variable)); 
     variable.v = 0;
-    variable.x = 0;
     variable.active=false;
     variable.table_size = 3;
     variable.table[0] = 0;
@@ -105,8 +114,9 @@ Variable update_a(Variable var) {
      if (var.v + 2 <= vmax && var.v + 2 >= -10){ 
         
         var.v += 2;
-    if (var.v >= vmax) var.active = true;
-        var.x += 1;
+        // var.x += 2;
+         var.active = false;
+            if(var.v == vmax){var.active = true;}
         // var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -120,13 +130,12 @@ Variable update_b(Variable var) {
    
    
    
-    if (var.v + 1 <= vmax && var.v + 1 >= -10){
+    if (var.v *2 <= vmax && var.v + 1 >= -10){
         
-        var.v += 1;
-    if (var.v >= vmax) var.active = true;
-    else
-      var.active = false;
-        var.x += 1;
+        var.v *= 2;
+       // var.x *= 2;
+        var.active = false;
+           if(var.v == vmax){var.active = true;}
         //  var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -139,13 +148,14 @@ Variable update_b(Variable var) {
 
 Variable update_c(Variable var) {
   
-    if (var.v * 2 <= vmax && var.v * 2 >= -10) {
+    if (var.v + 1 <= vmax && var.v * 2 >= -10) {
 
-      var.v *= 2;
-     if (var.v >= vmax) var.active = true;
-     else var.active = false;
-      var.x += 1;
-     
+      var.v += 1;
+    //  var.x += 1;
+
+      var.active = false;
+
+     if(var.v == vmax){var.active = true;}
     //   var.table[0]++;
     //   var.table[1] = var.v;
     //   var.table[2] = var.v;
