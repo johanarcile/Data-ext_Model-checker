@@ -401,27 +401,25 @@ void parse_model_json(const char* json_donnees){
 
                 switch(l){
                     case 0:
-                        if(cJSON_IsString(transition_value_json)){
-                            int count_action = 0;
-                            for(int m = 0; m < nb_actions; m++){
-                                if(strcmp(transition_value_json->valuestring, actions[m]) == 0){
-                                    transitions[i][k]->label_action = m; //Affectation de l'indice du nom de l'action dans actions à la valeur d'action de la transition k de la localité i 
-                                    break; //Arrêt de la boucle pour éviter des itérations inutiles
-                                }
-                                else count_action++;
-                            }
-                            if(count_action == nb_actions){
-                                printf("Erreur de syntaxe : L'action entree pour la transition %d de la localite %s n'est pas definie.\n", k, locations[i]);
-                                cJSON_Delete(json);
-                                exit(EXIT_FAILURE);
-                            } //Détection d'une action non définie pour la transition k de la localité i 
-                        }
-                        else if(cJSON_IsNull(transition_value_json)) transitions[i][k]->label_action = -1;
-                        else{
-                            printf("Erreur de syntaxe : Le type de l'action de la transition %d de la localite %s est incorrect.\nType attendu : String ou null.\n", k, locations[i]);
+                        if(!cJSON_IsString(transition_value_json)){
+                            printf("Erreur de syntaxe : Le type de l'action de la transition %d de la localite %s est incorrect.\nType attendu : String.\n", k, locations[i]);
                             cJSON_Delete(json);
                             exit(EXIT_FAILURE);
                         } //Détection d'une erreur de type pour l'action de la transition k de la localité i
+
+                        int count_action = 0;
+                        for(int m = 0; m < nb_actions; m++){
+                            if(strcmp(transition_value_json->valuestring, actions[m]) == 0){
+                                transitions[i][k]->label_action = m; //Affectation de l'indice du nom de l'action dans actions à la valeur d'action de la transition k de la localité i 
+                                break; //Arrêt de la boucle pour éviter des itérations inutiles
+                            }
+                            else count_action++;
+                        }
+                        if(count_action == nb_actions){
+                            printf("Erreur de syntaxe : L'action entree pour la transition %d de la localite %s n'est pas definie.\n", k, locations[i]);
+                            cJSON_Delete(json);
+                            exit(EXIT_FAILURE);
+                        } //Détection d'une action non définie pour la transition k de la localité i 
                         break;
 
                     case 1:

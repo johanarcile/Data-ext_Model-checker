@@ -19,8 +19,8 @@ Constraint* constraints;         // Contraintes
 // ---------------------Instantiation TA ---------------------
 
 void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND HAVING ALL VARIABLES BE ARRAYS
-    int nb_locations = model_c_nblocations;
-    int nb_actions = model_c_nbactions;
+    int nb_locations = 2;
+    int nb_actions = 3;
 
     locations = malloc(nb_locations * sizeof(char*));
     invariants = malloc(nb_locations * sizeof(DBM*));
@@ -31,16 +31,28 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     constraints = malloc(nb_actions * sizeof(Constraint));
 
     // Locations
-    model_c_locations
+    locations[0] = "l0";
+    locations[1] = "l1";
     
     // Invariants
-    model_c_invariants
+    static DBM i_0 = {{0,0,0},{2,0,infty},{2,infty,0}};
+    static DBM i_1 = {{0,0,0},{2,0,infty},{2,infty,0}};
+    invariants[0] = &i_0;
+    invariants[1] = &i_1;
 
     // Actions
-    model_c_actions
+    actions[0] = "a";
+    actions[1] = "b";
+    actions[2] = "c";
 
     // Transitions
-    model_c_transitions
+    nb_trans_par_location[0] = 2;
+    nb_trans_par_location[1] = 1;
+    transitions[0] = malloc(nb_trans_par_location[0] * sizeof(Transition));
+    transitions[1] = malloc(nb_trans_par_location[1] * sizeof(Transition));
+    transitions[0][0] = (Transition){.location_in = 0, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
+    transitions[0][1] = (Transition){.location_in = 1, .label_action = 0, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+    transitions[1][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
 }
 
 // --------------------- Initialisation des variables ---------------------
