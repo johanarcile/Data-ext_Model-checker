@@ -29,6 +29,8 @@ Variable variable;               // Variable de données
 UpdateFunction* update_functions; // Fonctions d'update
 Constraint* constraints;         // Contraintes
 int vmax = 500;
+//int vmax = 1000;
+
 // ---------------------Instantiation TA ---------------------
 
 void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND HAVING ALL VARIABLES BE ARRAYS
@@ -64,14 +66,14 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     // Transitions
     nb_trans_par_location[0] = 2;
     transitions[0] = malloc(nb_trans_par_location[0] * sizeof(Transition));
-    transitions[0][0] = (Transition){.location_in = 0, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
+    transitions[0][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
     transitions[0][1] = (Transition){.location_in = 1, .label_action = 0, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
 
     
 
     nb_trans_par_location[1] = 1;
     transitions[1] = malloc(nb_trans_par_location[1] * sizeof(Transition));
-    transitions[1][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
+    transitions[1][0] = (Transition){.location_in = 0, .label_action = 2, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
    
 
 
@@ -105,7 +107,8 @@ Variable update_a(Variable var) {
      if (var.v + 2 <= vmax && var.v + 2 >= -10){ 
         
         var.v += 2;
-    if (var.v >= vmax) var.active = true;
+        var.active = false;
+        if (var.v >= vmax) var.active = true;
         var.x += 1;
         // var.table[0]++;
         // var.table[1] = var.v;
@@ -117,33 +120,13 @@ Variable update_a(Variable var) {
 }
 
 Variable update_b(Variable var) {
-   
-   
-   
-    if (var.v + 1 <= vmax && var.v + 1 >= -10){
-        
-        var.v += 1;
-    if (var.v >= vmax) var.active = true;
-    else
-      var.active = false;
-        var.x += 1;
-        //  var.table[0]++;
-        // var.table[1] = var.v;
-        // var.table[2] = var.v;
-        // snprintf(var.name, NAME_SIZE, "transition b");
-    } 
-
-    
-    return var;
-}
-
-Variable update_c(Variable var) {
   
     if (var.v * 2 <= vmax && var.v * 2 >= -10) {
 
       var.v *= 2;
      if (var.v >= vmax) var.active = true;
-     else var.active = false;
+     else 
+     var.active = false;
       var.x += 1;
      
     //   var.table[0]++;
@@ -154,6 +137,29 @@ Variable update_c(Variable var) {
  
     return var;
 }
+
+Variable update_c(Variable var) {
+   
+   
+   
+    if (var.v + 1 <= vmax && var.v + 1 >= -10){
+        
+        var.v += 1;
+     if (var.v >= vmax) var.active = true;
+     else
+      var.active = false;
+        var.x += 1;
+        //  var.table[c
+        // var.table[1] = var.v;
+        // var.table[2] = var.v;
+        // snprintf(var.name, NAME_SIZE, "transition b");
+    } 
+
+    
+    return var;
+}
+
+
 void init_update_functions() {
     update_functions[0] = update_a;
     update_functions[1] = update_b;

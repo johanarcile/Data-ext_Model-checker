@@ -112,7 +112,8 @@ Variable update_a(Variable var) {
         
         var.v += 2;
         var.x += 1;
-       if (var.v ==500) var.active = true; else var.active=false;
+      // if (var.v ==500) var.active = true; else 
+       var.active=false;
         var.table[0]++;
         var.table[1] = var.v;
         var.table[2] = var.v;
@@ -130,7 +131,8 @@ Variable update_b(Variable var) {
         
         var.v += 1;
         var.x += 1;
-       if (var.v ==500) var.active = true; else var.active=false;
+       //if (var.v ==500) var.active = true; else 
+       var.active=false;
          var.table[0]++;
         var.table[1] = var.v;
         var.table[2] = var.v;
@@ -147,7 +149,8 @@ Variable update_c(Variable var) {
 
       var.v *= 2;
       var.x += 1;
-       if (var.v ==500) var.active = true; else var.active=false;
+      // if (var.v ==500) var.active = true; else
+        var.active=false;
       var.table[0]++;
       var.table[1] = var.v;
       var.table[2] = var.v;

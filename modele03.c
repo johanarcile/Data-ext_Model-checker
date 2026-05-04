@@ -4,18 +4,8 @@
 #include <stdio.h>
 #include "structure_ta.h"
 
-/*---------Description du modèle----------------------------------*/
-/*
-Nb_loclité = 2 Action = 3
-                  X>=1         y>=1         Y>=1
-AUTOMATE 01 : L0 --c-->l0; L0 --a-->l1; L1 --b-->l0;
-                 x=0                      x=0, y = 0
 
-                
 
-INVARIANT  x et y <= 16;
-
-*/
 
 // --------------------- Variables globales ---------------------
 
@@ -27,7 +17,7 @@ Transition** transitions;        // Transitions sortantes de chaque état
 Variable variable;               // Variable de données
 UpdateFunction* update_functions; // Fonctions d'update
 Constraint* constraints;         // Contraintes
-int vmax = 220;
+int vmax = 9000;
 // ---------------------Instantiation TA ---------------------
 
 
@@ -117,7 +107,7 @@ Variable update_a(Variable var) {
         var.v += 2;
          //var.x *= 2;
          var.active = false;
-            if(var.v == vmax){var.active = true;}
+        if(var.v == vmax){var.active = true;}
         // var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -136,7 +126,7 @@ Variable update_b(Variable var) {
         var.v *= 2;
        // var.x += 2;
         var.active = false;
-           if(var.v == vmax){var.active = true;}
+      if(var.v == vmax){var.active = true;}
         //  var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;

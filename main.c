@@ -21,6 +21,23 @@ int main() {
            tnmeg = 0,tmbeg = 0 ,   tmfeg = 0,  tmleg = 0, tmbhmeg = 0, tmbhpeg = 0;
     int   nbr_visit_efnom = 0,nbr_visit_efmb =0,nbr_visit_efmbhp= 0, nbr_visit_efmbhm = 0,nbr_visit_efml = 0,nbr_visit_efmf =0,  
     nbr_visit_egnom =0 ,  nbr_visit_egmb = 0,  nbr_visit_egmbhp = 0, nbr_visit_egmbhm = 0,nbr_visit_egml=0, nbr_visit_egmf = 0;
+     GoalCondition g;
+
+    //      g.mask =  CHECK_ACTIVE; 
+//     g.active = false;
+//     g.v = 501;
+//     g.x = 500;
+//     strcpy(  g.name, "transition b");
+    
+//  printf("\n \n **********************EG Full memory************************: \n ");
+   
+//     debut = clock(); 
+//     c = EG_FullMemory(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
+//     fin = clock();            // Fin du chronomètre
+//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+//     printf("\n Temps d execution EGP Avec 2 tables full memory: %f secondes", temps_ecoule);
+//     printf("\n trouver Avec  2 TABLES ? : %s ", c? "true" : "false  \n");
+//     tmfeg =+ temps_ecoule;
 
     printf("\n ***************************Resultats pour EF(p) :************************************** ");
 
@@ -30,16 +47,16 @@ int main() {
     //print_state(init_state,ta.locations);
  
 //  /*--------------------------- Goal cherche ----------------------------*/
-     GoalCondition g;
+   
    // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
-    g.mask =  CHECK_V; 
-    g.active = true;
-    g.v = 1001000;
-    g.x = 500;
-    strcpy(  g.name, "transition b");
+//     g.mask =  CHECK_ACTIVE; 
+//     g.active = false;
+//     g.v = 1001000;
+//     g.x = 500;
+//     strcpy(  g.name, "transition b");
 
  
-//  /*--------------------------- calculer nbr etats ----------------------------*/
+ /*--------------------------- calculer nbr etats ----------------------------*/
 
     debut = clock(); 
     build_state_space_ta(&ta, &state_space_ta);
@@ -49,17 +66,19 @@ int main() {
     printf("\n Temps d execution : %f secondes\n", temps_ecoule);
 
 
+
+
 printf("\n ======================================== Les tests =====================================");
 
 for(int i=0; i< 3; i++) {
 
      //  /*--------------------------- Goal cherche ----------------------------*/
-     GoalCondition g;
+
    // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
-    g.mask =  CHECK_V; 
-    g.active = true;
-    g.v = 1001000;
-    g.x = 500;
+    g.mask =  CHECK_V | CHECK_ACTIVE ;//|CHECK_X; 
+    g.active = false;
+    g.v = 1001000;//990000;//500;//990000;//9000;
+    g.x = 95;
     strcpy(  g.name, "transition b");
 
 printf("\n ---------------- Test n: %d ----------------------------------------------------------",i);
@@ -150,36 +169,36 @@ printf("\n ---------------- Test n: %d -----------------------------------------
     tmfef += temps_ecoule;
 
 
- printf("\n \n ****************EF No memory:****************** \n ");
+//  printf("\n \n ****************EF No memory:****************** \n ");
  
-    debut = clock(); 
-    c = EF_pNO_memory(& ta,init_state->location,init_state->clock_zone,&g, &result, check_p,heuristique_checkp);
-    fin = clock();            // Fin du chronomètre
-    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EFP 2 tables : %f secondes", temps_ecoule);
-    printf("\n trouver Avec  EFP 2 tables No emory? : %s ", c? "true" : "false \n");
-    if (result != NULL){
-         printf("\n Le state qui verifie\n");
-         print_state(result, ta.locations);
-         free (result);
-    }
+//     debut = clock(); 
+//     c = EF_pNO_memory(& ta,init_state->location,init_state->clock_zone,&g, &result, check_p,heuristique_checkp);
+//     fin = clock();            // Fin du chronomètre
+//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+//     printf("\n Temps d execution EFP 2 tables : %f secondes", temps_ecoule);
+//     printf("\n trouver Avec  EFP 2 tables No emory? : %s ", c? "true" : "false \n");
+//     if (result != NULL){
+//          printf("\n Le state qui verifie\n");
+//          print_state(result, ta.locations);
+//          free (result);
+//     }
 
-    tnmef = tnmef + temps_ecoule;
+//     tnmef = tnmef + temps_ecoule;
 
 
 //  /*--------------------------- EG(p) ----------------------------*/
 
  // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
-    g.mask =  CHECK_ACTIVE; 
+    g.mask =  CHECK_ACTIVE ; 
     g.active = false;
-    g.v = 501;
-    g.x = 500;
+    g.v = 990001;//501;
+    g.x = 1000;
     strcpy(  g.name, "transition b");
 
   printf("\n \n ------------------EG:-------------------------- \n ");
      printf("\n EG *********Memory on the borders only*************: \n ");
     debut = clock(); 
-    c = EG_p_2tables(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
+    c = EG_p_2tables(& ta,init_state->location,init_state->clock_zone,&g,check_p_inf,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
     printf("\n Temps d execution EGP Avec 2 tables: %f secondes", temps_ecoule);
@@ -191,7 +210,7 @@ printf("\n ---------------- Test n: %d -----------------------------------------
  
 
      debut = clock(); 
-    c = EG_p_HV_M(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
+    c = EG_p_HV_M(& ta,init_state->location,init_state->clock_zone,&g,check_p_inf,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
     printf("\n Temps d execution EGP heap pool juse maloc au besoins: %f secondes", temps_ecoule);
@@ -201,7 +220,7 @@ printf("\n ---------------- Test n: %d -----------------------------------------
   printf("\n \n **************EG memory in layers:******************* \n ");
 
     debut = clock(); 
-    c = EG_p_2tables_Memory_Layer(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
+    c = EG_p_2tables_Memory_Layer(& ta,init_state->location,init_state->clock_zone,&g,check_p_inf,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
     printf("\n Temps d execution EGP Avec 2 tables: %f secondes", temps_ecoule);
@@ -212,7 +231,7 @@ printf("\n ---------------- Test n: %d -----------------------------------------
   printf("\n \n **********************EG Full memory************************: \n ");
    
     debut = clock(); 
-    c = EG_FullMemory(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
+    c = EG_FullMemory(& ta,init_state->location,init_state->clock_zone,&g,check_p_inf,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
     printf("\n Temps d execution EGP Avec 2 tables full memory: %f secondes", temps_ecoule);
@@ -220,15 +239,15 @@ printf("\n ---------------- Test n: %d -----------------------------------------
     tmfeg =+ temps_ecoule;
 
     
-     printf("\n \n ****************EG No memory:****************** \n ");
+//      printf("\n \n ****************EG No memory:****************** \n ");
 
-    debut = clock(); 
-    c = EG_p_2tablesNo_memory(& ta,init_state->location,init_state->clock_zone,&g,check_p,heuristique_checkp);
-    fin = clock();            // Fin du chronomètre
-    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EGP Avec 2 tables: %f secondes", temps_ecoule);
-    printf("\n trouver Avec  2 TABLES ? : %s ", c? "true" : "false  \n");
-    tnmeg =+ temps_ecoule;
+//     debut = clock(); 
+//     c = EG_p_2tablesNo_memory(& ta,init_state->location,init_state->clock_zone,&g,check_p_inf,heuristique_checkp);
+//     fin = clock();            // Fin du chronomètre
+//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+//     printf("\n Temps d execution EGP Avec 2 tables: %f secondes", temps_ecoule);
+//     printf("\n trouver Avec  2 TABLES ? : %s ", c? "true" : "false  \n");
+//     tnmeg =+ temps_ecoule;
 
 
 
@@ -256,7 +275,21 @@ printf("\n memory in full memory :  temps %f  nbr visite", tmfeg/3,nbr_visit_egm
 
 
 
+// g.mask =  CHECK_V |CHECK_ACTIVE ; 
+//     g.active = false;
+//     g.v = 500;
+//     g.x = 1000;
+//     strcpy(  g.name, "transition b");
 
+//   printf("\n \n **********************EG Full memory************************: \n ");
+   
+//     debut = clock(); 
+//     c = EG_FullMemory(& ta,init_state->location,init_state->clock_zone,&g,check_p_inf,heuristique_checkp);
+//     fin = clock();            // Fin du chronomètre
+//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+//     printf("\n Temps d execution EGP Avec 2 tables full memory: %f secondes", temps_ecoule);
+//     printf("\n trouver Avec  2 TABLES ? : %s ", c? "true" : "false  \n");
+//     tmfeg =+ temps_ecoule;
 
 //  /*--------------------------- Requete imbriques EF(EG(p)) ----------------------------*/
 //    printf("\n \n EFEG:\n");
