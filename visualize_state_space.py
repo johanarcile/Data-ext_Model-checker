@@ -182,35 +182,33 @@ def convert_to_constraint_string(dbm_matrix):
     constraints = []
     for i in range(len(dbm_matrix)):
         for j in range(i+1, len(dbm_matrix[i])):
-            if i == j:
+            if (dbm_matrix[i][j] == float('inf') or dbm_matrix[i][j] == float('-inf')) and (dbm_matrix[j][i] == float('inf') or dbm_matrix[j][i] == float('-inf')):
                 continue
-            if dbm_matrix[i][j] == float('inf') or dbm_matrix[i][j] == float('-inf'):
-                continue
-            if i==0 or j==0:
-                if dbm_matrix[i][j] == 0:
-                    if dbm_matrix[j][i] == 0:
-                        constraints.append(f"x{i} = 0")
-                    else:
+            if i == 0:
+                if dbm_matrix[i][j] == float('inf') or dbm_matrix[i][j] == float('-inf'):
+                    constraints.append(f"x{j} <= {dbm_matrix[j][i]}")
+                elif dbm_matrix[j][i] == float('inf') or dbm_matrix[j][i] == float('-inf'):
+                    constraints.append(f"x{j} >= {-dbm_matrix[i][j]}")
+                elif dbm_matrix[i][j] == -dbm_matrix[j][i]:
+                    constraints.append(f"x{j} = {-dbm_matrix[i][j]}")
+                else:
+                    if dbm_matrix[i][j] == 0:
                         constraints.append(f"x{j} <= {dbm_matrix[j][i]}")
-                else:
-                    if dbm_matrix[j][i] == 0:
-                        constraints.append(f"x{i} >= {-dbm_matrix[i][j]}")
+                    elif dbm_matrix[j][i] == 0:
+                        constraints.append(f"x{j} >= {-dbm_matrix[i][j]}")
                     else:
-                        if dbm_matrix[i][j] == -dbm_matrix[j][i]:
-                            constraints.append(f"x{i} = {-dbm_matrix[i][j]}")
-                        else:
-                            constraints.append(f"{-dbm_matrix[i][j]} <= x{i} <= {dbm_matrix[j][i]}")
+                        constraints.append(f"{-dbm_matrix[i][j]} <= x{j} <= {dbm_matrix[j][i]}")
             else:
-                if dbm_matrix[i][j] == 0:
-                    if dbm_matrix[j][i] == 0:
-                        constraints.append(f"x{i} = x{j}")
-                    else:
-                        constraints.append(f"x{j} - x{i} <= {dbm_matrix[j][i]}")
+                if dbm_matrix[i][j] == 0 and dbm_matrix[j][i] == 0:
+                    constraints.append(f"x{i} = x{j}")
+                elif dbm_matrix[i][j] == float('inf') or dbm_matrix[i][j] == float('-inf'):
+                    constraints.append(f"x{j} - x{i} <= {dbm_matrix[j][i]}")
+                elif dbm_matrix[j][i] == float('inf') or dbm_matrix[j][i] == float('-inf'):
+                    constraints.append(f"x{i} - x{j} <= {dbm_matrix[i][j]}")
+                elif dbm_matrix[i][j] == -dbm_matrix[j][i]:
+                    constraints.append(f"x{i} - x{j} = {dbm_matrix[i][j]}")
                 else:
-                    if dbm_matrix[j][i] == 0:
-                        constraints.append(f"x{i} - x{j} <= {dbm_matrix[i][j]}")
-                    else:
-                        constraints.append(f"{dbm_matrix[j][i]} <= x{i} <= {dbm_matrix[i][j]}")
+                    constraints.append(f"{-dbm_matrix[j][i]} <= x{i} - x{j} <= {dbm_matrix[i][j]}")
     return constraints
 
 
@@ -281,7 +279,7 @@ def serve(ss):
         ], style={"margin": "10px"}),
         html.Div([
             cyto.Cytoscape(
-                id="cytoscape",
+                id="graph",
                 elements=[],
                 layout={
                     "name": "breadthfirst",
@@ -302,13 +300,13 @@ def serve(ss):
     ])
 
     @app.callback(
-        Output("cytoscape", "elements"),
-        Output("cytoscape", "layout"),
+        Output("graph", "elements"),
+        Output("graph", "layout"),
         Output("start-state-message", "children"),
         Output("visible-subgraph", "data"),
         Output("state-info-store", "data"),
         Input("start-state-btn", "n_clicks"),
-        Input("cytoscape", "tapNodeData"),
+        Input("graph", "tapNodeData"),
         State("start-state-id", "value"),
         State("visible-subgraph", "data"),
         State("state-info-store", "data"),
@@ -339,7 +337,7 @@ def serve(ss):
                 state_info,
             )
 
-        if trigger == "cytoscape" and tap_data and subgraph_state.get("started"):
+        if trigger == "graph" and tap_data and subgraph_state.get("started"):
             clicked_id = int(tap_data.get("id"))
 
             if clicked_id < 0 or clicked_id >= ss.EtatsLength():
