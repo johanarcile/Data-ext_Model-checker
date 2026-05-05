@@ -178,6 +178,40 @@ def load_subgraph_pred(ss, root_id: int, depth: int):
     return elements, all_info
 
 
+def load_subgraph(ss, root_id: int, depth: int):
+    visited_ids = {root_id}
+    all_nodes = {}
+    all_edges = []
+    all_info = {}
+
+    root_node, root_info = load_state(ss, root_id)
+    all_nodes[root_id] = root_node
+    all_info[str(root_id)] = root_info
+
+    current_level = {root_id}
+
+    for _ in range(depth):
+        next_level = set()
+        for state_id in current_level:
+            predecessor_ids, pred_edges = load_predecessors(ss, state_id)
+            adjacent_ids, edges = load_adjacent(ss, state_id)
+            all_edges.extend(edges)
+            all_edges.extend(pred_edges)
+            for nid in predecessor_ids + adjacent_ids:
+                if nid not in visited_ids:
+                    visited_ids.add(nid)
+                    next_level.add(nid)
+                    node, info = load_state(ss, nid)
+                    all_nodes[nid] = node
+                    all_info[str(nid)] = info
+        current_level = next_level
+        if not current_level:
+            break
+
+    elements = list(all_nodes.values()) + all_edges
+    return elements, all_info
+
+
 def convert_to_constraint_string(dbm_matrix):
     constraints = []
     for i in range(len(dbm_matrix)):
@@ -343,7 +377,7 @@ def serve(ss):
             if clicked_id < 0 or clicked_id >= ss.EtatsLength():
                 return no_update, no_update, no_update, subgraph_state, state_info
 
-            new_elements, new_info = load_subgraph_pred(ss, clicked_id, 1)
+            new_elements, new_info = load_subgraph(ss, clicked_id, 1)
             state_info.update(new_info)
             existing_elements = subgraph_state.get("elements", [])
             all_ids = set()
@@ -358,7 +392,7 @@ def serve(ss):
             return (
                 merged,
                 {"name": "breadthfirst", "animate": False, "fit": True, "directed": True, "padding": 40},
-                f"Prédécesseurs de l'état {clicked_id} affichés.",
+                f"Prédécesseurs et successeurs de l'état {clicked_id} affichés.",
                 subgraph_state,
                 state_info,
             )
