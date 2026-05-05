@@ -1,0 +1,36 @@
+namespace State_space_ta;
+
+table DBM {
+    dim:int;
+    //DBM[i][j] = matrice_applatie[i * dim + j]
+    matrice_applatie:[int];
+}
+
+table Variable {
+    v:int;
+}
+
+table State {
+    location:int;
+    clock_zone:DBM;
+    var:Variable;
+}
+
+table State_transition {
+    cible:int;
+    action_id:int;
+}
+
+
+table State_transitions {
+    items:[State_transition];
+}
+
+table State_space_ta {
+    etats:[State];
+    state_transitions:[State_transitions];
+    state_predecessors:[State_transitions];
+    nb_trans_by_state:[int];
+}
+
+root_type State_space_ta;
