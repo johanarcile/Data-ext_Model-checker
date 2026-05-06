@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #define infty INT_MAX 
+#define limit 1000000000
 
 typedef int** DBM;
 typedef int* clocks;

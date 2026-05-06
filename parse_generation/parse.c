@@ -323,15 +323,22 @@ void parse_model_json(const char* json_donnees){
             for(int l = 0; l < (nb_clocks+1); l++){
                 cJSON* invariant_value_json = cJSON_GetArrayItem(invariant_col_json, l); //Récupération de la valeur à l'indice [k][l] de l'invariant
                 if(!invariant_value_json){
-                    printf("Erreur de syntaxe : La valeur d'indice [%d][%d] de l'invariant  de la localite %s est vide.\n", k, l, locations[i]);
+                    printf("Erreur de syntaxe : La valeur d'indice [%d][%d] de l'invariant de la localite %s est vide.\n", k, l, locations[i]);
                     cJSON_Delete(json);
                     exit(EXIT_FAILURE);
                 } //Détection d'une valeur d'invariant nulle pour la localité i
 
-                if(cJSON_IsNumber(invariant_value_json)) invariants[i][k][l] = invariant_value_json->valueint;
+                if(cJSON_IsNumber(invariant_value_json)){
+                    invariants[i][k][l] = invariant_value_json->valueint;
+                    if(invariants[i][k][l] >= limit){
+                        printf("Erreur de syntaxe : La valeur d'indice [%d][%d] du tableau d'invariant de la localite %s est superieure a la limite fixee (%d).\n", k, l, locations[i], limit);
+                        cJSON_Delete(json);
+                        exit(EXIT_FAILURE);
+                    } //Détection d'une valeur supérieure ou égale à un milliard
+                } 
                 else if(cJSON_IsString(invariant_value_json) && (strcmp(invariant_value_json->valuestring, "infty") == 0)) invariants[i][k][l] = infty;
                 else{
-                    printf("Erreur de syntaxe : Le type de la valeur d'indice [%d][%d] du tableau d'invariant pour la localite %s est incorrect.\nType attendu : Int ou String infty.\n", k, l, locations[i]);
+                    printf("Erreur de syntaxe : Le type de la valeur d'indice [%d][%d] du tableau d'invariant de la localite %s est incorrect.\nType attendu : Int ou String infty.\n", k, l, locations[i]);
                     cJSON_Delete(json);
                     exit(EXIT_FAILURE);
                 } //Détection d'une erreur de type pour une valeur d'invariant de la localité i
@@ -339,7 +346,7 @@ void parse_model_json(const char* json_donnees){
         }
 
         //Parsing des transitions de la localité i
-        cJSON* transitions_json = cJSON_GetObjectItemCaseSensitive(location_json, "transitions"); //Récupération de la valeur de transition pour la localité i
+        cJSON* transitions_json = cJSON_GetObjectItemCaseSensitive(location_json, "transitions"); //Récupération de la valeur de transition de la localité i
         if(!transitions_json){
             printf("Erreur de syntaxe : La valeur de l'item transitions de la localite %s est vide.\n", locations[i]);
             cJSON_Delete(json);
@@ -424,60 +431,67 @@ void parse_model_json(const char* json_donnees){
 
                     case 1:
                         if(!cJSON_IsArray(transition_value_json)){
-                            printf("Erreur de syntaxe : Le type de l'invariant de la transition %d de la localite %s est incorrect.\nType attendu : Array.\n", k, locations[i]);
+                            printf("Erreur de syntaxe : Le type de garde de la transition %d de la localite %s est incorrect.\nType attendu : Array.\n", k, locations[i]);
                             cJSON_Delete(json);
                             exit(EXIT_FAILURE);
-                        } //Détection d'une erreur de type pour l'invariant de la transition k de la localité i
+                        } //Détection d'une erreur de type pour la garde de la transition k de la localité i
                         
                         if(length_transition_array != (nb_clocks+1)){
-                            printf("Erreur de syntaxe : La taille de l'invariant de la transition %d de la localite %s est incorrecte.\n", k, locations[i]);
+                            printf("Erreur de syntaxe : La taille de garde de la transition %d de la localite %s est incorrecte.\n", k, locations[i]);
                             cJSON_Delete(json);
                             exit(EXIT_FAILURE);
-                        } //Détection d'une taille d'invariant inattendue pour la transition k de la localité i
+                        } //Détection d'une taille de garde inattendue pour la transition k de la localité i
 
                         transitions[i][k]->guard = malloc((nb_clocks+1) * sizeof(int*)); //Allocation de l'espace mémoire pour l'invariant de la transition k de la localité i
                         if(!transitions[i][k]->guard){
-                            printf("Erreur d'allocation memoire pour l'invariant de la transition %d de la localite %s (transitions[i][j]->guard).\n", k, locations[i]);
+                            printf("Erreur d'allocation memoire pour la garde de la transition %d de la localite %s (transitions[i][j]->guard).\n", k, locations[i]);
                             cJSON_Delete(json);
                             exit(EXIT_FAILURE);
-                        } //Détection d'une erreur d'allocation mémoire pour l'invariant de la transition k de la localité i
+                        } //Détection d'une erreur d'allocation mémoire pour la garde de la transition k de la localité i
 
                         for(int m = 0; m < (nb_clocks+1); m++){
                             cJSON* transition_value_guard_json = cJSON_GetArrayItem(transition_value_json, m); //Récupération du tableau d'entier d'indice m de l'invariant de la transition k de la localité i
                             if(!cJSON_IsArray(transition_value_guard_json)){
-                                printf("Erreur de syntaxe : Le type de la valeur d'indice %d de l'invariant de la transition %d de la localite %s est incorrect.\nType attendu : Array.\n", m, k, locations[i]);
+                                printf("Erreur de syntaxe : Le type de la valeur d'indice %d de garde de la transition %d de la localite %s est incorrect.\nType attendu : Array.\n", m, k, locations[i]);
                                 cJSON_Delete(json);
                                 exit(EXIT_FAILURE);
                             } //Détection d'une erreur de type pour la ligne m de la matrice d'invariant de la transition k de la localité i
 
                             if(cJSON_GetArraySize(transition_value_guard_json) != (nb_clocks+1)){
-                                printf("Erreur de syntaxe : La taille de l'invariant de la transition %d de la localite %s est incorrecte.\n", k, locations[i]);
+                                printf("Erreur de syntaxe : La taille de garde de la transition %d de la localite %s est incorrecte.\n", k, locations[i]);
                                 cJSON_Delete(json);
                                 exit(EXIT_FAILURE);
-                            } //Détection d'une taille inattendue pour l'invariant de la transition k de la localité i 
+                            } //Détection d'une taille inattendue pour la garde de la transition k de la localité i 
 
                             transitions[i][k]->guard[m] = malloc((nb_clocks+1) * sizeof(int)); //Allocation de l'espace mémoire pour l'indice m de l'invariant de la transition k de la localité i
                             if(!transitions[i][k]->guard[m]){
-                                printf("Erreur d'allocation memoire pour l'invariant de la transition %d de la localite %s (transitions[i][j]->guard[k]).\n", k, locations[i]);
+                                printf("Erreur d'allocation memoire pour la garde de la transition %d de la localite %s (transitions[i][j]->guard[k]).\n", k, locations[i]);
                                 cJSON_Delete(json);
                                 exit(EXIT_FAILURE);
-                            } //Détection d'une erreur d'allocation mémoire pour l'invariant de la transition k de la localité i
+                            } //Détection d'une erreur d'allocation mémoire pour la garde de la transition k de la localité i
 
                             for(int n = 0; n < (nb_clocks+1); n++){
                                 cJSON* transition_value_guard_value_json = cJSON_GetArrayItem(transition_value_guard_json, n); //Récupération de la valeur d'indice [m][n] de l'invariant de la transition k de la localité i
                                 if(!transition_value_guard_value_json){
-                                    printf("Erreur de syntaxe : La valeur de l'invariant d'indice [%d][%d] de la transition %d de la localite %s est nulle.\n", m, n, k, locations[i]);
+                                    printf("Erreur de syntaxe : La valeur de garde d'indice [%d][%d] de la transition %d de la localite %s est nulle.\n", m, n, k, locations[i]);
                                     cJSON_Delete(json);
                                     exit(EXIT_FAILURE);
-                                } //Détection d'une absence de définition d'une valeur de l'invariant de la transition k de la localité i
+                                } //Détection d'une absence de définition d'une valeur de garde de la transition k de la localité i
 
-                                if(cJSON_IsNumber(transition_value_guard_value_json)) transitions[i][k]->guard[m][n] = transition_value_guard_value_json->valueint; //Si la valeur est un nombre, alore elle est récupérée dans l'invariant de la transition k de la localité i à l'indice [m][n]
+                                if(cJSON_IsNumber(transition_value_guard_value_json)){
+                                    transitions[i][k]->guard[m][n] = transition_value_guard_value_json->valueint; //Si la valeur est un nombre, alore elle est récupérée dans l'invariant de la transition k de la localité i à l'indice [m][n]                                   
+                                    if(transitions[i][k]->guard[m][n] >= limit){
+                                        printf("Erreur de syntaxe : La valeur de garde d'indice [%d][%d] de la transition %d de la localite %s est superieure a la limite fixee (%d).\n", m, n, k, locations[i], limit);
+                                        cJSON_Delete(json);
+                                        exit(EXIT_FAILURE);
+                                    } //Détection d'une valeur supérieure ou égale à un milliard
+                                }
                                 else if(cJSON_IsString(transition_value_guard_value_json) && (strcmp(transition_value_guard_value_json->valuestring, "infty") == 0)) transitions[i][k]->guard[m][n] = infty; //Si la valeur est un string qui correspond à infty, alors la case mémoire d'indice [m][n] de l'invariant de la transition k de la localité i prend la valeur infty
                                 else{
-                                    printf("Erreur de syntaxe : Le type de la valeur de l'invariant d'indice [%d][%d] de la transition %d de la localite %s est incorrect.\nType attendu : Int ou String infty.\n", m, n, k, locations[i]);
+                                    printf("Erreur de syntaxe : Le type de la valeur de garde d'indice [%d][%d] de la transition %d de la localite %s est incorrect.\nType attendu : Int ou String infty.\n", m, n, k, locations[i]);
                                     cJSON_Delete(json);
                                     exit(EXIT_FAILURE);
-                                } //Détection d'une erreur de type pour une valeur de l'invariant de la transition k de la lcoalité i
+                                } //Détection d'une erreur de type pour une valeur de garde de la transition k de la lcoalité i
                             }
                         }
                         break;
