@@ -6,7 +6,7 @@
 #include "cJSON.h"
 #include "parse.h"
 
-//Définition des structures de ParseInfos
+//Définition des champs de ParseInfos
 int nb_actions; //Variable pour conserver le nombre d'actions
 char** actions; //Tableau des nom des actions
 int nb_clocks; //Variable pour conserver le nombre d'horloges
@@ -16,6 +16,19 @@ char** locations; //Tableau des noms des localités
 DBM* invariants; //Structure DBM pour conserver les invariants
 int* nb_transitions_locations; //Tableau pour conserver le nombre de transitions sortantes de chaque localité
 Transition*** transitions; //Tableau à double dimension des transitions
+
+int nb_define; //Variable pour conserver le nombre de lignes de code pour la définition des constantes symboliques
+line* def_variables_define; //Tableau des lignes de code pour la définition de la structure Variable du fichier structure_variable.h
+int** nb_clines_typedef;
+int nb_typedef_struct;
+int nb_typedef_primitive;
+char*** label_typedef;
+line*** def_variables_typedef; //Taleau des lignes de codes des typdef
+int*** dim_elements_typedef_variables; //Sauvegarde des dimensions des champs de la structure définie pour Variable qui servira pour l'écriture des fonctions de comparaison et d'affichage du fichier variable.c
+int nb_clines_init_variables;
+line* init_variables_function;
+line** update_functions;
+line** contraints_functions;
 
 //Ouverture du fichier json en mode lecture
 char* read_model_json(const char* filename){
@@ -590,6 +603,401 @@ void parse_model_json(const char* json_donnees){
             }
         }
     }
+    
+    //Parsing des informations de variables
+    cJSON* variables_json = cJSON_GetObjectItemCaseSensitive(json, "variables"); //Récupération de la valeur associée à l'item variables
+    if(!variables_json){
+        printf("Erreur de syntaxe : Aucun item variables detecte.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE); 
+    } //Détection de l'absence d'item variables dans le json
+
+    if(!cJSON_IsObject(variables_json)){
+        printf("Erreur de syntaxe : Le type de la valeur de l'item variables est incorrect.\nType attendu : Object.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur de type pour variables
+
+    //Parsing des informations pour le fichier structure_variable.h
+    cJSON* definition_json = cJSON_GetObjectItemCaseSensitive(variables_json, "definition"); //Récupération de la valeur associée à l'item definition
+    if(!definition_json){
+        printf("Erreur de syntaxe : Aucun item definition detecte.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection de l'absence d'item definition dans l'objet variables du json
+
+    if(!cJSON_IsObject(definition_json)){
+        printf("Erreur de syntaxe : Le type de la valeur de l'item definition est incorrect.\nType attendu : Object.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur de type pour definition
+
+    cJSON* define_json = cJSON_GetObjectItemCaseSensitive(definition_json, "define"); //Récupération de la valeur associée à l'item define
+    if(!define_json){
+        printf("Erreur de syntaxe : Aucun item define detecte.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection de l'absence d'item define dans l'objet definition
+
+    if(!cJSON_IsArray(define_json)){
+        printf("Erreur de syntaxe : Le type de la valeur de l'item define est incorrect.\nType attendu : Array.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur de type pour la valeur de define
+
+    int length_define = cJSON_GetArraySize(define_json);
+    nb_define = length_define;
+    def_variables_define = malloc(length_define * sizeof(line)); //Allocation de l'espace mémoire pour le tableau des lignes de code definissant les constantes symboliques
+    if(!def_variables_define){
+        printf("Erreur d'allocation memoire pour le tableau des lignes de code definissant les constantes symboliques (def_variables_define).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour def_variables_define
+
+    for(int i = 0; i < length_define; i++){
+        cJSON* define_code_line = cJSON_GetArrayItem(define_json, i); //Récupération de la valeur d'indice i du tableau define
+        if(!define_code_line){
+            printf("Erreur de syntaxe : La ligne de code %d de define est vide.\n", i);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une ligne de code non définie.
+
+        if(!cJSON_IsString(define_code_line)){
+            printf("Erreur de syntaxe : Le type de la ligne de code %d de define est incorrect.\nType attendu : String.\n", i);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur de type pour la ligne de code i de define
+
+        def_variables_define[i] = strdup(define_code_line->valuestring);
+    }
+
+    cJSON* typedef_json = cJSON_GetObjectItemCaseSensitive(definition_json, "typedef"); //Récupération de la valeur associée à l'item typedef
+    if(!typedef_json){
+        printf("Erreur de syntaxe : Aucun item typedef detecte.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection de l'absence de l'item typedef
+
+    if(!cJSON_IsObject(typedef_json)){
+        printf("Erreur de syntaxe : Le type de la valeur de l'item typedef est incorrect.\nType attendu : Object.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur de type pour typedef
+
+    int length_typedef = cJSON_GetArraySize(typedef_json);
+    if(length_typedef != 2){
+        printf("Erreur de syntaxe : L'item typedef ne contient pas le nom nombre d'items.\nNombre attendu : 2 (struct, primitive).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'un nombre d'item incorrect pour typedef
+
+    nb_clines_typedef = malloc(length_typedef * sizeof(int**));
+    if(!nb_clines_typedef){
+        printf("Erreur d'allocation memoire pour le tableau stockant le nombre de lignes de codes pour chaque typedef (nb_clines_typedef).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour nb_clines_typdef
+
+    label_typedef = malloc(length_typedef * sizeof(char**));
+    if(!label_typedef){
+        printf("Erreur d'allocation memoire pour le tableau stockant les noms de chaque typedef (label_typedef).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour label_typedef
+
+    def_variables_typedef = malloc(length_typedef * sizeof(line**));
+    if(!def_variables_typedef){
+        printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef
+
+    dim_elements_typedef_variables = malloc(length_typedef * sizeof(int**));
+    if(!dim_elements_typedef_variables){
+        printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables
+
+    cJSON* struct_json = cJSON_GetObjectItemCaseSensitive(typedef_json, "struct"); //Récupération de la valeur associée à l'item struct
+    if(!struct_json){
+        printf("Erreur de syntaxe : Aucun item struct detecte.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection de l'absence de l'item struct
+
+    if(!cJSON_IsObject(struct_json)){
+        printf("Erreur de syntaxe : Le type de la valeur de l'item struct est incorrect.\nType attendu : Object.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur de type pour l'item struct
+
+    cJSON* item_struct = NULL;
+    int length_struct = cJSON_GetArraySize(struct_json);
+    nb_typedef_struct = length_struct;
+    nb_clines_typedef[0] = malloc(length_struct * sizeof(int));
+    if(!nb_clines_typedef[0]){
+        printf("Erreur d'allocation memoire pour le tableau stockant le nombre de lignes de codes pour chaque typedef (nb_clines_typedef[0]).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour nb_clines_typdef[0]
+
+    label_typedef[0] = malloc(length_struct * sizeof(char*));
+    if(!label_typedef[0]){
+        printf("Erreur d'allocation memoire pour le tableau stockant les noms de chaque typedef (label_typedef[0]).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour label_typedef[0]
+
+    def_variables_typedef[0] = malloc(length_struct * sizeof(line*));
+    if(!def_variables_typedef[0]){
+        printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef[0]).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef[0]
+
+    dim_elements_typedef_variables[0] = malloc(length_struct * sizeof(int*));
+    if(!dim_elements_typedef_variables[0]){
+        printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables[0]).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables[0]
+
+    int count_names_typedef = 0; //Index de parcours du tableau des noms des typedef struct
+    int count_item_struct_variable = 0; //Variable pour déterminer la définition du typedef type variable
+    cJSON_ArrayForEach(item_struct, struct_json){
+        if(!item_struct){
+            printf("Erreur de syntaxe : Un item_struct de l'objet struct n'est pas defini.\n");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'un item_struct vide dans l'objet struct
+
+        label_typedef[0][count_names_typedef] = strdup(item_struct->string);
+        if(strcmp(label_typedef[0][count_names_typedef], "variable") == 0) count_item_struct_variable = 1;
+        count_names_typedef++;
+    }
+
+    if(count_item_struct_variable != 1){
+        printf("Erreur de syntaxe : Le typedef type variable n'est pas defini.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection de l'absence du typedef type variable
+
+    for(int i = 0; i < count_names_typedef; i++){
+        if(strcmp(label_typedef[0][i], "variable") == 0){
+            label_typedef[0][i] = label_typedef[0][0];
+            label_typedef[0][0] = "variable";
+        }
+    } //Placement de la structure variable en premier
+
+    for(int i = 0; i < length_struct; i++){
+        cJSON* typedef_struct_json = cJSON_GetObjectItem(struct_json, label_typedef[0][i]);
+        if(!typedef_struct_json){
+            printf("Erreur de syntaxe : L'item %s n'est pas defini.\n", label_typedef[0][i]);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'un item de typedef struct non défini
+
+        if(!cJSON_IsArray(typedef_struct_json)){
+            printf("Erreur de syntaxe : Le type de la valeur de l'item %s est incorrect.\nType attendu : String.\n", label_typedef[0][i]);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur de type pour le typedef struct
+
+        int length_typedef_struct = cJSON_GetArraySize(typedef_struct_json);
+        nb_clines_typedef[0][i] = length_typedef_struct;
+        dim_elements_typedef_variables[0][i] = malloc(length_typedef_struct * sizeof(int));
+        if(!dim_elements_typedef_variables[0][i]){
+            printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables[0][i]).\n");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables[0][i]
+
+        def_variables_typedef[0][i] = malloc(length_typedef_struct * sizeof(line));
+        if(!def_variables_typedef[0][i]){
+            printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef[0][i]).\n");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef[0][i]
+
+        for(int j = 0; j < length_typedef_struct; j++){
+            cJSON* struct_code_line = cJSON_GetArrayItem(typedef_struct_json, j);
+            if(!struct_code_line){
+                printf("Erreur de syntaxe : La ligne de code %d du typedef type %s n'est pas définie.\n", j, label_typedef[0][i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une ligne de code vide pour un typedef type
+
+            if(!cJSON_IsString(struct_code_line)){
+                printf("Erreur de syntaxe : Le type de la ligne de code %d du typedef type %s est incorrect.\nType attendu : String.\n", j, label_typedef[0][i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une erreur de type pour la ligne de code j du typedef type
+
+            def_variables_typedef[0][i][j] = strdup(struct_code_line->valuestring);
+            int count_dim = 0;
+            for(int k = 0; k < strlen(def_variables_typedef[0][i][j]); k++){
+                if((def_variables_typedef[0][i][j][k] == '*')||(def_variables_typedef[0][i][j][k] == '[')) count_dim++;
+            } //Compte la dimension du champ du typedef type
+            dim_elements_typedef_variables[0][i][j] = count_dim;      
+        }
+    }
+
+    cJSON* primitive_json = cJSON_GetObjectItemCaseSensitive(typedef_json, "primitive"); 
+    if(!primitive_json){
+        printf("Erreur de syntaxe : Aucun item primitive detecte.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection de l'absence de l'item primitive
+
+    if(!cJSON_IsObject(primitive_json)){
+        printf("Erreur de syntaxe : Le type de la valeur de l'item primitive est incorrect.\nType attendu : Object.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur de type pour l'item primitive
+
+    cJSON* item_primitive = NULL;
+    int length_primitive = cJSON_GetArraySize(primitive_json);
+    nb_typedef_primitive = length_primitive;
+    nb_clines_typedef[1] = malloc(length_primitive * sizeof(int));
+    if(!nb_clines_typedef[1]){
+        printf("Erreur d'allocation memoire pour le tableau stockant le nombre de lignes de codes pour chaque typedef (nb_clines_typedef[1]).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour nb_clines_typdef[1]
+
+    label_typedef[1] = malloc(length_primitive * sizeof(char*));
+    if(!label_typedef[1]){
+        printf("Erreur d'allocation memoire pour le tableau stockant les noms de chaque typedef (label_typedef[1]).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour label_typedef[1]
+
+    def_variables_typedef[1] = malloc(length_primitive * sizeof(line*));
+    if(!def_variables_typedef[1]){
+        printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef[1]).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef[1]
+
+    dim_elements_typedef_variables[1] = malloc(length_primitive * sizeof(int*));
+    if(!dim_elements_typedef_variables[1]){
+        printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables[1]).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables[1]
+
+    count_names_typedef = 0; //Index de parcours du tableau des noms des typedef primitives
+    cJSON_ArrayForEach(item_primitive, primitive_json){
+        if(!item_primitive){
+            printf("Erreur de syntaxe : Un item_primitive de l'objet struct n'est pas defini.\n");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'un item_primitive vide dans l'objet struct
+
+        label_typedef[1][count_names_typedef] = strdup(item_primitive->string);
+        count_names_typedef++;
+    }
+
+    for(int i = 0; i < length_primitive; i++){
+        cJSON* typedef_primitive_json = cJSON_GetObjectItem(primitive_json, label_typedef[1][i]);
+        if(!typedef_primitive_json){
+            printf("Erreur de syntaxe : L'item %s n'est pas defini.\n", label_typedef[1][i]);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'un item de typedef primitive non défini
+
+        if(!cJSON_IsArray(typedef_primitive_json)){
+            printf("Erreur de syntaxe : Le type de la valeur de l'item %s est incorrect.\nType attendu : String.\n", label_typedef[1][i]);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur de type pour le typedef primitive
+
+        int length_typedef_primitive = cJSON_GetArraySize(typedef_primitive_json);
+        if(length_typedef_primitive != 1){
+            printf("Erreur de syntaxe : Un typedef type primitif ne peux pas avoir plusieurs lignes.\n");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur sur le nombre de lignes
+
+        nb_clines_typedef[1][i] = length_typedef_primitive;
+        dim_elements_typedef_variables[1][i] = malloc(length_typedef_primitive * sizeof(int));
+        if(!dim_elements_typedef_variables[1][i]){
+            printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables[1][i]).\n");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables[1][i]
+
+        def_variables_typedef[1][i] = malloc(length_typedef_primitive * sizeof(line));
+        if(!def_variables_typedef[1][i]){
+            printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef[1][i]).\n");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef[1][i]
+
+        for(int j = 0; j < length_typedef_primitive; j++){
+            cJSON* primitive_code_line = cJSON_GetArrayItem(typedef_primitive_json, j);
+            if(!primitive_code_line){
+                printf("Erreur de syntaxe : La ligne de code %d du typedef type %s n'est pas définie.\n", j, label_typedef[1][i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une ligne de code vide pour un typedef type
+
+            if(!cJSON_IsString(primitive_code_line)){
+                printf("Erreur de syntaxe : Le type de la ligne de code %d du typedef type %s est incorrect.\nType attendu : String.\n", j, label_typedef[1][i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une erreur de type pour la ligne de code j du typedef type
+
+            def_variables_typedef[1][i][j] = strdup(primitive_code_line->valuestring);
+            int count_dim = 0;
+            for(int k = 0; k < strlen(def_variables_typedef[1][i][j]); k++){
+                if((def_variables_typedef[1][i][j][k] == '*')||(def_variables_typedef[1][i][j][k] == '[')) count_dim++;
+            } //Compte la dimension du champ du typedef type
+            dim_elements_typedef_variables[1][i][j] = count_dim;      
+        }
+    }
+
+    //Parsing des lignes de code de la fonction init_variables
+    cJSON* init_variables_json = cJSON_GetObjectItemCaseSensitive(variables_json, "init_variables"); //Récupération de la valeur associée à l'item init_variables
+    if(!init_variables_json){
+        printf("Erreur de syntaxe : Aucun item init_variables detecte.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection de l'absence de l'item init_variables dans l'objet variables
+
+    if(!cJSON_IsArray(init_variables_json)){
+        printf("Erreur de syntaxe : Le type de la valeur de l'item init_variables est incorrect.\nType attendu : Array.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur de type pour init_variables
+
+    int length_init_variables = cJSON_GetArraySize(init_variables_json);
+    nb_clines_init_variables = length_init_variables;
+    init_variables_function = malloc(length_init_variables * sizeof(line)); //Allocation de l'espace mémoire pour le tableau des lignes de code de la fonction init_variables
+    if(!init_variables_function){
+        printf("Erreur d'allocation memoire pour le tableau des lignes de code de la fonction init_variables (init_variables_function).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour init_variables_function
+
+    for(int i = 0; i < length_init_variables; i++){
+        cJSON* init_variables_code_line = cJSON_GetArrayItem(init_variables_json, i); //Récupération de la valeur d'indice i du tableau init_variables
+        if(!init_variables_code_line){
+            printf("Erreur de syntaxe : La ligne de code %d de init_variables est vide.\n", i);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une ligne de code % d'init_variables non définie
+
+        if(!cJSON_IsString(init_variables_code_line)){
+            printf("Erreur de syntaxe : Le type de la lignede code  %d  de init_variables est incorrect.\nType attendu : String.\n", i);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur de type pour la ligne de code i de la fonction init_variables
+
+        init_variables_function[i] = strdup(init_variables_code_line->valuestring);
+    }
+
     cJSON_Delete(json);
 }
 
