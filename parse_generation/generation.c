@@ -92,7 +92,7 @@ void generation_structure_DBM_h(int nb_clocks){
     fclose(structure_DBM_h_copy);
 }
 
-void generation_structure_variable_h(){
+void generation_structure_variable_h(int nb_define, line* def_variables_define, int** nb_clines_typedef, int nb_typedef_struct, int nb_typedef_primitive, char*** label_typedef, line*** def_variables_typedef){
     FILE* structure_variable_h = fopen("modeles_generation/structure_variable.h", "r");
     if(!structure_variable_h){
         perror("Impossible d'ouvrir le fichier structure_variable.h.\n");
@@ -106,24 +106,86 @@ void generation_structure_variable_h(){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
 
-    char tampon;
+    int* find_line = malloc(3 * sizeof(int));
+    char** error_message = malloc(3 * sizeof(char*));
+    error_message[0] = "'structure_variable_h_define'";
+    error_message[1] = "'structure_variable_h_typedef_primitive'";
+    error_message[2] = "'structure_variable_h_typedef_struct'";
+
+    char* chaine_tampon = malloc(1000 * sizeof(char));
     while(1){
-        tampon = fgetc(structure_variable_h);
-        if(tampon == EOF){
-            if(feof(structure_variable_h)) break; //Détection de la fin du fichier structure_variable.h
+        chaine_tampon = fgets(chaine_tampon, 1000, structure_variable_h);
+        if(chaine_tampon == NULL){
+            if(feof(structure_variable_h)) break;
             else{
-                printf("Erreur de lecture du fichier structure_variable.h.\n");
+                printf("Erreur de lecture du fichier model.c.\n");
                 fclose(structure_variable_h);
                 fclose(structure_variable_h_copy);
                 exit(EXIT_FAILURE);
-            } //Détection d'une erreur de lecture du fichier structure_variable.h
+            } //Détection d'une erreur de lecture du fichier model.c
         }
-        fputc(tampon, structure_variable_h_copy); //Ajout du caractère dans le fichier généré
+        else if(strchr(chaine_tampon, '\n') == NULL){
+            printf("Erreur de taille : La ligne (%s) depasse 1000 caracteres.\n", chaine_tampon);
+            fclose(structure_variable_h);
+            fclose(structure_variable_h_copy);
+            exit(EXIT_FAILURE);
+        } //Détection d'une ligne trop grande pour le tampon
+
+        if(strcmp(chaine_tampon, "structure_variable_h_define\n") == 0){
+            for(int i = 0; i < nb_define; i++){
+                char convert[1000];
+                snprintf(convert, sizeof(convert), "%s\n", def_variables_define[i]);
+                fputs(convert, structure_variable_h_copy);
+            }
+            fputs("\n", structure_variable_h_copy);
+            find_line[0] = 1;
+        }
+
+        else if(strcmp(chaine_tampon, "structure_variable_h_typedef_primitive\n") == 0){
+            for(int i = 0; i < nb_typedef_primitive; i++){
+                for(int j = 0; j < nb_clines_typedef[1][i]; j++){
+                    char convert[1000];
+                    snprintf(convert, sizeof(convert), "%s\n", def_variables_typedef[1][i][j]);
+                    fputs(convert, structure_variable_h_copy);
+                }
+            }
+            if(nb_typedef_primitive != 0) fputs("\n", structure_variable_h_copy);
+            find_line[1] = 1;
+        }
+
+        else if(strcmp(chaine_tampon, "structure_variable_h_typedef_struct\n") == 0){
+            for(int i = 0; i < nb_typedef_struct; i++){
+                printf("boucle i\n");
+                char convert[1000];
+                snprintf(convert, sizeof(convert), "typedef struct %s {\n", label_typedef[0][i]);
+                fputs(convert, structure_variable_h_copy);
+                for(int j = 0; j < nb_clines_typedef[0][i]; j++){
+                    printf("boucle j\n");
+                    char convertBis[1000];
+                    snprintf(convertBis, sizeof(convertBis), "%s\n", def_variables_typedef[0][i][j]);
+                    fputs(convertBis, structure_variable_h_copy);
+                }
+                fputs("}\n", structure_variable_h_copy);
+                fputs("\n", structure_variable_h_copy);
+            }
+            find_line[2] = 1;
+        }
+
+        else fputs(chaine_tampon, structure_variable_h_copy); //Copie si la ligne n'est pas une ligne à modifier
+    }
+
+    for(int i = 0; i < 3; i++){
+        if(find_line[i] != 1){
+            printf("Erreur de syntaxe : La ligne %s n'a pas ete trouvee dans le fichier structure_variable.h.\n", error_message[i]);
+            fclose(structure_variable_h);
+            fclose(structure_variable_h_copy);
+            exit(EXIT_FAILURE);
+        } //Détection de l'absence de la ligne à modifier
     }
 
     fclose(structure_variable_h);
     fclose(structure_variable_h_copy);
-} //A poursuivre
+}
 
 void generation_structure_ta_h(){
     FILE* structure_ta_h = fopen("modeles_generation/structure_ta.h", "r");
@@ -298,8 +360,7 @@ void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** 
             fclose(model_c_copy);
             exit(EXIT_FAILURE);
         } //Détection d'une ligne trop grande pour le tampon
-
-        
+  
         if(strcmp(chaine_tampon, "    int nb_locations = model_c_nblocations;\n") == 0){
             char convert[1000];
             snprintf(convert, sizeof(convert), "    int nb_locations = %d;\n", nb_locations); //Conversion et concaténation de la chaine à coller dans le fichier généré
@@ -434,7 +495,7 @@ void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** 
         else fputs(chaine_tampon, model_c_copy); //Copie si la ligne n'est pas une ligne à modifier
     }
 
-    for(int i = 0; i < 3; i++){
+    for(int i = 0; i < 6; i++){
         if(find_line[i] != 1){
             printf("Erreur de syntaxe : La ligne %s n'a pas ete trouvee dans le fichier model.c.\n", error_message[i]);
             fclose(model_c);
@@ -555,7 +616,7 @@ void generation(ParseInfos* parseInfos){
     generation_gitignore(); //Fonction de génération du fichier .gitignore
     generation_structure_ta_h(); //Fonction de génération du fichier structure_ta.h
     generation_DBM_c(); //Fonction de génération du fichier DBM.c
-    generation_structure_variable_h(); //Fonction de génération du fichier structure_variable.h
+    generation_structure_variable_h(parseInfos->nb_define, parseInfos->def_variables_define, parseInfos->nb_clines_typedef, parseInfos->nb_typedef_struct, parseInfos->nb_typedef_primitive, parseInfos->label_typedef, parseInfos->def_variables_typedef); //Fonction de génération du fichier structure_variable.h
     generation_variable_c(); //Fonction de génération du fichier variable.c
     generation_model_c(parseInfos->nb_locations, parseInfos->nb_actions, parseInfos->nb_clocks, parseInfos->locations, parseInfos->invariants, parseInfos->actions, parseInfos->nb_transitions_locations, parseInfos->transitions); //Fonction de génération du fichier model.c
 }

@@ -5,7 +5,7 @@
 
 void generation_uthash_h();
 void generation_structure_DBM_h(int nb_clocks);
-void generation_structure_variable_h();
+void generation_structure_variable_h(int nb_define, line* def_variables_define, int** nb_clines_typedef, int nb_typedef_struct, int nb_typedef_primitive, char*** label_typedef, line*** def_variables_typedef);
 void generation_structure_ta_h();
 void generation_state_space_ta_h();
 void generation_DBM_c();

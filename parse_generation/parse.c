@@ -69,16 +69,16 @@ void parse_model_json(const char* json_donnees){
     // Parsing du tableau d'actions
     cJSON* actions_json = cJSON_GetObjectItemCaseSensitive(json, "actions"); //Récupération de la valeur associée à l'item actions
     if(!actions_json){
-        printf("Erreur de syntaxe : Aucun item actions detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet actions detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence d'item actions dans le json
+    } //Détection de l'absence de l'objet actions dans le json
 
     if(!cJSON_IsArray(actions_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item actions est incorrect.\nType attendu : Array.\n");
+        printf("Erreur de syntaxe : Le type de l'objet actions est incorrect.\nType attendu : Array.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une structure de action différente d'un tableau
+    } //Détection d'une erreur de type pour l'objet actions
 
     int length_actions = cJSON_GetArraySize(actions_json); //Récupération de la taille du tableau d'actions
     nb_actions = length_actions;
@@ -116,16 +116,16 @@ void parse_model_json(const char* json_donnees){
     //Parsing du tableau des noms d'horloges
     cJSON* clocks_json = cJSON_GetObjectItemCaseSensitive(json, "clocks"); //Récupération de la valeur associée à l'item clocks
     if(!clocks_json){
-        printf("Erreur de syntaxe : Aucun item clocks detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet clocks detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'item clocks
+    } //Détection de l'absence de l'objet clocks
  
     if(!cJSON_IsArray(clocks_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item clocks est incorrect.\nType attendu : Array.\n");
+        printf("Erreur de syntaxe : Le type de l'objet clocks est incorrect.\nType attendu : Array.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une structure de clocks différente d'un tableau
+    } //Détection d'une erreur de type pour l'objet clocks
     
     int length_clocks = cJSON_GetArraySize(clocks_json); //Récupération de la taille du tableau de clocks
     nb_clocks = length_clocks;
@@ -163,16 +163,16 @@ void parse_model_json(const char* json_donnees){
     //Parsing du tableau des localités
     cJSON* locations_json = cJSON_GetObjectItemCaseSensitive(json, "locations"); //Récupération du tableau de localités
     if(!locations_json){
-        printf("Erreur de syntaxe : Aucun item locations detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet locations detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'item locations
+    } //Détection de l'absence de l'objet locations
 
     if(!cJSON_IsArray(locations_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item locations est incorrect.\nType attendu : Array.\n");
+        printf("Erreur de syntaxe : Le type de l'objet locations est incorrect.\nType attendu : Array.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour l'item locations
+    } //Détection d'une erreur de type pour l'objet locations
 
     int length_locations = cJSON_GetArraySize(locations_json); //Récupération de la taille du tableau de localités
     if(length_locations == 0){
@@ -220,13 +220,13 @@ void parse_model_json(const char* json_donnees){
         printf("Erreur de syntaxe : Aucune localite initiale definie.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'item init
+    } //Détection de l'absence de l'objet init
 
     if(!cJSON_IsString(init_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item init est incorrect.\nType attendu : String.\n");
+        printf("Erreur de syntaxe : Le type de la valeur de l'objet init est incorrect.\nType attendu : String.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour l'item init
+    } //Détection d'une erreur de type pour l'objet init
 
     char* init_location = strdup(init_json->valuestring); //Affectation de la valeur récupérée à une chaine de caractères temporaire
     int count = 0; //Création d'un compteur qui permettra de déterminer si la localité initiale définie a été définie dans le tableau des localités
@@ -270,13 +270,13 @@ void parse_model_json(const char* json_donnees){
     for(int i = 0; i < nb_locations; i++){
         cJSON* location_json = cJSON_GetObjectItemCaseSensitive(json, locations[i]); //Récupération de la structure de données de la localité i 
         if(!location_json){
-            printf("Erreur de syntaxe : Aucun item trouve pour la localite %s.\n", locations[i]);
+            printf("Erreur de syntaxe : Aucun objet trouve pour la localite %s.\n", locations[i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'une structure de données vide pour la localité i
+        } //Détection d'une absence de l'objet de localité i 
 
         if(!cJSON_IsObject(location_json)){
-            printf("Erreur de syntaxe : Le type de la valeur de l'item localite %s est incorrect.\nType attendu : Object.\n", locations[i]);
+            printf("Erreur de syntaxe : Le type de la valeur de l'objet localite %s est incorrect.\nType attendu : Object.\n", locations[i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur de type pour la localité i
@@ -363,16 +363,16 @@ void parse_model_json(const char* json_donnees){
         //Parsing des transitions de la localité i
         cJSON* transitions_json = cJSON_GetObjectItemCaseSensitive(location_json, "transitions"); //Récupération de la valeur de transition de la localité i
         if(!transitions_json){
-            printf("Erreur de syntaxe : La valeur de l'item transitions de la localite %s est vide.\n", locations[i]);
+            printf("Erreur de syntaxe : La valeur de l'objet transitions de la localite %s est vide.\n", locations[i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une absence de définition des transitions pour la localité i 
 
         if(!cJSON_IsArray(transitions_json)){
-            printf("Erreur de syntaxe : Le type de la valeur de l'item transitions de la localite %s est incorrect.\nType attendu : Array.\n", locations[i]);
+            printf("Erreur de syntaxe : Le type de la valeur de l'objet transitions de la localite %s est incorrect.\nType attendu : Array.\n", locations[i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'une erreur de type pour transitions
+        } //Détection d'une erreur de type pour l'objet transitions
 
         int length_transitions = cJSON_GetArraySize(transitions_json); //Récupération de la taille du tableau de transitions pour la localité i 
         nb_transitions_locations[i] = length_transitions;
@@ -609,40 +609,40 @@ void parse_model_json(const char* json_donnees){
     //Parsing des informations de variables
     cJSON* variables_json = cJSON_GetObjectItemCaseSensitive(json, "variables"); //Récupération de la valeur associée à l'item variables
     if(!variables_json){
-        printf("Erreur de syntaxe : Aucun item variables detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet variables detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE); 
-    } //Détection de l'absence d'item variables dans le json
+    } //Détection de l'absence de l'objet variables dans le json
 
     if(!cJSON_IsObject(variables_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item variables est incorrect.\nType attendu : Object.\n");
+        printf("Erreur de syntaxe : Le type de l'objet variables est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour variables
+    } //Détection d'une erreur de type pour l'objet variables
 
     //Parsing des informations pour le fichier structure_variable.h
     cJSON* definition_json = cJSON_GetObjectItemCaseSensitive(variables_json, "definition"); //Récupération de la valeur associée à l'item definition
     if(!definition_json){
-        printf("Erreur de syntaxe : Aucun item definition detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet definition detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence d'item definition dans l'objet variables du json
+    } //Détection de l'absence de l'objet definition dans l'objet variables du json
 
     if(!cJSON_IsObject(definition_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item definition est incorrect.\nType attendu : Object.\n");
+        printf("Erreur de syntaxe : Le type de l'objet definition est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour definition
+    } //Détection d'une erreur de type pour l'objet definition
 
     cJSON* define_json = cJSON_GetObjectItemCaseSensitive(definition_json, "define"); //Récupération de la valeur associée à l'item define
     if(!define_json){
-        printf("Erreur de syntaxe : Aucun item define detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet define detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence d'item define dans l'objet definition
+    } //Détection de l'absence de l'objet define dans l'objet definition
 
     if(!cJSON_IsArray(define_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item define est incorrect.\nType attendu : Array.\n");
+        printf("Erreur de syntaxe : Le type de l'objet define est incorrect.\nType attendu : Array.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de type pour la valeur de define
@@ -675,46 +675,39 @@ void parse_model_json(const char* json_donnees){
 
     cJSON* typedef_json = cJSON_GetObjectItemCaseSensitive(definition_json, "typedef"); //Récupération de la valeur associée à l'item typedef
     if(!typedef_json){
-        printf("Erreur de syntaxe : Aucun item typedef detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet typedef detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'item typedef
+    } //Détection de l'absence de l'objet typedef
 
     if(!cJSON_IsObject(typedef_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item typedef est incorrect.\nType attendu : Object.\n");
+        printf("Erreur de syntaxe : Le type de l'objet typedef est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour typedef
+    } //Détection d'une erreur de type pour l'objet typedef
 
-    int length_typedef = cJSON_GetArraySize(typedef_json);
-    if(length_typedef != 2){
-        printf("Erreur de syntaxe : L'item typedef ne contient pas le nom nombre d'items.\nNombre attendu : 2 (struct, primitive).\n");
-        cJSON_Delete(json);
-        exit(EXIT_FAILURE);
-    } //Détection d'un nombre d'item incorrect pour typedef
-
-    nb_clines_typedef = malloc(length_typedef * sizeof(int**));
+    nb_clines_typedef = malloc(2 * sizeof(int**));
     if(!nb_clines_typedef){
         printf("Erreur d'allocation memoire pour le tableau stockant le nombre de lignes de codes pour chaque typedef (nb_clines_typedef).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour nb_clines_typdef
 
-    label_typedef = malloc(length_typedef * sizeof(char**));
+    label_typedef = malloc(2 * sizeof(char**));
     if(!label_typedef){
         printf("Erreur d'allocation memoire pour le tableau stockant les noms de chaque typedef (label_typedef).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour label_typedef
 
-    def_variables_typedef = malloc(length_typedef * sizeof(line**));
+    def_variables_typedef = malloc(2 * sizeof(line**));
     if(!def_variables_typedef){
         printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef
 
-    dim_elements_typedef_variables = malloc(length_typedef * sizeof(int**));
+    dim_elements_typedef_variables = malloc(2 * sizeof(int**));
     if(!dim_elements_typedef_variables){
         printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables).\n");
         cJSON_Delete(json);
@@ -723,16 +716,16 @@ void parse_model_json(const char* json_donnees){
 
     cJSON* struct_json = cJSON_GetObjectItemCaseSensitive(typedef_json, "struct"); //Récupération de la valeur associée à l'item struct
     if(!struct_json){
-        printf("Erreur de syntaxe : Aucun item struct detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet struct detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'item struct
+    } //Détection de l'absence de l'objet struct
 
     if(!cJSON_IsObject(struct_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item struct est incorrect.\nType attendu : Object.\n");
+        printf("Erreur de syntaxe : Le type de l'objet struct est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour l'item struct
+    } //Détection d'une erreur de type pour l'objet struct
 
     cJSON* item_struct = NULL;
     int length_struct = cJSON_GetArraySize(struct_json);
@@ -769,13 +762,13 @@ void parse_model_json(const char* json_donnees){
     int count_item_struct_variable = 0; //Variable pour déterminer la définition du typedef type variable
     cJSON_ArrayForEach(item_struct, struct_json){
         if(!item_struct){
-            printf("Erreur de syntaxe : Un item_struct de l'objet struct n'est pas defini.\n");
+            printf("Erreur de syntaxe : Un item de l'objet struct n'est pas defini.\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'un item_struct vide dans l'objet struct
+        } //Détection d'un item vide dans l'objet struct
 
         label_typedef[0][count_names_typedef] = strdup(item_struct->string);
-        if(strcmp(label_typedef[0][count_names_typedef], "variable") == 0) count_item_struct_variable = 1;
+        if(strcmp(label_typedef[0][count_names_typedef], "Variable") == 0) count_item_struct_variable = 1;
         count_names_typedef++;
     }
 
@@ -786,22 +779,22 @@ void parse_model_json(const char* json_donnees){
     } //Détection de l'absence du typedef type variable
 
     for(int i = 0; i < count_names_typedef; i++){
-        if(strcmp(label_typedef[0][i], "variable") == 0){
-            label_typedef[0][i] = label_typedef[0][0];
-            label_typedef[0][0] = "variable";
+        if(strcmp(label_typedef[0][i], "Variable") == 0){
+            label_typedef[0][i] = label_typedef[0][count_names_typedef-1];
+            label_typedef[0][count_names_typedef-1] = "Variable";
         }
     } //Placement de la structure variable en premier
 
     for(int i = 0; i < length_struct; i++){
         cJSON* typedef_struct_json = cJSON_GetObjectItem(struct_json, label_typedef[0][i]);
         if(!typedef_struct_json){
-            printf("Erreur de syntaxe : L'item %s n'est pas defini.\n", label_typedef[0][i]);
+            printf("Erreur de syntaxe : Le typedef type %s n'est pas defini.\n", label_typedef[0][i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'un item de typedef struct non défini
+        } //Détection d'un typedef struct non défini
 
         if(!cJSON_IsArray(typedef_struct_json)){
-            printf("Erreur de syntaxe : Le type de la valeur de l'item %s est incorrect.\nType attendu : String.\n", label_typedef[0][i]);
+            printf("Erreur de syntaxe : Le type du typedef type %s est incorrect.\nType attendu : Array.\n", label_typedef[0][i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur de type pour le typedef struct
@@ -847,16 +840,16 @@ void parse_model_json(const char* json_donnees){
 
     cJSON* primitive_json = cJSON_GetObjectItemCaseSensitive(typedef_json, "primitive"); 
     if(!primitive_json){
-        printf("Erreur de syntaxe : Aucun item primitive detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet primitive detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'item primitive
+    } //Détection de l'absence de l'objet primitive
 
     if(!cJSON_IsObject(primitive_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item primitive est incorrect.\nType attendu : Object.\n");
+        printf("Erreur de syntaxe : Le type de l'objet primitive est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour l'item primitive
+    } //Détection d'une erreur de type pour l'objet primitive
 
     cJSON* item_primitive = NULL;
     int length_primitive = cJSON_GetArraySize(primitive_json);
@@ -892,10 +885,10 @@ void parse_model_json(const char* json_donnees){
     count_names_typedef = 0; //Index de parcours du tableau des noms des typedef primitives
     cJSON_ArrayForEach(item_primitive, primitive_json){
         if(!item_primitive){
-            printf("Erreur de syntaxe : Un item_primitive de l'objet struct n'est pas defini.\n");
+            printf("Erreur de syntaxe : Un item de l'objet primitive n'est pas defini.\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'un item_primitive vide dans l'objet struct
+        } //Détection d'un item vide dans l'objet struct
 
         label_typedef[1][count_names_typedef] = strdup(item_primitive->string);
         count_names_typedef++;
@@ -904,13 +897,13 @@ void parse_model_json(const char* json_donnees){
     for(int i = 0; i < length_primitive; i++){
         cJSON* typedef_primitive_json = cJSON_GetObjectItem(primitive_json, label_typedef[1][i]);
         if(!typedef_primitive_json){
-            printf("Erreur de syntaxe : L'item %s n'est pas defini.\n", label_typedef[1][i]);
+            printf("Erreur de syntaxe : Le typedef type %s n'est pas defini.\n", label_typedef[1][i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'un item de typedef primitive non défini
 
         if(!cJSON_IsArray(typedef_primitive_json)){
-            printf("Erreur de syntaxe : Le type de la valeur de l'item %s est incorrect.\nType attendu : String.\n", label_typedef[1][i]);
+            printf("Erreur de syntaxe : Le type du typedef type %s est incorrect.\nType attendu : Array.\n", label_typedef[1][i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur de type pour le typedef primitive
@@ -963,16 +956,16 @@ void parse_model_json(const char* json_donnees){
     //Parsing des lignes de code de la fonction init_variables
     cJSON* init_variables_json = cJSON_GetObjectItemCaseSensitive(variables_json, "init_variables"); //Récupération de la valeur associée à l'item init_variables
     if(!init_variables_json){
-        printf("Erreur de syntaxe : Aucun item init_variables detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet init_variables detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'item init_variables dans l'objet variables
+    } //Détection de l'absence de l'objet init_variables dans l'objet variables
 
     if(!cJSON_IsArray(init_variables_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item init_variables est incorrect.\nType attendu : Array.\n");
+        printf("Erreur de syntaxe : Le type de l'objet init_variables est incorrect.\nType attendu : Array.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour init_variables
+    } //Détection d'une erreur de type pour l'objet init_variables
 
     int length_init_variables = cJSON_GetArraySize(init_variables_json);
     nb_clines_init_variables = length_init_variables;
@@ -992,7 +985,7 @@ void parse_model_json(const char* json_donnees){
         } //Détection d'une ligne de code % d'init_variables non définie
 
         if(!cJSON_IsString(init_variables_code_line)){
-            printf("Erreur de syntaxe : Le type de la lignede code  %d  de init_variables est incorrect.\nType attendu : String.\n", i);
+            printf("Erreur de syntaxe : Le type de la ligne de code  %d  de init_variables est incorrect.\nType attendu : String.\n", i);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur de type pour la ligne de code i de la fonction init_variables
@@ -1003,16 +996,16 @@ void parse_model_json(const char* json_donnees){
     //Parsing des update_functions
     cJSON* update_functions_json = cJSON_GetObjectItemCaseSensitive(variables_json, "update_functions");
     if(!update_functions_json){
-        printf("Erreur de syntaxe : Aucun item update_functions detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet update_functions detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'item update_functions
+    } //Détection de l'absence de l'objet update_functions
 
     if(!cJSON_IsObject(update_functions_json)){
-        printf("Erreur de syntaxe : Le type de la valeur de l'item update_functions est incorrect.\nType attendu : Object.\n");
+        printf("Erreur de syntaxe : Le type de l'objet update_functions est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour l'item update_functions
+    } //Détection d'une erreur de type pour l'objet update_functions
 
     nb_clines_updatef = malloc(nb_actions * sizeof(int));
     if(!nb_clines_updatef){
@@ -1031,13 +1024,13 @@ void parse_model_json(const char* json_donnees){
     for(int i = 0; i < nb_actions; i++){
         cJSON* update_function_json = cJSON_GetObjectItemCaseSensitive(update_functions_json, actions[i]);
         if(!update_function_json){
-            printf("Erreur de syntaxe : La fonction update pour l'action %s n'est pas definie.\n", actions[i]);
+            printf("Erreur de syntaxe : La fonction d'update pour l'action %s n'est pas definie.\n", actions[i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection de l'absence de définition pour la fonction update de l'action i
 
         if(!cJSON_IsArray(update_function_json)){
-            printf("Erreur de syntaxe : Le type de la valeur de l'item %s pour sa fonction update est incorrect.\nType attendu : Array.\n", actions[i]);
+            printf("Erreur de syntaxe : Le type de l'objet %s (fonction d'update) est incorrect.\nType attendu : Array.\n", actions[i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur de type pour la valeur de la fonction d'update de l'action i
@@ -1065,22 +1058,22 @@ void parse_model_json(const char* json_donnees){
                 exit(EXIT_FAILURE);
             } //Détection d'une erreur de type pour la ligne j de la fonction d'update de l'action i
 
-            update_functions[i][j] = update_code_line->valuestring;
+            update_functions[i][j] = strdup(update_code_line->valuestring);
         }
     }
 
     cJSON* constraints_json = cJSON_GetObjectItemCaseSensitive(variables_json, "constraints");
     if(!constraints_json){
-        printf("Erreur de syntaxe : Aucun item constraints detecte.\n");
+        printf("Erreur de syntaxe : Aucun objet constraints detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence d'item pour les contraintes
+    } //Détection de l'absence de l'objet pour les contraintes
 
     if(!cJSON_IsObject(constraints_json)){
-        printf("Erreur de syntaxe : Le type de la ligne de la valeur de l'item constraints est incorrect.\nType attendu : Object.\n");
+        printf("Erreur de syntaxe : Le type de la ligne de la valeur de l'objet constraints est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour l'item constraints
+    } //Détection d'une erreur de type pour l'objet constraints
 
     nb_clines_constraints = malloc(nb_actions * sizeof(int));
     if(!nb_clines_constraints){
@@ -1105,7 +1098,7 @@ void parse_model_json(const char* json_donnees){
         } //Détection de l'absence de définition pour la fonction de contrainte de l'action i
 
         if(!cJSON_IsArray(constraint_json)){
-            printf("Erreur de syntaxe : Le type de la valeur de l'item %s pour sa fonction de contrainte est incorrect.\nType attendu : Array.\n", actions[i]);
+            printf("Erreur de syntaxe : Le type de l'objet %s (fonction de contrainte) est incorrect.\nType attendu : Array.\n", actions[i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur de type pour la valeur de la fonction de contrainte de l'action i
@@ -1133,7 +1126,7 @@ void parse_model_json(const char* json_donnees){
                 exit(EXIT_FAILURE);
             } //Détection d'une erreur de type pour la ligne j de la fonction de contrainte de l'action i
 
-            constraints_functions[i][j] = constraint_code_line->valuestring;
+            constraints_functions[i][j] = strdup(constraint_code_line->valuestring);
         }
     }
     cJSON_Delete(json);
@@ -1146,7 +1139,7 @@ void fill_parseInfos_struct(ParseInfos* parseInfos){
         free(json_donnee);
     }
 
-    //Affectation des structures parsées aux champs de parseInfos 
+    //Affectation des structures parsées aux champs de parseInfos
     parseInfos->nb_actions = nb_actions;
     parseInfos->actions = actions;
     parseInfos->nb_clocks = nb_clocks;
@@ -1156,4 +1149,20 @@ void fill_parseInfos_struct(ParseInfos* parseInfos){
     parseInfos->invariants = invariants;
     parseInfos->transitions = transitions;
     parseInfos->nb_transitions_locations = nb_transitions_locations;
+
+    //Affectation des structures parsées aux champs de parseInfos pour les variables
+    parseInfos->nb_define = nb_define;
+    parseInfos->def_variables_define = def_variables_define;
+    parseInfos->nb_clines_typedef = nb_clines_typedef;
+    parseInfos->nb_typedef_struct = nb_typedef_struct;
+    parseInfos->nb_typedef_primitive = nb_typedef_primitive;
+    parseInfos->label_typedef = label_typedef;
+    parseInfos->def_variables_typedef = def_variables_typedef;
+    parseInfos->dim_elements_typedef_variables = dim_elements_typedef_variables;
+    parseInfos->nb_clines_init_variables = nb_clines_init_variables;
+    parseInfos->init_variables_function = init_variables_function;
+    parseInfos->nb_clines_updatef = nb_clines_updatef;
+    parseInfos->update_functions = update_functions;
+    parseInfos->nb_clines_constraints = nb_clines_constraints;
+    parseInfos->constraints_functions = constraints_functions;
 }
