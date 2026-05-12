@@ -5,9 +5,9 @@
 
 // --------------------- Def de variables -------------------------
 
-typedef struct Variable {
-    int v;
-} Variable;
+structure_variable_h_define
+structure_variable_h_typedef_primitive
+structure_variable_h_typedef_struct
 
 bool equal_var(Variable* v1, Variable* v2);
 void print_variable(Variable* v);
