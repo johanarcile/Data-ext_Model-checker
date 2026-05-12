@@ -27,8 +27,10 @@ line*** def_variables_typedef; //Taleau des lignes de codes des typdef
 int*** dim_elements_typedef_variables; //Sauvegarde des dimensions des champs de la structure définie pour Variable qui servira pour l'écriture des fonctions de comparaison et d'affichage du fichier variable.c
 int nb_clines_init_variables;
 line* init_variables_function;
+int* nb_clines_updatef;
 line** update_functions;
-line** contraints_functions;
+int* nb_clines_constraints;
+line** constraints_functions;
 
 //Ouverture du fichier json en mode lecture
 char* read_model_json(const char* filename){
@@ -998,6 +1000,142 @@ void parse_model_json(const char* json_donnees){
         init_variables_function[i] = strdup(init_variables_code_line->valuestring);
     }
 
+    //Parsing des update_functions
+    cJSON* update_functions_json = cJSON_GetObjectItemCaseSensitive(variables_json, "update_functions");
+    if(!update_functions_json){
+        printf("Erreur de syntaxe : Aucun item update_functions detecte.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection de l'absence de l'item update_functions
+
+    if(!cJSON_IsObject(update_functions_json)){
+        printf("Erreur de syntaxe : Le type de la valeur de l'item update_functions est incorrect.\nType attendu : Object.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur de type pour l'item update_functions
+
+    nb_clines_updatef = malloc(nb_actions * sizeof(int));
+    if(!nb_clines_updatef){
+        printf("Erreur d'allocation memoire pour le tableau de sauvegarde du nombre de ligne de code pour chaque fonction d'update (nb_clines_updatef).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour nb_clines_updatef
+
+    update_functions = malloc(nb_actions * sizeof(line*));
+    if(!update_functions){
+        printf("Erreur d'allocation memoire pour le tableau des lignes de code des fonctions d'update (update_functions).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour update_functions
+
+    for(int i = 0; i < nb_actions; i++){
+        cJSON* update_function_json = cJSON_GetObjectItemCaseSensitive(update_functions_json, actions[i]);
+        if(!update_function_json){
+            printf("Erreur de syntaxe : La fonction update pour l'action %s n'est pas definie.\n", actions[i]);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection de l'absence de définition pour la fonction update de l'action i
+
+        if(!cJSON_IsArray(update_function_json)){
+            printf("Erreur de syntaxe : Le type de la valeur de l'item %s pour sa fonction update est incorrect.\nType attendu : Array.\n", actions[i]);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur de type pour la valeur de la fonction d'update de l'action i
+
+        int length_update_function = cJSON_GetArraySize(update_function_json);
+        nb_clines_updatef[i] = length_update_function;
+        update_functions[i] = malloc(length_update_function * sizeof(line));
+        if(!update_functions[i]){
+            printf("Erreur d'allocation memoire pour le tableau des lignes de code des fonctions d'update (update_functions[i]).\n");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur d'allocation mémoire pour update_functions[i]
+
+        for(int j = 0; j < length_update_function; j++){
+            cJSON* update_code_line = cJSON_GetArrayItem(update_function_json, j);
+            if(!update_code_line){
+                printf("Erreur de syntaxe : La ligne de code %d de la fonction d'update de l'action %s n'est pas definie.\n", j, actions[i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une absence de définition pour la ligne j de la fonction d'update de l'action i
+
+            if(!cJSON_IsString(update_code_line)){
+                printf("Erreur de syntaxe : Le type de la ligne de code %d de la fonction d'update de l'action %s est incorrect.\nType attendu : String.\n", j, actions[i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une erreur de type pour la ligne j de la fonction d'update de l'action i
+
+            update_functions[i][j] = update_code_line->valuestring;
+        }
+    }
+
+    cJSON* constraints_json = cJSON_GetObjectItemCaseSensitive(variables_json, "constraints");
+    if(!constraints_json){
+        printf("Erreur de syntaxe : Aucun item constraints detecte.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection de l'absence d'item pour les contraintes
+
+    if(!cJSON_IsObject(constraints_json)){
+        printf("Erreur de syntaxe : Le type de la ligne de la valeur de l'item constraints est incorrect.\nType attendu : Object.\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur de type pour l'item constraints
+
+    nb_clines_constraints = malloc(nb_actions * sizeof(int));
+    if(!nb_clines_constraints){
+        printf("Erreur d'allocation memoire pour le tableau de sauvegarde du nombre de lignes de code pour les fonctions de contraintes (nb_clines_constraints).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour nb_clines_constraints
+
+    constraints_functions = malloc(nb_actions * sizeof(line*));
+    if(!constraints_functions){
+        printf("Erreur d'allocation memoire pour le tableau des lignes de code des fonctions de contraintes (constraints_functions).\n");
+        cJSON_Delete(json);
+        exit(EXIT_FAILURE);
+    } //Détection d'une erreur d'allocation mémoire pour constraints_functions
+
+    for(int i = 0; i < nb_actions; i++){
+        cJSON* constraint_json = cJSON_GetObjectItemCaseSensitive(constraints_json, actions[i]);
+        if(!constraint_json){
+            printf("Erreur de syntaxe : La fonction de contrainte pour l'action %s n'est pas definie.\n", actions[i]);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection de l'absence de définition pour la fonction de contrainte de l'action i
+
+        if(!cJSON_IsArray(constraint_json)){
+            printf("Erreur de syntaxe : Le type de la valeur de l'item %s pour sa fonction de contrainte est incorrect.\nType attendu : Array.\n", actions[i]);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur de type pour la valeur de la fonction de contrainte de l'action i
+
+        int length_constraint_function = cJSON_GetArraySize(constraint_json);
+        nb_clines_constraints[i] = length_constraint_function;
+        constraints_functions[i] = malloc(length_constraint_function * sizeof(line));
+        if(!constraints_functions[i]){
+            printf("Erreur d'allocation memoire pour le tableau des lignes de code des fonctions de contraintes (constraints_functions[i]).\n");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une erreur d'allocation mémoire pour constraints_functions[i]
+
+        for(int j = 0; j < length_constraint_function; j++){
+            cJSON* constraint_code_line = cJSON_GetArrayItem(constraint_json, j);
+            if(!constraint_code_line){
+                printf("Erreur de syntaxe : La ligne de code %d de la fonction de contrainte de l'action %s n'est pas definie.\n", j, actions[i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une absence de définition pour la ligne j de la fonction de contrainte de l'action i
+
+            if(!cJSON_IsString(constraint_code_line)){
+                printf("Erreur de syntaxe : Le type de la ligne de code %d de la fonction de contrainte de l'action %s est incorrect.\nType attendu : String.\n", j, actions[i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une erreur de type pour la ligne j de la fonction de contrainte de l'action i
+
+            constraints_functions[i][j] = constraint_code_line->valuestring;
+        }
+    }
     cJSON_Delete(json);
 }
 

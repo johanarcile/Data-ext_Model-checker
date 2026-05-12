@@ -39,8 +39,10 @@ typedef struct ParseInfos {
     int*** dim_elements_typedef_variables; //Array memorizing the dimension of each field of a typedef type
     int nb_clines_init_variables; //Number of code lines for init_variables function
     line* init_variables_function; //Lines of init_variables function
-    line** update_functions; //Array of lines of update functions for each action
-    line** contraints_functions; //Array of lines of contraint functions for each action
+    int* nb_clines_updatef; //Numer of code lines for update functions
+    line** update_functions; //Array of code lines of update functions for each action
+    int* nb_clines_constraints; //Number of code lines for contraints functions
+    line** constraints_functions; //Array of code lines of contraint functions for each action
 } ParseInfos;
 
 char* read_model_json(const char* filename);
