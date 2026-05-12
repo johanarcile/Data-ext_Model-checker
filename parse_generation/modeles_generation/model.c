@@ -46,31 +46,21 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 // --------------------- Initialisation des variables ---------------------
 
 void init_variables() { 
-    variable.v = 0;
+    model_c_init_variables
 }
 
 // --------------------- Update functions ---------------------
 
-Variable update_a(Variable var) { if (var.v + 2 <= 10 && var.v + 2 >= -10) var.v += 2; return var; }
-Variable update_b(Variable var) { if (var.v - 1 <= 10 && var.v - 1 >= -10) var.v -= 1; return var; }
-Variable update_c(Variable var) { if (var.v * 2 <= 10 && var.v * 2 >= -10) var.v *= 2; return var; }
-
+model_c_update_functions
 void init_update_functions() {
-    update_functions[0] = update_a;
-    update_functions[1] = update_b;
-    update_functions[2] = update_c;
+    model_c_init_update_functions
 }
 
 // --------------------- Contraintes ---------------------
 
-bool const_a(Variable var) { return true; }
-bool const_b(Variable var) { return true; }
-bool const_c(Variable var) { return true; }
-
+model_c_constraints
 void init_constraints() {
-    constraints[0] = const_a;
-    constraints[1] = const_b;
-    constraints[2] = const_c;
+    model_c_init_constraints
 }
 
 // --------------------- Remplir la structure TA ---------------------

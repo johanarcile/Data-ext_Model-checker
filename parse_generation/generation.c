@@ -165,7 +165,9 @@ void generation_structure_variable_h(int nb_define, line* def_variables_define, 
                     snprintf(convertBis, sizeof(convertBis), "%s\n", def_variables_typedef[0][i][j]);
                     fputs(convertBis, structure_variable_h_copy);
                 }
-                fputs("}\n", structure_variable_h_copy);
+                char convertBisS[1000];
+                snprintf(convertBisS, sizeof(convertBisS), "} %s;\n", label_typedef[0][i]);
+                fputs(convertBisS, structure_variable_h_copy);
                 fputs("\n", structure_variable_h_copy);
             }
             find_line[2] = 1;
@@ -319,7 +321,7 @@ void generation_variable_c(){
     fclose(variable_c_copy);
 } //A poursuivre
 
-void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** locations, DBM* invariants, char** actions, int* nb_transitions_locations, Transition*** transitions){
+void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** locations, DBM* invariants, char** actions, int* nb_transitions_locations, Transition*** transitions, int nb_clines_init_variables, line* init_variables_function, int* nb_clines_updatef, line** update_functions, int* nb_clines_constraints, line** constraints_functions){
     FILE* model_c = fopen("modeles_generation/model.c", "r");
     if(!model_c){
         perror("Impossible d'ouvrir le fichier model.c.\n");
@@ -333,14 +335,19 @@ void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** 
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
 
-    int* find_line = malloc(6 * sizeof(int));
-    char** error_message = malloc(6 * sizeof(char*));
+    int* find_line = malloc(11 * sizeof(int));
+    char** error_message = malloc(11 * sizeof(char*));
     error_message[0] = "'    int nb_locations = model_c_nblocations;'";
     error_message[1] = "'    int nb_actions = model_c_nbactions;'";
     error_message[2] = "'    model_c_locations'";
     error_message[3] = "'    model_c_invariants'";
     error_message[4] = "'    model_c_actions'";
     error_message[5] = "'    model_c_transitions'";
+    error_message[6] = "'    model_c_init_variables'";
+    error_message[7] = "'model_c_update_functions'";
+    error_message[8] = "'    model_c_init_update_functions'";
+    error_message[9] = "'model_c_constraints'";
+    error_message[10] = "'    model_c_init_constraints'";
 
     char* chaine_tampon = malloc(1000 * sizeof(char));
     while(1){
@@ -492,10 +499,69 @@ void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** 
             find_line[5] = 1;
         }
 
+        else if(strcmp(chaine_tampon, "    model_c_init_variables\n") == 0){
+            for(int i = 0; i < nb_clines_init_variables; i++){
+                char convert[1000];
+                snprintf(convert, sizeof(convert), "%s\n", init_variables_function[i]);
+                fputs(convert, model_c_copy);
+            }
+            find_line[6] = 1;
+        }
+
+        else if(strcmp(chaine_tampon, "model_c_update_functions\n") == 0){
+            for(int i = 0; i < nb_actions; i++){
+                char convert[1000];
+                snprintf(convert, sizeof(convert), "Variable update_%s(Variable variable) {\n", actions[i]);
+                fputs(convert, model_c_copy);
+                for(int j = 0; j < nb_clines_updatef[i]; j++){
+                    char convertBis[1000];
+                    snprintf(convertBis, sizeof(convertBis), "%s\n", update_functions[i][j]);
+                    fputs(convertBis, model_c_copy);
+                }
+                fputs("}\n", model_c_copy);
+                fputs("\n", model_c_copy);
+            }
+            find_line[7] = 1;
+        }
+
+        else if(strcmp(chaine_tampon, "    model_c_init_update_functions\n") == 0){
+            for(int i = 0; i < nb_actions; i++){
+                char convert[1000];
+                snprintf(convert, sizeof(convert), "    update_functions[%d] = update_%s;\n", i, actions[i]);
+                fputs(convert, model_c_copy);
+            }
+            find_line[8] = 1;
+        }
+
+        else if(strcmp(chaine_tampon, "model_c_constraints\n") == 0){
+            for(int i = 0; i < nb_actions; i++){
+                char convert[1000];
+                snprintf(convert, sizeof(convert), "bool const_%s(Variable variable) {\n", actions[i]);
+                fputs(convert, model_c_copy);
+                for(int j = 0; j < nb_clines_constraints[i]; j++){
+                    char convertBis[1000];
+                    snprintf(convertBis, sizeof(convertBis), "%s\n", constraints_functions[i][j]);
+                    fputs(convertBis, model_c_copy);
+                }
+                fputs("}\n", model_c_copy);
+                fputs("\n", model_c_copy);
+            }
+            find_line[9] = 1;
+        }
+
+        else if(strcmp(chaine_tampon, "    model_c_init_constraints\n") == 0){
+            for(int i = 0; i < nb_actions; i++){
+                char convert[1000];
+                snprintf(convert, sizeof(convert), "    constraints[%d] = const_%s;\n", i, actions[i]);
+                fputs(convert, model_c_copy);
+            }
+            find_line[10] = 1;
+        }
+
         else fputs(chaine_tampon, model_c_copy); //Copie si la ligne n'est pas une ligne à modifier
     }
 
-    for(int i = 0; i < 6; i++){
+    for(int i = 0; i < 11; i++){
         if(find_line[i] != 1){
             printf("Erreur de syntaxe : La ligne %s n'a pas ete trouvee dans le fichier model.c.\n", error_message[i]);
             fclose(model_c);
@@ -618,5 +684,5 @@ void generation(ParseInfos* parseInfos){
     generation_DBM_c(); //Fonction de génération du fichier DBM.c
     generation_structure_variable_h(parseInfos->nb_define, parseInfos->def_variables_define, parseInfos->nb_clines_typedef, parseInfos->nb_typedef_struct, parseInfos->nb_typedef_primitive, parseInfos->label_typedef, parseInfos->def_variables_typedef); //Fonction de génération du fichier structure_variable.h
     generation_variable_c(); //Fonction de génération du fichier variable.c
-    generation_model_c(parseInfos->nb_locations, parseInfos->nb_actions, parseInfos->nb_clocks, parseInfos->locations, parseInfos->invariants, parseInfos->actions, parseInfos->nb_transitions_locations, parseInfos->transitions); //Fonction de génération du fichier model.c
+    generation_model_c(parseInfos->nb_locations, parseInfos->nb_actions, parseInfos->nb_clocks, parseInfos->locations, parseInfos->invariants, parseInfos->actions, parseInfos->nb_transitions_locations, parseInfos->transitions, parseInfos->nb_clines_init_variables, parseInfos->init_variables_function, parseInfos->nb_clines_updatef, parseInfos->update_functions, parseInfos->nb_clines_constraints, parseInfos->constraints_functions); //Fonction de génération du fichier model.c
 }
