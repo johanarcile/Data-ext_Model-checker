@@ -25,13 +25,20 @@
                     "Variable": [
                         "    int v;",
                         "    int x;",
-                        "    int table[TABLE_SIZE];   // tableau d'int",
-                        "    int table_size;          // nombre d'éléments utilisés",
+                        "    int* table[TABLE_SIZE];   // tableau d'int",
+                        "    int table_size_1;          // nombre d'éléments utilisés",
                         "    char name[NAME_SIZE];    // string",
-                        "    bool active;             // booléen"
+                        "    bool active;             // booléen",
+                        "    prim primitive;",
+                        "    int primitive_size;"
+                    ],
+                    "Name": [
+                        "    char* nom;"
                     ]
                 },
-                "primitive": {}
+                "primitive": {
+                    "prim": ["typedef int* prim;"]
+                }
             }
         },
         "init_variables": [
