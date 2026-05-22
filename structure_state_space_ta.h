@@ -28,6 +28,8 @@ typedef struct StateHash {
     UT_hash_handle hh;
 } StateHash;
 
+
+
 typedef struct State_transition {
     int cible;
     int action_id;
@@ -46,10 +48,17 @@ typedef struct {
     UT_hash_handle hh;
 } visit;
 
-typedef struct {
-    State       key;
-    UT_hash_handle hh;
-} visitState;
+// typedef struct {
+//     State       key;
+//     UT_hash_handle hh;
+// } visitState;
+
+
+// typedef struct StateHash {
+//     State key;
+//     int index;
+//     UT_hash_handle hh;
+// } StateHash;
 
 typedef struct {
     Variable            key;    /* clé = state.var */

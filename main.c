@@ -39,21 +39,21 @@ int main() {
 //     printf("\n trouver Avec  2 TABLES ? : %s ", c? "true" : "false  \n");
 //     tmfeg =+ temps_ecoule;
 
-    printf("\n ***************************Resultats pour EF(p) :************************************** ");
+//     printf("\n ***************************Resultats pour EF(p) :************************************** ");
 
 
 
-    State* init_state = compute_init_state(&ta);
-    //print_state(init_state,ta.locations);
+     State* init_state = compute_init_state(&ta);
+//     //print_state(init_state,ta.locations);
  
-//  /*--------------------------- Goal cherche ----------------------------*/
+// //  /*--------------------------- Goal cherche ----------------------------*/
    
-   // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
-//     g.mask =  CHECK_ACTIVE; 
-//     g.active = false;
-//     g.v = 1001000;
-//     g.x = 500;
-//     strcpy(  g.name, "transition b");
+//    // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
+// //     g.mask =  CHECK_ACTIVE; 
+// //     g.active = false;
+// //     g.v = 1001000;
+// //     g.x = 500;
+// //     strcpy(  g.name, "transition b");
 
  
  /*--------------------------- calculer nbr etats ----------------------------*/
@@ -77,7 +77,7 @@ for(int i=0; i< 3; i++) {
    // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
     g.mask =  CHECK_V | CHECK_ACTIVE ;//|CHECK_X; 
     g.active = false;
-    g.v = 1001000;//990000;//500;//990000;//9000;
+    g.v = 9001; //1001000;//990000;//500;//990000;//9000;
     g.x = 95;
     strcpy(  g.name, "transition b");
 
@@ -189,9 +189,9 @@ printf("\n ---------------- Test n: %d -----------------------------------------
 //  /*--------------------------- EG(p) ----------------------------*/
 
  // g.mask = CHECK_V | CHECK_ACTIVE |CHECK_NAME;
-    g.mask =  CHECK_ACTIVE ; 
+    g.mask =  CHECK_ACTIVE |CHECK_V ; 
     g.active = false;
-    g.v = 990001;//501;
+    g.v = 8999;//501;
     g.x = 1000;
     strcpy(  g.name, "transition b");
 
@@ -239,15 +239,15 @@ printf("\n ---------------- Test n: %d -----------------------------------------
     tmfeg =+ temps_ecoule;
 
     
-//      printf("\n \n ****************EG No memory:****************** \n ");
+   //   printf("\n \n ****************EG No memory:****************** \n ");
 
-//     debut = clock(); 
-//     c = EG_p_2tablesNo_memory(& ta,init_state->location,init_state->clock_zone,&g,check_p_inf,heuristique_checkp);
-//     fin = clock();            // Fin du chronomètre
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n Temps d execution EGP Avec 2 tables: %f secondes", temps_ecoule);
-//     printf("\n trouver Avec  2 TABLES ? : %s ", c? "true" : "false  \n");
-//     tnmeg =+ temps_ecoule;
+   //  debut = clock(); 
+   //  c = EG_p_2tablesNo_memory(& ta,init_state->location,init_state->clock_zone,&g,check_p_inf,heuristique_checkp);
+   //  fin = clock();            // Fin du chronomètre
+   //  temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+   //  printf("\n Temps d execution EGP Avec 2 tables: %f secondes", temps_ecoule);
+   //  printf("\n trouver Avec  2 TABLES ? : %s ", c? "true" : "false  \n");
+   //  tnmeg =+ temps_ecoule;
 
 
 
