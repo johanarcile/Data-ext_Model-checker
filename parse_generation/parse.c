@@ -20,8 +20,8 @@ Transition*** transitions; //Tableau à double dimension des transitions
 int nb_define; //Variable pour conserver le nombre de lignes de code pour la définition des constantes symboliques
 line* def_variables_define; //Tableau des lignes de code pour la définition de la structure Variable du fichier structure_variable.h
 int** nb_clines_typedef;
-int nb_typedef_struct;
-int nb_typedef_primitive;
+int nb_typedef_structure;
+int nb_typedef_alias;
 char*** label_typedef;
 line*** def_variables_typedef; //Taleau des lignes de codes des typdef
 int*** dim_elements_typedef_variables; //Sauvegarde des dimensions des champs de la structure définie pour Variable qui servira pour l'écriture des fonctions de comparaison et d'affichage du fichier variable.c
@@ -82,7 +82,7 @@ void parse_model_json(const char* json_donnees){
 
     int length_actions = cJSON_GetArraySize(actions_json); //Récupération de la taille du tableau d'actions
     nb_actions = length_actions;
-    actions = malloc(length_actions * sizeof(char*)); //Allocation de l'espace mémoire pour le tableau d'actions
+    actions = malloc((length_actions+1) * sizeof(char*)); //Allocation de l'espace mémoire pour le tableau d'actions
     if(!actions){
         printf("Erreur d'allocation memoire pour le tableau d'actions (actions).\n");
         cJSON_Delete(json);
@@ -129,7 +129,7 @@ void parse_model_json(const char* json_donnees){
     
     int length_clocks = cJSON_GetArraySize(clocks_json); //Récupération de la taille du tableau de clocks
     nb_clocks = length_clocks;
-    names_clocks = malloc(length_clocks * sizeof(char*)); //Allocation de l'espace mémoire pour le tableau de noms des horloges
+    names_clocks = malloc((length_clocks+1) * sizeof(char*)); //Allocation de l'espace mémoire pour le tableau de noms des horloges
     if(!names_clocks){
         printf("Erreur d'allocation memoire pour le tableau des noms d'horloges (names_clocks).\n");
         cJSON_Delete(json);
@@ -182,7 +182,7 @@ void parse_model_json(const char* json_donnees){
     } //Détection d'une absence de localité dans la définition 
 
     nb_locations = length_locations; //Récupération du nombre de localités définies
-    locations = malloc(length_locations * sizeof(char*)); //Allocations de l'espace mémoire pour le tableau des localités
+    locations = malloc((length_locations+1) * sizeof(char*)); //Allocations de l'espace mémoire pour le tableau des localités
     if(!locations){
         printf("Erreur d'allocation memoire pour le tableau des localites (locations).\n");
         cJSON_Delete(json);
@@ -245,21 +245,21 @@ void parse_model_json(const char* json_donnees){
         exit(EXIT_FAILURE);
     } //Détection de l'absence de définition de la localité initiale
 
-    nb_transitions_locations = malloc(nb_locations * sizeof(int)); //Allocation de l'espace mémoire pour le tableau de nombre de transitions par localité
+    nb_transitions_locations = malloc((nb_locations+1) * sizeof(int)); //Allocation de l'espace mémoire pour le tableau de nombre de transitions par localité
     if(!nb_transitions_locations){
         printf("Erreur d'allocation memoire pour le tableau de nombre de transitions sortantes de chaque localite (nb_transitions_locations).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation memoire pour le tableau des nombres de transitions sortantes de chaque localité
 
-    invariants = malloc(nb_locations * sizeof(DBM)); //Allocation de l'espace mémoire pour le tableau des invariants
+    invariants = malloc((nb_locations+1) * sizeof(DBM)); //Allocation de l'espace mémoire pour le tableau des invariants
     if(!invariants){
         printf("Erreur d'allocation memoire pour le tableau d'invariants (invariants).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour le tableau d'invariants
 
-    transitions = malloc(nb_locations * sizeof(Transition**)); //Allocation de l'espace mémoire pour le tableau des transitions
+    transitions = malloc((nb_locations+1) * sizeof(Transition**)); //Allocation de l'espace mémoire pour le tableau des transitions
     if(!transitions){
         printf("Erreur d'allocation memoire pour le tableau de transitions (transitions).\n");
         cJSON_Delete(json);
@@ -300,7 +300,7 @@ void parse_model_json(const char* json_donnees){
             exit(EXIT_FAILURE);
         } //Détection d'une taille d'invariant inattendue
 
-        invariants[i] = malloc((nb_clocks+1) * sizeof(int*)); //Allocation de l'espace mémoire pour l'invariant i du tableau d'invariants
+        invariants[i] = malloc((nb_clocks+2) * sizeof(int*)); //Allocation de l'espace mémoire pour l'invariant i du tableau d'invariants
         if(!invariants[i]){
             printf("Erreur d'allocation memoire pour l'invariant de la localite %s (invariants[i]).\n", locations[i]);
             cJSON_Delete(json);
@@ -308,7 +308,7 @@ void parse_model_json(const char* json_donnees){
         } //Détection d'une erreur d'allocation mémoire pour invariants[i]
 
         for(int k = 0; k < (nb_clocks+1); k++){
-            invariants[i][k] = malloc((nb_clocks+1) * sizeof(int)); //Allocation de l'espace mémoire pour invariants[i][k]
+            invariants[i][k] = malloc((nb_clocks+2) * sizeof(int)); //Allocation de l'espace mémoire pour invariants[i][k]
             if(!invariants[i][k]){
                 printf("Erreur d'allocation memoire pour l'invariant de la localite %s (invariants[i][j]).\n", locations[i]);
                 cJSON_Delete(json);
@@ -376,7 +376,7 @@ void parse_model_json(const char* json_donnees){
 
         int length_transitions = cJSON_GetArraySize(transitions_json); //Récupération de la taille du tableau de transitions pour la localité i 
         nb_transitions_locations[i] = length_transitions;
-        transitions[i] = malloc(length_transitions * sizeof(Transition*)); //Allocation de l'espace mémoire pour le tableau de transition de la localité i 
+        transitions[i] = malloc((length_transitions+1) * sizeof(Transition*)); //Allocation de l'espace mémoire pour le tableau de transition de la localité i 
         if(!transitions[i]){
             printf("Erreur d'allocation memoire pour le tableau de transitions de la localite %s (transitions[i]).\n", locations[i]);
             cJSON_Delete(json);
@@ -457,7 +457,7 @@ void parse_model_json(const char* json_donnees){
                             exit(EXIT_FAILURE);
                         } //Détection d'une taille de garde inattendue pour la transition k de la localité i
 
-                        transitions[i][k]->guard = malloc((nb_clocks+1) * sizeof(int*)); //Allocation de l'espace mémoire pour l'invariant de la transition k de la localité i
+                        transitions[i][k]->guard = malloc((nb_clocks+2) * sizeof(int*)); //Allocation de l'espace mémoire pour l'invariant de la transition k de la localité i
                         if(!transitions[i][k]->guard){
                             printf("Erreur d'allocation memoire pour la garde de la transition %d de la localite %s (transitions[i][j]->guard).\n", k, locations[i]);
                             cJSON_Delete(json);
@@ -478,7 +478,7 @@ void parse_model_json(const char* json_donnees){
                                 exit(EXIT_FAILURE);
                             } //Détection d'une taille inattendue pour la garde de la transition k de la localité i 
 
-                            transitions[i][k]->guard[m] = malloc((nb_clocks+1) * sizeof(int)); //Allocation de l'espace mémoire pour l'indice m de l'invariant de la transition k de la localité i
+                            transitions[i][k]->guard[m] = malloc((nb_clocks+2) * sizeof(int)); //Allocation de l'espace mémoire pour l'indice m de l'invariant de la transition k de la localité i
                             if(!transitions[i][k]->guard[m]){
                                 printf("Erreur d'allocation memoire pour la garde de la transition %d de la localite %s (transitions[i][j]->guard[k]).\n", k, locations[i]);
                                 cJSON_Delete(json);
@@ -524,7 +524,7 @@ void parse_model_json(const char* json_donnees){
                             exit(EXIT_FAILURE);
                         } //Détection d'une taille de reset supérieure au nombre d'horloges pour la transition k de la localité i
 
-                        transitions[i][k]->reset = malloc(nb_clocks * sizeof(int)); //Allocation de l'espace mémoire pour l'ensemble reset de la transition k de la localité i
+                        transitions[i][k]->reset = malloc((nb_clocks+1) * sizeof(int)); //Allocation de l'espace mémoire pour l'ensemble reset de la transition k de la localité i
                         if(!transitions[i][k]->reset){
                             printf("Erreur d'allocation memoire pour l'ensemble reset de la transition %d de la localite %s (transitions[i][j]->reset).\n", k, locations[i]);
                             cJSON_Delete(json);
@@ -534,7 +534,7 @@ void parse_model_json(const char* json_donnees){
                         for(int m = 0; m < nb_clocks; m++) transitions[i][k]->reset[m] = infty; //Initialisation des valeurs de reset à infty pour la transition k de la localité i
 
                         int index_d = 0; //Index de parcours du tableau doublons_reset
-                        char** doublons_reset = malloc(nb_clocks * sizeof(char*)); //Allocation de l'espace mémoire pour doublons_reset qui permettra de détecter des doublons dans l'ensemble reset déclaré
+                        char** doublons_reset = malloc((nb_clocks+1) * sizeof(char*)); //Allocation de l'espace mémoire pour doublons_reset qui permettra de détecter des doublons dans l'ensemble reset déclaré
                         if(!doublons_reset){
                             printf("Erreur d'allocation memoire pour le tableau de chaine de caractère temporaire de verification de doublons pour l'ensemble reset de la transition %d de la localite %s.\n", k, locations[i]);
                             cJSON_Delete(json);
@@ -649,7 +649,7 @@ void parse_model_json(const char* json_donnees){
 
     int length_define = cJSON_GetArraySize(define_json);
     nb_define = length_define;
-    def_variables_define = malloc(length_define * sizeof(line)); //Allocation de l'espace mémoire pour le tableau des lignes de code definissant les constantes symboliques
+    def_variables_define = malloc((length_define+1) * sizeof(line)); //Allocation de l'espace mémoire pour le tableau des lignes de code definissant les constantes symboliques
     if(!def_variables_define){
         printf("Erreur d'allocation memoire pour le tableau des lignes de code definissant les constantes symboliques (def_variables_define).\n");
         cJSON_Delete(json);
@@ -686,97 +686,97 @@ void parse_model_json(const char* json_donnees){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de type pour l'objet typedef
 
-    nb_clines_typedef = malloc(2 * sizeof(int**));
+    nb_clines_typedef = malloc(3 * sizeof(int**));
     if(!nb_clines_typedef){
         printf("Erreur d'allocation memoire pour le tableau stockant le nombre de lignes de codes pour chaque typedef (nb_clines_typedef).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour nb_clines_typdef
 
-    label_typedef = malloc(2 * sizeof(char**));
+    label_typedef = malloc(3 * sizeof(char**));
     if(!label_typedef){
         printf("Erreur d'allocation memoire pour le tableau stockant les noms de chaque typedef (label_typedef).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour label_typedef
 
-    def_variables_typedef = malloc(2 * sizeof(line**));
+    def_variables_typedef = malloc(3 * sizeof(line**));
     if(!def_variables_typedef){
         printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef
 
-    dim_elements_typedef_variables = malloc(2 * sizeof(int**));
+    dim_elements_typedef_variables = malloc(3 * sizeof(int**));
     if(!dim_elements_typedef_variables){
         printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables
 
-    cJSON* struct_json = cJSON_GetObjectItemCaseSensitive(typedef_json, "struct"); //Récupération de la valeur associée à l'item struct
-    if(!struct_json){
-        printf("Erreur de syntaxe : Aucun objet struct detecte.\n");
+    cJSON* structure_json = cJSON_GetObjectItemCaseSensitive(typedef_json, "structure"); //Récupération de la valeur associée à l'item structure
+    if(!structure_json){
+        printf("Erreur de syntaxe : Aucun objet structure detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'objet struct
+    } //Détection de l'absence de l'objet structure
 
-    if(!cJSON_IsObject(struct_json)){
-        printf("Erreur de syntaxe : Le type de l'objet struct est incorrect.\nType attendu : Object.\n");
+    if(!cJSON_IsObject(structure_json)){
+        printf("Erreur de syntaxe : Le type de l'objet structure est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour l'objet struct
+    } //Détection d'une erreur de type pour l'objet structure
 
-    cJSON* item_struct = NULL;
-    int length_struct = cJSON_GetArraySize(struct_json);
-    nb_typedef_struct = length_struct;
-    nb_clines_typedef[0] = malloc(length_struct * sizeof(int));
+    cJSON* item_structure = NULL;
+    int length_structure = cJSON_GetArraySize(structure_json);
+    nb_typedef_structure = length_structure;
+    nb_clines_typedef[0] = malloc((length_structure+1) * sizeof(int));
     if(!nb_clines_typedef[0]){
         printf("Erreur d'allocation memoire pour le tableau stockant le nombre de lignes de codes pour chaque typedef (nb_clines_typedef[0]).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour nb_clines_typdef[0]
 
-    label_typedef[0] = malloc(length_struct * sizeof(char*));
+    label_typedef[0] = malloc((length_structure+1) * sizeof(char*));
     if(!label_typedef[0]){
         printf("Erreur d'allocation memoire pour le tableau stockant les noms de chaque typedef (label_typedef[0]).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour label_typedef[0]
 
-    def_variables_typedef[0] = malloc(length_struct * sizeof(line*));
+    def_variables_typedef[0] = malloc((length_structure+1) * sizeof(line*));
     if(!def_variables_typedef[0]){
         printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef[0]).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef[0]
 
-    dim_elements_typedef_variables[0] = malloc(length_struct * sizeof(int*));
+    dim_elements_typedef_variables[0] = malloc((length_structure+1) * sizeof(int*));
     if(!dim_elements_typedef_variables[0]){
         printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables[0]).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables[0]
 
-    int count_names_typedef = 0; //Index de parcours du tableau des noms des typedef struct
-    int count_item_struct_variable = 0; //Variable pour déterminer la définition du typedef type variable
-    cJSON_ArrayForEach(item_struct, struct_json){
-        if(!item_struct){
-            printf("Erreur de syntaxe : Un item de l'objet struct n'est pas defini.\n");
+    int count_names_typedef = 0; //Index de parcours du tableau des noms des structures
+    int count_item_structure_variable = 0; //Variable pour déterminer la définition de la structure variable
+    cJSON_ArrayForEach(item_structure, structure_json){
+        if(!item_structure){
+            printf("Erreur de syntaxe : Un item de l'objet structure n'est pas defini.\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'un item vide dans l'objet struct
+        } //Détection d'un item vide dans l'objet structure
 
-        label_typedef[0][count_names_typedef] = strdup(item_struct->string);
-        if(strcmp(label_typedef[0][count_names_typedef], "Variable") == 0) count_item_struct_variable = 1;
+        label_typedef[0][count_names_typedef] = strdup(item_structure->string);
+        if(strcmp(label_typedef[0][count_names_typedef], "Variable") == 0) count_item_structure_variable = 1;
         count_names_typedef++;
     }
 
-    if(count_item_struct_variable != 1){
-        printf("Erreur de syntaxe : Le typedef type variable n'est pas defini.\n");
+    if(count_item_structure_variable != 1){
+        printf("Erreur de syntaxe : La structure variable n'est pas definie.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence du typedef type variable
+    } //Détection de l'absence de la structure variable
 
     for(int i = 0; i < count_names_typedef; i++){
         if(strcmp(label_typedef[0][i], "Variable") == 0){
@@ -785,170 +785,170 @@ void parse_model_json(const char* json_donnees){
         }
     } //Placement de la structure variable en premier
 
-    for(int i = 0; i < length_struct; i++){
-        cJSON* typedef_struct_json = cJSON_GetObjectItem(struct_json, label_typedef[0][i]);
-        if(!typedef_struct_json){
-            printf("Erreur de syntaxe : Le typedef type %s n'est pas defini.\n", label_typedef[0][i]);
+    for(int i = 0; i < length_structure; i++){
+        cJSON* typedef_structure_json = cJSON_GetObjectItem(structure_json, label_typedef[0][i]);
+        if(!typedef_structure_json){
+            printf("Erreur de syntaxe : La structure %s n'est pas definie.\n", label_typedef[0][i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'un typedef struct non défini
+        } //Détection d'un typedef structure non défini
 
-        if(!cJSON_IsArray(typedef_struct_json)){
-            printf("Erreur de syntaxe : Le type du typedef type %s est incorrect.\nType attendu : Array.\n", label_typedef[0][i]);
+        if(!cJSON_IsArray(typedef_structure_json)){
+            printf("Erreur de syntaxe : Le type de la structure %s est incorrect.\nType attendu : Array.\n", label_typedef[0][i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'une erreur de type pour le typedef struct
+        } //Détection d'une erreur de type pour la structure
 
-        int length_typedef_struct = cJSON_GetArraySize(typedef_struct_json);
-        nb_clines_typedef[0][i] = length_typedef_struct;
-        dim_elements_typedef_variables[0][i] = malloc(length_typedef_struct * sizeof(int));
+        int length_typedef_structure = cJSON_GetArraySize(typedef_structure_json);
+        nb_clines_typedef[0][i] = length_typedef_structure;
+        dim_elements_typedef_variables[0][i] = malloc((length_typedef_structure+1) * sizeof(int));
         if(!dim_elements_typedef_variables[0][i]){
-            printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables[0][i]).\n");
+            printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque structure (dim_elements_typedef_variables[0][i]).\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables[0][i]
 
-        def_variables_typedef[0][i] = malloc(length_typedef_struct * sizeof(line));
+        def_variables_typedef[0][i] = malloc((length_typedef_structure+1) * sizeof(line));
         if(!def_variables_typedef[0][i]){
-            printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef[0][i]).\n");
+            printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque structure (def_variables_typedef[0][i]).\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef[0][i]
 
-        for(int j = 0; j < length_typedef_struct; j++){
-            cJSON* struct_code_line = cJSON_GetArrayItem(typedef_struct_json, j);
-            if(!struct_code_line){
-                printf("Erreur de syntaxe : La ligne de code %d du typedef type %s n'est pas définie.\n", j, label_typedef[0][i]);
+        for(int j = 0; j < length_typedef_structure; j++){
+            cJSON* structure_code_line = cJSON_GetArrayItem(typedef_structure_json, j);
+            if(!structure_code_line){
+                printf("Erreur de syntaxe : La ligne de code %d du structure %s n'est pas définie.\n", j, label_typedef[0][i]);
                 cJSON_Delete(json);
                 exit(EXIT_FAILURE);
-            } //Détection d'une ligne de code vide pour un typedef type
+            } //Détection d'une ligne de code vide pour une structure
 
-            if(!cJSON_IsString(struct_code_line)){
-                printf("Erreur de syntaxe : Le type de la ligne de code %d du typedef type %s est incorrect.\nType attendu : String.\n", j, label_typedef[0][i]);
+            if(!cJSON_IsString(structure_code_line)){
+                printf("Erreur de syntaxe : Le type de la ligne de code %d de la structure %s est incorrect.\nType attendu : String.\n", j, label_typedef[0][i]);
                 cJSON_Delete(json);
                 exit(EXIT_FAILURE);
-            } //Détection d'une erreur de type pour la ligne de code j du typedef type
+            } //Détection d'une erreur de type pour la ligne de code j de la structure
 
-            def_variables_typedef[0][i][j] = strdup(struct_code_line->valuestring);
+            def_variables_typedef[0][i][j] = strdup(structure_code_line->valuestring);
             int count_dim = 0;
             for(int k = 0; k < strlen(def_variables_typedef[0][i][j]); k++){
                 if((def_variables_typedef[0][i][j][k] == '*')||(def_variables_typedef[0][i][j][k] == '[')) count_dim++;
-            } //Compte la dimension du champ du typedef type
+            } //Compte la dimension du champ de la structure
             dim_elements_typedef_variables[0][i][j] = count_dim;      
         }
     }
 
-    cJSON* primitive_json = cJSON_GetObjectItemCaseSensitive(typedef_json, "primitive"); 
-    if(!primitive_json){
-        printf("Erreur de syntaxe : Aucun objet primitive detecte.\n");
+    cJSON* alias_json = cJSON_GetObjectItemCaseSensitive(typedef_json, "alias"); 
+    if(!alias_json){
+        printf("Erreur de syntaxe : Aucun objet alias detecte.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection de l'absence de l'objet primitive
+    } //Détection de l'absence de l'objet alias
 
-    if(!cJSON_IsObject(primitive_json)){
-        printf("Erreur de syntaxe : Le type de l'objet primitive est incorrect.\nType attendu : Object.\n");
+    if(!cJSON_IsObject(alias_json)){
+        printf("Erreur de syntaxe : Le type de l'objet alias est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'une erreur de type pour l'objet primitive
+    } //Détection d'une erreur de type pour l'objet alias
 
-    cJSON* item_primitive = NULL;
-    int length_primitive = cJSON_GetArraySize(primitive_json);
-    nb_typedef_primitive = length_primitive;
-    nb_clines_typedef[1] = malloc(length_primitive * sizeof(int));
+    cJSON* item_alias = NULL;
+    int length_alias = cJSON_GetArraySize(alias_json);
+    nb_typedef_alias = length_alias;
+    nb_clines_typedef[1] = malloc((length_alias+1) * sizeof(int));
     if(!nb_clines_typedef[1]){
-        printf("Erreur d'allocation memoire pour le tableau stockant le nombre de lignes de codes pour chaque typedef (nb_clines_typedef[1]).\n");
+        printf("Erreur d'allocation memoire pour le tableau stockant le nombre de lignes de codes pour chaque alias (nb_clines_typedef[1]).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour nb_clines_typdef[1]
 
-    label_typedef[1] = malloc(length_primitive * sizeof(char*));
+    label_typedef[1] = malloc((length_alias+1) * sizeof(char*));
     if(!label_typedef[1]){
-        printf("Erreur d'allocation memoire pour le tableau stockant les noms de chaque typedef (label_typedef[1]).\n");
+        printf("Erreur d'allocation memoire pour le tableau stockant les noms de chaque alias (label_typedef[1]).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour label_typedef[1]
 
-    def_variables_typedef[1] = malloc(length_primitive * sizeof(line*));
+    def_variables_typedef[1] = malloc((length_alias+1) * sizeof(line*));
     if(!def_variables_typedef[1]){
         printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef[1]).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef[1]
 
-    dim_elements_typedef_variables[1] = malloc(length_primitive * sizeof(int*));
+    dim_elements_typedef_variables[1] = malloc((length_alias+1) * sizeof(int*));
     if(!dim_elements_typedef_variables[1]){
         printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables[1]).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables[1]
 
-    count_names_typedef = 0; //Index de parcours du tableau des noms des typedef primitives
-    cJSON_ArrayForEach(item_primitive, primitive_json){
-        if(!item_primitive){
-            printf("Erreur de syntaxe : Un item de l'objet primitive n'est pas defini.\n");
+    count_names_typedef = 0; //Index de parcours du tableau des noms des alias
+    cJSON_ArrayForEach(item_alias, alias_json){
+        if(!item_alias){
+            printf("Erreur de syntaxe : Un item de l'objet alias n'est pas defini.\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'un item vide dans l'objet struct
+        } //Détection d'un item vide dans l'objet structure
 
-        label_typedef[1][count_names_typedef] = strdup(item_primitive->string);
+        label_typedef[1][count_names_typedef] = strdup(item_alias->string);
         count_names_typedef++;
     }
 
-    for(int i = 0; i < length_primitive; i++){
-        cJSON* typedef_primitive_json = cJSON_GetObjectItem(primitive_json, label_typedef[1][i]);
-        if(!typedef_primitive_json){
-            printf("Erreur de syntaxe : Le typedef type %s n'est pas defini.\n", label_typedef[1][i]);
+    for(int i = 0; i < length_alias; i++){
+        cJSON* typedef_alias_json = cJSON_GetObjectItem(alias_json, label_typedef[1][i]);
+        if(!typedef_alias_json){
+            printf("Erreur de syntaxe : L'alias %s n'est pas defini.\n", label_typedef[1][i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'un item de typedef primitive non défini
+        } //Détection d'un item de l'alias non défini
 
-        if(!cJSON_IsArray(typedef_primitive_json)){
-            printf("Erreur de syntaxe : Le type du typedef type %s est incorrect.\nType attendu : Array.\n", label_typedef[1][i]);
+        if(!cJSON_IsArray(typedef_alias_json)){
+            printf("Erreur de syntaxe : Le type de l'alias %s est incorrect.\nType attendu : Array.\n", label_typedef[1][i]);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'une erreur de type pour le typedef primitive
+        } //Détection d'une erreur de type pour le typedef alias
 
-        int length_typedef_primitive = cJSON_GetArraySize(typedef_primitive_json);
-        if(length_typedef_primitive != 1){
-            printf("Erreur de syntaxe : Un typedef type primitif ne peux pas avoir plusieurs lignes.\n");
+        int length_typedef_alias = cJSON_GetArraySize(typedef_alias_json);
+        if(length_typedef_alias != 1){
+            printf("Erreur de syntaxe : Un alias ne peux pas avoir plusieurs lignes.\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur sur le nombre de lignes
 
-        nb_clines_typedef[1][i] = length_typedef_primitive;
-        dim_elements_typedef_variables[1][i] = malloc(length_typedef_primitive * sizeof(int));
+        nb_clines_typedef[1][i] = length_typedef_alias;
+        dim_elements_typedef_variables[1][i] = malloc((length_typedef_alias+1) * sizeof(int));
         if(!dim_elements_typedef_variables[1][i]){
             printf("Erreur d'allocation memoire pour le tableau stockant les dimensions de chaque champ de chaque typedef (dim_elements_typedef_variables[1][i]).\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur d'allocation mémoire pour dim_elements_typedef_variables[1][i]
 
-        def_variables_typedef[1][i] = malloc(length_typedef_primitive * sizeof(line));
+        def_variables_typedef[1][i] = malloc((length_typedef_alias+1) * sizeof(line));
         if(!def_variables_typedef[1][i]){
             printf("Erreur d'allocation memoire pour le tableau stockant les lignes de code de chaque typedef (def_variables_typedef[1][i]).\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur d'allocation mémoire pour def_variables_typedef[1][i]
 
-        for(int j = 0; j < length_typedef_primitive; j++){
-            cJSON* primitive_code_line = cJSON_GetArrayItem(typedef_primitive_json, j);
-            if(!primitive_code_line){
-                printf("Erreur de syntaxe : La ligne de code %d du typedef type %s n'est pas définie.\n", j, label_typedef[1][i]);
+        for(int j = 0; j < length_typedef_alias; j++){
+            cJSON* alias_code_line = cJSON_GetArrayItem(typedef_alias_json, j);
+            if(!alias_code_line){
+                printf("Erreur de syntaxe : La ligne de code %d de l'alias %s n'est pas définie.\n", j, label_typedef[1][i]);
                 cJSON_Delete(json);
                 exit(EXIT_FAILURE);
-            } //Détection d'une ligne de code vide pour un typedef type
+            } //Détection d'une ligne de code vide pour un alias
 
-            if(!cJSON_IsString(primitive_code_line)){
-                printf("Erreur de syntaxe : Le type de la ligne de code %d du typedef type %s est incorrect.\nType attendu : String.\n", j, label_typedef[1][i]);
+            if(!cJSON_IsString(alias_code_line)){
+                printf("Erreur de syntaxe : Le type de la ligne de code %d de l'alias %s est incorrect.\nType attendu : String.\n", j, label_typedef[1][i]);
                 cJSON_Delete(json);
                 exit(EXIT_FAILURE);
-            } //Détection d'une erreur de type pour la ligne de code j du typedef type
+            } //Détection d'une erreur de type pour la ligne de code j de l'alias
 
-            def_variables_typedef[1][i][j] = strdup(primitive_code_line->valuestring);
+            def_variables_typedef[1][i][j] = strdup(alias_code_line->valuestring);
             int count_dim = 0;
             for(int k = 0; k < strlen(def_variables_typedef[1][i][j]); k++){
                 if((def_variables_typedef[1][i][j][k] == '*')||(def_variables_typedef[1][i][j][k] == '[')) count_dim++;
-            } //Compte la dimension du champ du typedef type
+            } //Compte la dimension du champ de l'alias
             dim_elements_typedef_variables[1][i][j] = count_dim;      
         }
     }
@@ -969,7 +969,7 @@ void parse_model_json(const char* json_donnees){
 
     int length_init_variables = cJSON_GetArraySize(init_variables_json);
     nb_clines_init_variables = length_init_variables;
-    init_variables_function = malloc(length_init_variables * sizeof(line)); //Allocation de l'espace mémoire pour le tableau des lignes de code de la fonction init_variables
+    init_variables_function = malloc((length_init_variables+1) * sizeof(line)); //Allocation de l'espace mémoire pour le tableau des lignes de code de la fonction init_variables
     if(!init_variables_function){
         printf("Erreur d'allocation memoire pour le tableau des lignes de code de la fonction init_variables (init_variables_function).\n");
         cJSON_Delete(json);
@@ -1007,14 +1007,14 @@ void parse_model_json(const char* json_donnees){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de type pour l'objet update_functions
 
-    nb_clines_updatef = malloc(nb_actions * sizeof(int));
+    nb_clines_updatef = malloc((nb_actions+1) * sizeof(int));
     if(!nb_clines_updatef){
         printf("Erreur d'allocation memoire pour le tableau de sauvegarde du nombre de ligne de code pour chaque fonction d'update (nb_clines_updatef).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour nb_clines_updatef
 
-    update_functions = malloc(nb_actions * sizeof(line*));
+    update_functions = malloc((nb_actions+1) * sizeof(line*));
     if(!update_functions){
         printf("Erreur d'allocation memoire pour le tableau des lignes de code des fonctions d'update (update_functions).\n");
         cJSON_Delete(json);
@@ -1037,7 +1037,7 @@ void parse_model_json(const char* json_donnees){
 
         int length_update_function = cJSON_GetArraySize(update_function_json);
         nb_clines_updatef[i] = length_update_function;
-        update_functions[i] = malloc(length_update_function * sizeof(line));
+        update_functions[i] = malloc((length_update_function+1) * sizeof(line));
         if(!update_functions[i]){
             printf("Erreur d'allocation memoire pour le tableau des lignes de code des fonctions d'update (update_functions[i]).\n");
             cJSON_Delete(json);
@@ -1075,14 +1075,14 @@ void parse_model_json(const char* json_donnees){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de type pour l'objet constraints
 
-    nb_clines_constraints = malloc(nb_actions * sizeof(int));
+    nb_clines_constraints = malloc((nb_actions+1) * sizeof(int));
     if(!nb_clines_constraints){
         printf("Erreur d'allocation memoire pour le tableau de sauvegarde du nombre de lignes de code pour les fonctions de contraintes (nb_clines_constraints).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour nb_clines_constraints
 
-    constraints_functions = malloc(nb_actions * sizeof(line*));
+    constraints_functions = malloc((nb_actions+1) * sizeof(line*));
     if(!constraints_functions){
         printf("Erreur d'allocation memoire pour le tableau des lignes de code des fonctions de contraintes (constraints_functions).\n");
         cJSON_Delete(json);
@@ -1105,7 +1105,7 @@ void parse_model_json(const char* json_donnees){
 
         int length_constraint_function = cJSON_GetArraySize(constraint_json);
         nb_clines_constraints[i] = length_constraint_function;
-        constraints_functions[i] = malloc(length_constraint_function * sizeof(line));
+        constraints_functions[i] = malloc((length_constraint_function+1) * sizeof(line));
         if(!constraints_functions[i]){
             printf("Erreur d'allocation memoire pour le tableau des lignes de code des fonctions de contraintes (constraints_functions[i]).\n");
             cJSON_Delete(json);
@@ -1132,7 +1132,7 @@ void parse_model_json(const char* json_donnees){
     cJSON_Delete(json);
 }
 
-void fill_parseInfos_struct(ParseInfos* parseInfos){
+void fill_parseInfos_structure(ParseInfos* parseInfos){
     char* json_donnee = read_model_json("json_model.json");
     if(json_donnee){
         parse_model_json(json_donnee);
@@ -1154,8 +1154,8 @@ void fill_parseInfos_struct(ParseInfos* parseInfos){
     parseInfos->nb_define = nb_define;
     parseInfos->def_variables_define = def_variables_define;
     parseInfos->nb_clines_typedef = nb_clines_typedef;
-    parseInfos->nb_typedef_struct = nb_typedef_struct;
-    parseInfos->nb_typedef_primitive = nb_typedef_primitive;
+    parseInfos->nb_typedef_structure = nb_typedef_structure;
+    parseInfos->nb_typedef_alias = nb_typedef_alias;
     parseInfos->label_typedef = label_typedef;
     parseInfos->def_variables_typedef = def_variables_typedef;
     parseInfos->dim_elements_typedef_variables = dim_elements_typedef_variables;

@@ -32,8 +32,8 @@ typedef struct ParseInfos {
     int nb_define; //Number of code lines for declaration of symbolic constants
     line* def_variables_define; //Declarations lines of symbolic constants for structure_variable.h file
     int** nb_clines_typedef; //Array saving the number of code lines for each typedef
-    int nb_typedef_struct; //Number of object typedef types
-    int nb_typedef_primitive; //Number of primitive typedef types
+    int nb_typedef_structure; //Number of object typedef types
+    int nb_typedef_alias; //Number of primitive typedef types
     char*** label_typedef; //Array of names of each typedef
     line*** def_variables_typedef; //Declarations lines of typedef types including which of Variable
     int*** dim_elements_typedef_variables; //Array memorizing the dimension of each field of a typedef type
@@ -47,6 +47,6 @@ typedef struct ParseInfos {
 
 char* read_model_json(const char* filename);
 void parse_model_json(const char* json_donnees);
-void fill_parseInfos_struct(ParseInfos* parseInfos);
+void fill_parseInfos_structure(ParseInfos* parseInfos);
 
 #endif

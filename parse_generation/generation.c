@@ -18,7 +18,7 @@ void generation_uthash_h(){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
 
-    char tampon;
+    int tampon;
     while(1){
         tampon = fgetc(uthash_h);
         if(tampon == EOF){
@@ -54,8 +54,8 @@ void generation_structure_DBM_h(int nb_clocks){
     int find_line = 0;
     char* chaine_tampon = malloc(1000 * sizeof(char));
     while(1){
-        chaine_tampon = fgets(chaine_tampon, 1000, structure_DBM_h);
-        if(chaine_tampon == NULL){
+        char* result = fgets(chaine_tampon, 1000, structure_DBM_h);
+        if(result == NULL){
             if(feof(structure_DBM_h)) break;
             else{
                 printf("Erreur de lecture du fichier structure_DBM.h.\n");
@@ -64,7 +64,7 @@ void generation_structure_DBM_h(int nb_clocks){
                 exit(EXIT_FAILURE);
             } //Détection d'une erreur de lecture du fichier structure_DBM.h
         }
-        else if(strchr(chaine_tampon, '\n') == NULL){
+        else if(strchr(result, '\n') == NULL){
             printf("Erreur de taille : La ligne (%s) du fichier structure_DBM.h depasse 1000 caracteres.\n", chaine_tampon);
             fclose(structure_DBM_h);
             fclose(structure_DBM_h_copy);
@@ -92,7 +92,7 @@ void generation_structure_DBM_h(int nb_clocks){
     fclose(structure_DBM_h_copy);
 }
 
-void generation_structure_variable_h(int nb_define, line* def_variables_define, int** nb_clines_typedef, int nb_typedef_struct, int nb_typedef_primitive, char*** label_typedef, line*** def_variables_typedef){
+void generation_structure_variable_h(int nb_define, line* def_variables_define, int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef){
     FILE* structure_variable_h = fopen("modeles_generation/structure_variable.h", "r");
     if(!structure_variable_h){
         perror("Impossible d'ouvrir le fichier structure_variable.h.\n");
@@ -106,16 +106,16 @@ void generation_structure_variable_h(int nb_define, line* def_variables_define, 
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
 
-    int* find_line = calloc(3, sizeof(int));
-    char** error_message = malloc(3 * sizeof(char*));
+    int* find_line = calloc(4, sizeof(int));
+    char** error_message = malloc(4 * sizeof(char*));
     error_message[0] = "'structure_variable_h_define'";
-    error_message[1] = "'structure_variable_h_typedef_primitive'";
-    error_message[2] = "'structure_variable_h_typedef_struct'";
+    error_message[1] = "'structure_variable_h_typedef_alias'";
+    error_message[2] = "'structure_variable_h_typedef_structure'";
 
     char* chaine_tampon = malloc(1000 * sizeof(char));
     while(1){
-        chaine_tampon = fgets(chaine_tampon, 1000, structure_variable_h);
-        if(chaine_tampon == NULL){
+        char* result = fgets(chaine_tampon, 1000, structure_variable_h);
+        if(result == NULL){
             if(feof(structure_variable_h)) break;
             else{
                 printf("Erreur de lecture du fichier structure_variable.h.\n");
@@ -124,7 +124,7 @@ void generation_structure_variable_h(int nb_define, line* def_variables_define, 
                 exit(EXIT_FAILURE);
             } //Détection d'une erreur de lecture du fichier structure_variable.h
         }
-        else if(strchr(chaine_tampon, '\n') == NULL){
+        else if(strchr(result, '\n') == NULL){
             printf("Erreur de taille : La ligne (%s) du fichier structure_variable.h depasse 1000 caracteres.\n", chaine_tampon);
             fclose(structure_variable_h);
             fclose(structure_variable_h_copy);
@@ -141,20 +141,20 @@ void generation_structure_variable_h(int nb_define, line* def_variables_define, 
             find_line[0] = 1; //Mémorise la présence de la chaine à remplacer dans le fichier modèle
         }
 
-        else if(strcmp(chaine_tampon, "structure_variable_h_typedef_primitive\n") == 0){
-            for(int i = 0; i < nb_typedef_primitive; i++){
+        else if(strcmp(chaine_tampon, "structure_variable_h_typedef_alias\n") == 0){
+            for(int i = 0; i < nb_typedef_alias; i++){
                 for(int j = 0; j < nb_clines_typedef[1][i]; j++){
                     char convert[1000];
                     snprintf(convert, sizeof(convert), "%s\n", def_variables_typedef[1][i][j]);
                     fputs(convert, structure_variable_h_copy);
                 }
             } //Ajout les lignes de code de déclaration des alias dont la comparaison est souhaitée sur les valeurs
-            if(nb_typedef_primitive != 0) fputs("\n", structure_variable_h_copy);
+            if(nb_typedef_alias != 0) fputs("\n", structure_variable_h_copy);
             find_line[1] = 1; //Mémorise la présence de la chaine à remplacer dans le fichier modèle
         }
 
-        else if(strcmp(chaine_tampon, "structure_variable_h_typedef_struct\n") == 0){
-            for(int i = 0; i < nb_typedef_struct; i++){
+        else if(strcmp(chaine_tampon, "structure_variable_h_typedef_structure\n") == 0){
+            for(int i = 0; i < nb_typedef_structure; i++){
                 char convert[1000];
                 snprintf(convert, sizeof(convert), "typedef struct %s {\n", label_typedef[0][i]);
                 fputs(convert, structure_variable_h_copy);
@@ -174,14 +174,18 @@ void generation_structure_variable_h(int nb_define, line* def_variables_define, 
         else fputs(chaine_tampon, structure_variable_h_copy); //Copie si la ligne n'est pas une ligne à modifier
     }
 
+    int error = 0;
     for(int i = 0; i < 3; i++){
         if(find_line[i] != 1){
-            printf("Erreur de syntaxe : La ligne %s n'a pas ete trouvee dans le fichier structure_variable.h.\n", error_message[i]);
-            fclose(structure_variable_h);
-            fclose(structure_variable_h_copy);
-            exit(EXIT_FAILURE);
-        } //Détection de l'absence des lignes à modifier
+            printf("Erreur de syntaxe : La ligne %s n'a pas ete trouvee dans le fichier structure_variable.h.\n", error_message[i]); //Détection de l'absence des lignes à modifier
+            error++;
+        }
     }
+    if(error != 0){
+        fclose(structure_variable_h);
+        fclose(structure_variable_h_copy);
+        exit(EXIT_FAILURE);
+    } //Si l'absence d'une ligne est détectée, l'exécution est stoppée
 
     free(find_line);
     free(error_message);
@@ -203,7 +207,7 @@ void generation_structure_ta_h(){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
     
-    char tampon;
+    int tampon;
     while(1){
         tampon = fgetc(structure_ta_h);
         if(tampon == EOF){
@@ -236,7 +240,7 @@ void generation_structure_state_space_ta_h(){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
     
-    char tampon;
+    int tampon;
     while(1){
         tampon = fgetc(structure_state_space_ta_h);
         if(tampon == EOF){
@@ -269,7 +273,7 @@ void generation_DBM_c(){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
     
-    char tampon;
+    int tampon;
     while(1){
         tampon = fgetc(DBM_c);
         if(tampon == EOF){
@@ -288,7 +292,7 @@ void generation_DBM_c(){
     fclose(DBM_c_copy);
 }
 
-void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int nb_typedef_primitive, char*** label_typedef, line*** def_variables_typedef, int*** dim_elements_typedef_variables){
+void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef, int*** dim_elements_typedef_variables){
     printf("v0\t");
     FILE* variable_c = fopen("modeles_generation/variable.c", "r");
     if(!variable_c){
@@ -304,60 +308,57 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
     } //Détection d'une erreur de création du fichier
     printf("v1\t");
     
-    int* find_line = calloc(2, sizeof(int));
-    char** error_message = malloc(2 * sizeof(char*));
+    int* find_line = calloc(3, sizeof(int));
+    char** error_message = malloc(3 * sizeof(char*));
     error_message[0] = "'  variable_c_equal_function'";
     error_message[1] = "'  variable_c_print_function'";
     printf("v2\t");
-
-    char* chaine_tampon = malloc(1000 * sizeof(char));
-    printf("v3\t");
     
-    line*** copy = malloc(2* sizeof(line**)); //Copie du tableau des lignes de code des typedef types pour éviter une perte d'informations
-    copy[0] = malloc(nb_typedef_struct * sizeof(line*));
-    copy[1] = malloc(nb_typedef_primitive * sizeof(line*));
-    for(int i = 0; i < nb_typedef_struct; i++){
-        copy[0][i] = malloc(nb_clines_typedef[0][i] * sizeof(line));
+    line*** copy = malloc(3 * sizeof(line**)); //Copie du tableau des lignes de code des typedef types pour éviter une perte d'informations
+    copy[0] = malloc((nb_typedef_structure+1) * sizeof(line*));
+    copy[1] = malloc((nb_typedef_alias+1) * sizeof(line*));
+    for(int i = 0; i < nb_typedef_structure; i++){
+        copy[0][i] = malloc((nb_clines_typedef[0][i]+1) * sizeof(line));
         for(int j = 0; j < nb_clines_typedef[0][i]; j++){
             copy[0][i][j] = strdup(def_variables_typedef[0][i][j]);
         }
     }
-    for(int i = 0; i < nb_typedef_primitive; i++){
-        copy[1][i] = malloc(nb_clines_typedef[1][i] * sizeof(line));
+    for(int i = 0; i < nb_typedef_alias; i++){
+        copy[1][i] = malloc((nb_clines_typedef[1][i]+1) * sizeof(line));
         for(int j = 0; j < nb_clines_typedef[1][i]; j++){
             copy[1][i][j] = strdup(def_variables_typedef[1][i][j]);
         }
     } //Copie des lignes de code de Variable
     printf("v4\t");
 
-    char** types_two_words = malloc(5 * sizeof(char*));
+    char** types_two_words = malloc(6 * sizeof(char*)); //Tableau contenant les deuxièmes mots que l'on peut trouver dans les noms des types en c
     types_two_words[0] = "int";
     types_two_words[1] = "char";
     types_two_words[2] = "short";
     types_two_words[3] = "long";
     types_two_words[4] = "double";
 
-    char** types_three_words = malloc(2 * sizeof(char*));
+    char** types_three_words = malloc(3 * sizeof(char*)); //Tableau contenant les troisièmes mots que l'on peut trouver dans les noms des types en c
     types_three_words[0] = "int";
     types_three_words[1] = "long";
 
-    char* types_four_words = "int";
+    char* types_four_words = "int"; //Quatrième mot que l'on peut trouver dans les noms des types en c
 
     char seps[] = " [;]*"; //Chaine de caractères contenant les caractères de sépération pour le découpage
-    char* field_names[1000] = {NULL}; //Récupération des noms des champs de l'objet Variable
-    char* field_types[1000] = {NULL}; //Récupération du nom du type de chaque champs de l'objet Variable
+    char* field_names[1000] = {NULL}; //Récupération des noms des champs de la structure Variable
+    char* field_types[1000] = {NULL}; //Récupération du nom du type de chaque champs de la structure Variable
     char** size_tab[1000] = {NULL}; //Récupération des tailles des tableaux 
     char** size_tab_type[1000] = {NULL}; //Tableau qui permet de savoir si la taille de la dimension est définie dynamiquement ou statiquement
-    char* field_types_def[1000] = {NULL};
+    char* field_types_def[1000] = {NULL}; //Tableau qui mémorise si le type du champ de la structure Variable est un alias, une structure ou un type natif
     printf("v5\t");
 
-    for(int i = 0; i < nb_clines_typedef[0][nb_typedef_struct-1]; i++){
+    for(int i = 0; i < nb_clines_typedef[0][nb_typedef_structure-1]; i++){
         printf("v6\t");
-        char *split_string = strtok(copy[0][nb_typedef_struct-1][i], seps); //Découpe la chaine selon les caractères de seps
-        int count = 0; //Variable pour savoir quel type de texte est attendu lors du parcours de la chaine découpée
-        int count_types_words = 0;
-        int size_count = 0; //Variable pour compter le nombre de chaine à ajouter dans size_tab et size_tab_type
-        char* temp[1000];
+        char *split_string = strtok(copy[0][nb_typedef_structure-1][i], seps); //Remplace les caractères indiqués par seps trouvé dans la chaine copy[0][nb_typedef_structure-1][i] (ligne de code de la structure Variable) par le caractère '\0'
+        int count = 0; //Variable pour savoir quel type de texte est attendu lors du parcours de la chaine découpée (type, nom ou dimension du champ)
+        int count_types_words = 0; //Variable pour compter le nombre de mots dans le type du champ
+        int size_count = 0; //Variable pour compter le nombre de chaines de caractères à ajouter dans size_tab et size_tab_type (nom des variables mémorisant la taille des dimensions des tableaux)
+        char* temp[1000]; //Tableau temporaire pour mémoriser les noms des variables mémorisant la taille des dimensions des tableaux
         printf("v7\t");
         while(split_string != NULL){
             printf("v8\t");
@@ -373,73 +374,83 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                             else count = 1;
                         }
                         break;
-                    }
+                    } //Détecte si le deuxième mot appartient au type ou au nom du champ
                     case 2 : {
                         if((strcmp(split_string, types_three_words[0]) != 0)&&(strcmp(split_string, types_three_words[1]) != 0)) count = 1;
                         break;
-                    }
+                    } //Détecte si le troisième mot appartient au type ou au nom du champ
                     case 3 : {
                         if(strcmp(split_string, types_four_words) != 0) count = 1;
                         break;
-                    }
+                    } //Détecte si le quatrième mot appartient au type ou au nom du champ
                     default : {
                         count = 1;
                         break;
-                    }
+                    } //incrémente count pour indiquer que le mot trouvé est le nom du champ
                 }
-            } //Détection de si le mot de la ligne est un type ou non
+            } //Détection d'un mot appartenant au type ou au nom du champ
             printf("\n%d\n", count);
 
-            if(count == 0){
+            if(count == 0){ 
                 printf("v9\t");
-                if(count_types_words == 0) field_types[i] = strdup(split_string); //Récupération du type du champ de Variable
-                else strcat(field_types[i], split_string);
+                if(count_types_words == 0) field_types[i] = strdup(split_string); //Récupération du premier mot du type du champ
+                else{
+                    char* realloc_s = realloc(field_types[i], strlen(field_types[i])+strlen(split_string)+1);
+                    if(realloc_s == NULL){
+                        printf("Erreur de reallocation memoire pour la chaine de caracteres recueillant le nom du type du champ %s de la structure Variable (field_types).\n", field_names[i]);
+                        fclose(variable_c);
+                        fclose(variable_c_copy);
+                        exit(EXIT_FAILURE);
+                    }
+                    field_types[i] = realloc_s;
+                    strcat(field_types[i], split_string); //Concaténation des autres mots du type du champ au mots précédents
+                }
                 printf("v10\t");
-                count_types_words++;
+                count_types_words++; //Incrémentation du nombre de mots trouvés désignant le type du champ
             }
             else if(count == 1) {
-                field_names[i] = strdup(split_string); //Récupération du nom du champ de Variable
+                field_names[i] = strdup(split_string); //Récupération du nom du champ
                 count++;
             }
             else if(count > 1){
-                if(strcmp(split_string, "//") == 0) break; //Sortie de la boucle si la suite découpée correspond à un commentaire
+                if(strcmp(split_string, "//") == 0) break; //Sortie de la boucle si la suite correspond à un commentaire
                 else{
                     temp[size_count] = strdup(split_string);
                     size_count++;
-                } //Récupération du nom de la variable sauvegardant la taille d'une dimension du champ de Variable
+                } //Récupération du nom de la variable sauvegardant la taille d'une dimension du champ
                 count++;
             }
-            split_string = strtok(NULL, seps);
+            split_string = strtok(NULL, seps); //Permet de passer au mot suivant de la chaine copy[0][nb_typedef_structure-1][i]
             printf("v11\t");
-        }
+        } //Parcours mot par mot de la chaine modifiée copy[0][nb_typedef_structure-1][i]
         
         printf("\n%s\n", field_types[i]);
         printf("\n%s\n", field_names[i]);
-        field_types_def[i] = "n";
-        for(int j = 0; j < nb_typedef_primitive; j++){
+        field_types_def[i] = "n"; //Indique que le type du champ n'est ni un alias ni une structure dont la comparaison est souhaitée sur les valeurs
+        for(int j = 0; j < nb_typedef_alias; j++){
             if(strcmp(field_types[i], label_typedef[1][j]) == 0){
                 char temp_type[1000];
-                snprintf(temp_type, sizeof(temp_type), "p%d", j);
+                snprintf(temp_type, sizeof(temp_type), "p%d", j); //Indique que le type du champ est un alias défini comme tel dans le json et sauvegarde sa position dans le tableau nb_typedef_alias
                 field_types_def[i] = strdup(temp_type);
             }
         }
-        for(int j = 0; j < nb_typedef_struct; j++){
+        for(int j = 0; j < nb_typedef_structure; j++){
             if(strcmp(field_types[i], label_typedef[0][j]) == 0){
                 char temp_type[1000];
-                snprintf(temp_type, sizeof(temp_type), "s%d", j);
+                snprintf(temp_type, sizeof(temp_type), "s%d", j); //Indique que le type du champ est une structure définie comme tel dans le json et sauvegarde sa position dans le tableau nb_typedef_structure
                 field_types_def[i] = strdup(temp_type);
             }
         }
 
         int dim_size;
-        dim_size = dim_elements_typedef_variables[0][nb_typedef_struct-1][i];
+        dim_size = dim_elements_typedef_variables[0][nb_typedef_structure-1][i]; //Sauvegarde la diemnsion du champ de la structure Variable
         if(field_types_def[i][0] == 'p'){
             char* conv;
             int num_t = (int)strtol(field_types_def[i] + 1, &conv, 10);
-            dim_size += dim_elements_typedef_variables[1][num_t][0];
+            dim_size += dim_elements_typedef_variables[1][num_t][0]; //S'il s'agit d'un alias, la dimension de l'alias est ajoutée à al dimension du champ de Variable
         }
         size_tab[i] = malloc((dim_size+1) * sizeof(char*));
-        size_tab_type[i] = malloc((dim_size+1) * sizeof(char*));
+        size_tab_type[i] = malloc((dim_size+1) * sizeof(char*)); //Allocation de l'espace mémoire pour les tableaux de sauvegarde des noms des variables mémorisant la taille des dimensions
 
         if(size_count == 0){
             for(int j = 0; j < dim_size; j++){
@@ -448,56 +459,63 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
             }
             
             printf("v12\t");
-        } //Initialisation de size_tab et size_tab_type si size_count est égal à 0
+        } //Initialisation de size_tab et size_tab_type si aucune constante symbolique ne mémorise la taille d'une dimension du tableau
 
         else {
             if(size_count > dim_size){
-                printf("Erreur de syntaxe : Trop de variables ont ete definie pour les tailles de %s.\n", field_names[i]);
+                printf("Erreur de syntaxe : Trop de variables ont ete definie pour les tailles du champ %sde la structure Variable.\n", field_names[i]);
                 fclose(variable_c);
                 fclose(variable_c_copy);
                 exit(EXIT_FAILURE);
-            }
-            int count_dim = 0;
+            } //Détecte si trop de variables sont définies pour les tailles des dimensions du tableau
+
             for(int j = 0; j < dim_size; j++){
-                if(count_dim < size_count){
+                if(j < size_count){
                     size_tab[i][j] = strdup(temp[j]);
-                    size_tab_type[i][j] = "define";
-                }
+                    size_tab_type[i][j] = "define"; //Mémorise que la variable est une constante symbolique
+                } //Mémorisation des nom des variables étant des constantes symboliques
                 else{
                     size_tab[i][j] = NULL;
                     size_tab_type[i][j] = NULL;
-                }
-                count_dim++;
+                } //Iniialisation pour les cases restantes
             }
-        } //Remplissage de size_tab et size_tab_type si des dimensions ont été récupérées pour des champs de Variable  
+        } //Mémorisation des noms des constantes symboliques sauvegardant les tailles des dimensions du champ  
     }
     printf("v13\t");
 
-    for(int i = 0; i < nb_clines_typedef[0][nb_typedef_struct-1]; i++){
+    for(int i = 0; i < nb_clines_typedef[0][nb_typedef_structure-1]; i++){
         printf("v14\t");
-        char* copy_name = strdup(field_names[i]);
-        char *split_name = strtok(copy_name, "_"); //Découpage de chaque nom de champ de Variable pour récupérer des variables savegardant des dimensions de tableaux dynamiques de Variable
-        char* temp[1000];
+        char* copy_name = strdup(field_names[i]); //Copie du nom du champ pour éviter des pertes d'informations
+        char *split_name = strtok(copy_name, "_"); //Remplace les caractères '_' du nom du champ de la structure Variable (copy_name) par le caractère '\0'
+        char* temp[1000]; //Tableau temporaire pour mémoriser chaque mot découpé du nom du champ
         int count = 0;
         while(split_name != NULL){
             temp[count] = strdup(split_name);
-            split_name = strtok(NULL, "_");
+            split_name = strtok(NULL, "_"); //Permet de passer au mot suivant de la chaine copy_name
             count++;
-        }
+        } //Parcours mot par mot de la chaine modifée copy_name
         printf("v15\t");
 
         if(count == 1) continue; //Passe à l'itération de la boucle suivante si le nom ne contient pas le caractère '_'
 
-        if(strcmp(temp[1], "size") == 0){ //Détection du mot size indiquant que la variable considérée permet de sauvegarder une dimension d'un des tableaux dynamiques de Variable
+        if(strcmp(temp[1], "size") == 0){
             switch(count){
                 case 2 : { 
                     printf("v16\t");
-                    for(int j = 0; j < nb_clines_typedef[0][nb_typedef_struct-1]; j++){
+                    for(int j = 0; j < nb_clines_typedef[0][nb_typedef_structure-1]; j++){
                         printf("v16.1\n%s\n%s\n%s\n", field_names[j], temp[0], temp[1]);
                         if(strcmp(field_names[j], temp[0]) == 0){
                             printf("Noms identiques\n");
+                            if(dim_elements_typedef_variables[0][nb_typedef_structure-1][j] == 0){
+                                printf("Erreur de syntaxe : Le champ %s de la structure Variable n'est pas un tableau. Le nom du champ %s de la structure Variable doit etre modifie.\n", field_names[j], field_names[i]);
+                                free(copy_name);
+                                fclose(variable_c);
+                                fclose(variable_c_copy);
+                                exit(EXIT_FAILURE);
+                            } //Détection d'une variable sauvegardan la dimension d'un champ n'étant pas un tableau
+
                             if(size_tab[j][0] != NULL){
-                                printf("Erreur de syntaxe : La taille de %s est definie deux fois par la constante symbolique %s et %s", field_names[j], size_tab[j][0], field_names[i]);
+                                printf("Erreur de syntaxe : La taille de %s est definie deux fois par %s et %s", field_names[j], size_tab[j][0], field_names[i]);
                                 free(copy_name);
                                 fclose(variable_c);
                                 fclose(variable_c_copy);
@@ -505,37 +523,40 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                             } //Détection d'un conflit de variable sauvegardant la dimension du tableau 
 
                             size_tab[j][0] = field_names[i];
-                            size_tab_type[j][0] = "*";
+                            size_tab_type[j][0] = "*"; //Mémorise que la variable est un champ de la structure Variable
                             break;
                         }
                     }
                     printf("v17\t");
                     break;
-                } //Détection d'une variable sauvegardant la première dimension
+                } //Détection d'une variable sauvegardant la première dimension du tableau 
 
                 case 3 : {
                     printf("v18\t");
-                    char* convert;
-                    int taille = (int)strtol(temp[2], &convert, 10);
-                    if(*convert != '\0') break;
-                    for(int j = 0; j < nb_clines_typedef[0][nb_typedef_struct-1]; j++){
+                    char* convert; //Chaine tempon pour convertir la chaine temp[2] en entier
+                    int taille = (int)strtol(temp[2], &convert, 10); //Conversion du nombre de la variable en entier
+                    if(*convert != '\0') break; //Détection d'une erreur de conversion
+
+                    for(int j = 0; j < nb_clines_typedef[0][nb_typedef_structure-1]; j++){
                         if(strcmp(field_names[j], temp[0]) == 0){
-                            int dim_size = dim_elements_typedef_variables[0][nb_typedef_struct-1][j];
+                            int dim_size = dim_elements_typedef_variables[0][nb_typedef_structure-1][j];
                             if(field_types_def[j][0] == 'p'){
                                 char* conv;
                                 int num_t = (int)strtol(field_types_def[i] + 1, &conv, 10);
                                 dim_size += dim_elements_typedef_variables[1][num_t][0];
-                            }
+                            } //Ajoute à la dimension du champ de la structure Variable la dimension de l'alias
+
                             printf("\nTailles checking : %s %d %d\n", field_names[i], taille, dim_size);
                             if(taille >= dim_size){
                                 printf("\nTailles checking : %s %d %d\n", field_names[i], taille, dim_size);
-                                printf("Erreur de syntaxe : Trop de variables ont ete definie pour les tailles de %s.\n", field_names[j]);
+                                printf("Erreur de syntaxe : Trop de variables ont ete definie pour les tailles du champ %s de la structure Variable.\n", field_names[j]);
                                 fclose(variable_c);
                                 fclose(variable_c_copy);
                                 exit(EXIT_FAILURE);
-                            }
+                            } //Détecte si trop de variables sont définies pour les tailles des dimensions du tableau
+
                             if(size_tab[j][taille] != NULL){
-                                printf("Erreur de syntaxe : La taille de la dimension %d de %s est definie deux fois par la constante symbolique %s et %s", taille, field_names[j], size_tab[j][taille], field_names[i]);
+                                printf("Erreur de syntaxe : La taille de la dimension %d de %s est definie deux fois par %s et %s", taille, field_names[j], size_tab[j][taille], field_names[i]);
                                 free(copy_name);
                                 fclose(variable_c);
                                 fclose(variable_c_copy);
@@ -543,7 +564,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                             } //Détection d'un conflit de variable sauvegardant la taille de la dimension du tableau
 
                             size_tab[j][taille] = field_names[i];
-                            size_tab_type[j][taille] = "*";
+                            size_tab_type[j][taille] = "*"; //Mémorise que la variable est un champ de la structure Variable
                             break;
                         }
                     }
@@ -553,33 +574,33 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
 
                 default : break;
             }
-        }
+        } //Détection du mot size indiquant que la variable considérée permet de sauvegarder une dimension d'un des tableaux dynamiques de Variable
         free(copy_name);
     }
     printf("v20\t");
 
-    char** field_struct_names[1000] = {NULL};
-    char** field_struct_types[1000] = {NULL};
-    char*** size_struct_tab[1000] = {NULL};
-    char*** size_struct_tab_type[1000] = {NULL};
+    char** field_struct_names[1000] = {NULL}; //Equivalent de field_names pour les autres structures que Variable
+    char** field_struct_types[1000] = {NULL}; //Equivalent de field_types pour les autres structures que Variable
+    char*** size_struct_tab[1000] = {NULL}; //Equivalent de size_tab pour les autres structures que Variable
+    char*** size_struct_tab_type[1000] = {NULL}; //Equivalent de size_tab_type pour les autres structures que Variable
     printf("v21\t");
 
-    for(int i = 0; i < nb_clines_typedef[0][nb_typedef_struct-1]; i++){
+    for(int i = 0; i < nb_clines_typedef[0][nb_typedef_structure-1]; i++){
         printf("v22\t");
         if(field_types_def[i][0] == 's'){
             printf("v23\t");
             char* conv;
-            int num_t = (int)strtol(field_types_def[i]+1, &conv, 10);
+            int num_t = (int)strtol(field_types_def[i]+1, &conv, 10); //Conversion du nombre en entier
 
-            field_struct_names[i] = malloc(nb_clines_typedef[0][num_t] * sizeof(char*));
-            field_struct_types[i] = malloc(nb_clines_typedef[0][num_t] * sizeof(char*));
-            size_struct_tab[i] = malloc(nb_clines_typedef[0][num_t] * sizeof(char*));
-            size_struct_tab_type[i] = malloc(nb_clines_typedef[0][num_t] * sizeof(char*));
+            field_struct_names[i] = malloc((nb_clines_typedef[0][num_t]+1) * sizeof(char*));
+            field_struct_types[i] = malloc((nb_clines_typedef[0][num_t]+1) * sizeof(char*));
+            size_struct_tab[i] = malloc((nb_clines_typedef[0][num_t]+1) * sizeof(char*));
+            size_struct_tab_type[i] = malloc((nb_clines_typedef[0][num_t]+1) * sizeof(char*));
             printf("v24\t");
 
             for(int j = 0; j < nb_clines_typedef[0][num_t]; j++){
                 printf("v25\t");
-                char *split_struct = strtok(copy[0][num_t][j], seps);
+                char *split_struct = strtok(copy[0][num_t][j], seps); //Remplace les caractères seps par le caractère '\0' dans la ligne de code du champ de la structure
                 int count = 0; 
                 int count_types_words = 0;
                 int size_count = 0;
@@ -616,7 +637,17 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
 
                     if(count == 0){
                         if(count_types_words == 0) field_struct_types[i][j] = strdup(split_struct);
-                        else strcat(field_struct_types[i][j], split_struct);
+                        else{
+                            char* realloc_st = realloc(field_struct_types[i][j], strlen(field_struct_types[i][j])+strlen(split_struct)+1);
+                            if(realloc_st == NULL){
+                                printf("Erreur de reallocation memoire pour la chaine de caracteres recueillant le nom du type du champ %s de la structure %s (field_struct_types).\n", field_struct_names[i][j], label_typedef[0][num_t]);
+                                fclose(variable_c);
+                                fclose(variable_c_copy);
+                                exit(EXIT_FAILURE);
+                            }
+                            field_struct_types[i][j] = realloc_st;
+                            strcat(field_struct_types[i][j], split_struct);
+                        }
                         count_types_words++;
                     }
                     else if(count == 1){
@@ -648,7 +679,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
 
                 else{
                     if(size_count > dim_elements_typedef_variables[0][num_t][j]){
-                        printf("Erreur de syntaxe : Trop de variables ont ete definie pour les tailles de %s.\n", field_names[i]);
+                        printf("Erreur de syntaxe : Trop de variables ont ete definie pour les tailles du champ %s de la structure Variable.\n", field_names[i]);
                         fclose(variable_c);
                         fclose(variable_c_copy);
                         exit(EXIT_FAILURE);
@@ -670,7 +701,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
     }
     printf("v29\t");
 
-    for(int i = 0; i < nb_clines_typedef[0][nb_typedef_struct-1]; i++){
+    for(int i = 0; i < nb_clines_typedef[0][nb_typedef_structure-1]; i++){
         printf("v30\t");
         if(field_types_def[i][0] == 's'){
             char* conv;
@@ -696,8 +727,15 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                             printf("v33\t");
                             for(int k = 0; k < nb_clines_typedef[0][num_t]; k++){
                                 if(strcmp(field_struct_names[i][k], temp[0]) == 0){
+                                    if(dim_elements_typedef_variables[0][num_t][k] == 0){
+                                        printf("Erreur de syntaxe : Le champ %s du champ %s de la structure Variable n'est pas un tableau. Le nom du champ %s de la structure %s doit etre modifie.\n", field_struct_names[i][k], field_names[i], field_struct_names[i][j], label_typedef[0][num_t]);
+                                        free(copy_name);
+                                        fclose(variable_c);
+                                        fclose(variable_c_copy);
+                                        exit(EXIT_FAILURE);
+                                    }
                                     if(size_struct_tab[i][k][0] != NULL){
-                                        printf("Erreur de syntaxe : La taille de %s est definie deux fois par la constante symbolique %s et %s", field_struct_names[i][k], size_struct_tab[i][k][0], field_struct_names[i][j]);
+                                        printf("Erreur de syntaxe : La taille de %s est definie deux fois par %s et %s", field_struct_names[i][k], size_struct_tab[i][k][0], field_struct_names[i][j]);
                                         free(copy_name);
                                         fclose(variable_c);
                                         fclose(variable_c_copy);
@@ -718,16 +756,16 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                             char* convert;
                             int taille = (int)strtol(temp[2], &convert, 10);
                             if(*convert != '\0') break;
-                            for(int k = 0; k < nb_clines_typedef[0][nb_typedef_struct-1]; k++){
-                                if(strcmp(field_names[j], temp[0]) == 0){
+                            for(int k = 0; k < nb_clines_typedef[0][nb_typedef_structure-1]; k++){
+                                if(strcmp(field_struct_names[i][k], temp[0]) == 0){
                                     if(taille >= dim_elements_typedef_variables[0][num_t][k]){
-                                        printf("Erreur de syntaxe : Trop de variables ont ete definie pour les tailles de %s.\n", field_struct_names[i][j]);
+                                        printf("Erreur de syntaxe : Trop de variables ont ete definie pour les tailles du champ %s du champ %s de la structure Variable.\n", field_struct_names[i][j], field_names[i]);
                                         fclose(variable_c);
                                         fclose(variable_c_copy);
                                         exit(EXIT_FAILURE);
                                     }
                                     if(size_struct_tab[i][k][taille] != NULL){
-                                        printf("Erreur de syntaxe : La taille de la dimension %d de %s est definie deux fois par la constante symbolique %s et %s", taille, field_struct_names[i][k], size_struct_tab[i][k][taille], field_struct_names[i][j]);
+                                        printf("Erreur de syntaxe : La taille de la dimension %d de %s est definie deux fois par %s et %s", taille, field_struct_names[i][k], size_struct_tab[i][k][taille], field_struct_names[i][j]);
                                         free(copy_name);
                                         fclose(variable_c);
                                         fclose(variable_c_copy);
@@ -752,10 +790,17 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
     }
     printf("v37\t");
 
-    for(int i = 0; i < nb_typedef_struct; i++){
+    //Libération de la mémoire pour copy
+    for(int i = 0; i < nb_typedef_structure; i++){
+        for(int j = 0; j < nb_clines_typedef[0][i]; j++){
+            free(copy[0][i][j]);
+        }
         free(copy[0][i]);
     }
-    for(int i = 0; i < nb_typedef_primitive; i++){
+    for(int i = 0; i < nb_typedef_alias; i++){
+        for(int j = 0; j < nb_clines_typedef[1][i]; j++){
+            free(copy[1][i][j]);
+        }
         free(copy[1][i]);
     }
     free(copy[0]);
@@ -763,10 +808,12 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
     free(copy);
     printf("v38\t");
 
+    char* chaine_tampon = malloc(1000 * sizeof(char));
     while(1){
         printf("v39\t");
-        chaine_tampon = fgets(chaine_tampon, 1000, variable_c);
-        if(chaine_tampon == NULL){
+        char* result = fgets(chaine_tampon, 1000, variable_c);
+        printf("v39.1\t");
+        if(result == NULL){
             if(feof(variable_c)) break;
             else{
                 printf("Erreur de lecture du fichier variable.c.\n");
@@ -775,7 +822,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                 exit(EXIT_FAILURE);
             } //Détection d'une erreur de lecture du fichier variable.c
         }
-        else if(strchr(chaine_tampon, '\n') == NULL){
+        else if(strchr(result, '\n') == NULL){
             printf("Erreur de taille : La ligne (%s) du fichier variable.c depasse 1000 caracteres.\n", chaine_tampon);
             fclose(variable_c);
             fclose(variable_c_copy);
@@ -785,10 +832,10 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
  
         if(strcmp(chaine_tampon, "  variable_c_equal_function\n") == 0){
             printf("v41\t");
-            for(int i = 0; i < nb_clines_typedef[0][nb_typedef_struct-1]; i++){
+            for(int i = 0; i < nb_clines_typedef[0][nb_typedef_structure-1]; i++){
                 printf("v42\t");
                 int is_struct;
-                int dim_l = dim_elements_typedef_variables[0][nb_typedef_struct-1][i];
+                int dim_l = dim_elements_typedef_variables[0][nb_typedef_structure-1][i];
                 if(strcmp(field_types_def[i], "n") == 0){
                     printf("v43\t");
                     is_struct = 0;
@@ -801,7 +848,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                 exit(EXIT_FAILURE);
                             }
                         }
-                    }
+                    } //Détection d'une absence de variables définissant des tailles du champ de la structure Variable
                     printf("v44\t");
                 }
                 else if(field_types_def[i][0] == 's'){
@@ -816,7 +863,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                 exit(EXIT_FAILURE);
                             }
                         }
-                    }
+                    } //Détection d'une absence de variables définissant des tailles du champ de la structure Variable
                     printf("v46\t");
                 }
                 else{
@@ -834,7 +881,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                 exit(EXIT_FAILURE);
                             }
                         }
-                    }
+                    } //Détection d'une absence de variables définissant des tailles du champ de la structure Variable
                     printf("v48\t");
                 }
 
@@ -850,7 +897,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                             fputs("  }\n", variable_c_copy);
                             printf("v51\t");
                             break;
-                        }
+                        } //Cas pour un champ de type alias ou natif
 
                         case 1 : {
                             printf("v52\t");
@@ -865,7 +912,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                         fclose(variable_c_copy);
                                         exit(EXIT_FAILURE);
                                     }
-                                }
+                                } //Détection d'une absence de variables définissant des tailles du champ d'une structure
 
                                 if(dim_elements_typedef_variables[0][num_t][j] == 0){
                                     printf("v53\t");
@@ -875,7 +922,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                     fputs("    return false;\n", variable_c_copy);
                                     fputs("  }\n", variable_c_copy);
                                     printf("v54\t");
-                                }
+                                } //Cas où le champ de la structure n'est pas un tableau
 
                                 else{
                                     printf("v55\t");
@@ -895,7 +942,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                         indent[k+1] = strdup(indent[k]);
                                         strcat(indent[k+1], "  ");
                                         level++;
-                                    }
+                                    } //Génération des boucles itératives
                                     printf("v56\t");
 
                                     for(int k = 0; k < 3; k++){
@@ -914,7 +961,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                                 fputs(convert, variable_c_copy);
                                                 break;
                                         }
-                                    }
+                                    } //Génération du contenu des boucles
                                     printf("v57\t");
 
                                     for(int k = (dim_elements_typedef_variables[0][num_t][j]-1); k >= 0 ; k--){
@@ -926,12 +973,11 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                 }
                             }
                             break;
-                        }
+                        } //Cas où le champ de la structure est un tableau
 
                         default : break;
-                    }
-                    
-                }
+                    } //Cas pour un champ de type structure 
+                } //Cas où le champ de la structure Variable n'est pas un tableau
 
                 else{
                     printf("v59\t");
@@ -974,9 +1020,9 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                         break;
                                 }
                                 printf("v60.2\t");
-                            } //Génération du contenu des boucles
+                            }
                             break;
-                        }
+                        } //Génération du contenu des boucles itératives pour un champ de type alias ou natif
 
                         case 1 : {
                             printf("v60.3\t");
@@ -991,7 +1037,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                         fclose(variable_c_copy);
                                         exit(EXIT_FAILURE);
                                     }
-                                }
+                                } //Détection d'une absence de variables définissant des tailles du champ d'une structure
 
                                 if(dim_elements_typedef_variables[0][num_t][j] == 0){
                                     printf("v60.4\t");
@@ -1018,7 +1064,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                         printf("v60.6\t");
                                     }
                                     printf("v60.7\t");
-                                }
+                                } //Cas où le champ de la structure n'est pas un tableau
 
                                 else{
                                     printf("v60.8\t");
@@ -1048,7 +1094,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                         level_s++;
                                         dim_l_s++;
                                         printf("v60.11\t");
-                                    }
+                                    } //Génération des boucles itératives
 
                                     for(int k = 0; k < 3; k++){
                                         printf("v60.12\t");
@@ -1071,21 +1117,21 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                             }
                                         }
                                         printf("v60.13\t");
-                                    }
+                                    } //Génération du contenu des boucles itératives
 
-                                    for(int k = (dim_elements_typedef_variables[0][num_t][j]-1); k <= 0; k++){
+                                    for(int k = (dim_elements_typedef_variables[0][num_t][j]-1); k >= 0; k--){
                                         printf("bugbug0\t");
                                         char convert[1000];
                                         dim_l_s--;
                                         snprintf(convert, sizeof(convert), "%s}\n", indent_s[dim_l_s]);
                                         printf("bugbug1\t");
                                         fputs(convert, variable_c_copy);
-                                    }
+                                    } //Génération de la fermeture des boucles itératives
                                     printf("v60.14\t");
-                                }
+                                } //Cas où le champ de la structure est un tableau
                             }
                             break;
-                        }
+                        } //Génération du contenu des boucles itératives pour un champ de type structure
                     }
                     printf("v61\t");
 
@@ -1104,9 +1150,9 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
 
         else if(strcmp(chaine_tampon, "  variable_c_print_function\n") == 0){
             printf("v63\t");
-            for(int i = 0; i < nb_clines_typedef[0][nb_typedef_struct-1]; i++){
+            for(int i = 0; i < nb_clines_typedef[0][nb_typedef_structure-1]; i++){
                 printf("v64\t");
-                int dim_l = dim_elements_typedef_variables[0][nb_typedef_struct-1][i];
+                int dim_l = dim_elements_typedef_variables[0][nb_typedef_structure-1][i];
                 int is_struct;
                 if(strcmp(field_types_def[i], "n") == 0){
                     printf("v65\t");
@@ -1143,6 +1189,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                     is_struct = 0;
                     char* conv;
                     int num_t = (int)strtol(field_types_def[i] + 1, &conv, 10);
+                    printf("Indice alias : %d\n", num_t);
                     dim_l += dim_elements_typedef_variables[1][num_t][0];
                     if(dim_l > 0){
                         for(int j = 0; j < dim_l; j++){
@@ -1160,12 +1207,18 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                     int count_types_words = 0; 
                     int count_line = 0;
                     while(split_line != NULL){
-                        if((count_line == 1)&&(count_types_words > 0)){
+                        printf("Count alias : %d, %d, chaine : %s\n", count_line, count_types_words, split_line);
+                        if(count_line == 0){
+                            count_line++;
+                            split_line = strtok(NULL, " ;*");
+                            continue;
+                        }
+                        else if((count_line == 1)&&(count_types_words > 0)){
                             switch(count_types_words){
                                 case 1 : {
                                     for(int j = 0; j < 5; j++){
                                         if(strcmp(split_line, types_two_words[j]) == 0){
-                                            count_line == 1;
+                                            count_line = 1;
                                             break;
                                         }
                                         else count_line = 2;
@@ -1189,8 +1242,19 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
 
                         if(count_line == 1){
                             if(count_types_words == 0) field_types[i] = strdup(split_line);
-                            else strcat(field_types[i], split_line);
+                            else{
+                                char* realloc_sp = realloc(field_types[i], strlen(field_types[i])+strlen(split_line)+1);
+                                if(realloc_sp == NULL){
+                                    printf("Erreur de reallocation memoire pour la chaine de caracteres recueillant le nom du type du champ %s de type alias de la structure Variable (field_types).\n", field_names[i]);
+                                    fclose(variable_c);
+                                    fclose(variable_c_copy);
+                                    exit(EXIT_FAILURE);
+                                }
+                                field_types[i] = realloc_sp;
+                                strcat(field_types[i], split_line);
+                            }
                             count_types_words++;
+                            printf("Type alias : %s\n", field_types[i]);
                         }
                         else break;
                         split_line = strtok(NULL, " ;*");
@@ -1597,7 +1661,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
 
                                 if(dim_elements_typedef_variables[0][num_t][j] == 0){
                                     char convert[1000];
-                                    snprintf(convert, sizeof(convert), "  printf(\"\\t %s%s.%s = ", field_names[i], dim_print, field_struct_names[i][j], level_print);
+                                    snprintf(convert, sizeof(convert), "  printf(\"\\t %s%s.%s = ", field_names[i], dim_print, field_struct_names[i][j]);
                                     if((strcmp(field_struct_types[i][j],"int") == 0)||(strcmp(field_struct_types[i][j],"bool") == 0)||(strcmp(field_struct_types[i][j],"signedint") == 0)||(strcmp(field_struct_types[i][j],"signed") == 0)){
                                         char convertBis[1000];
                                         snprintf(convertBis, sizeof(convertBis), "%%d\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
@@ -1678,7 +1742,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
                                         indent_s[k] = strdup(indent[k]);
                                     }
                                     char convert_name[1000];
-                                    snprintf(convert_name, sizeof(convert_name), "%sprintf(\"\\t %s%s.%s :\");\n", indent_s[dim_l_s], field_names[i], dim_print, field_struct_names[i][j]);
+                                    snprintf(convert_name, sizeof(convert_name), "%sprintf(\"\\t %s%s.%s :\"%s);\n", indent_s[dim_l_s], field_names[i], dim_print, field_struct_names[i][j], level_print);
                                     fputs(convert_name, variable_c_copy);
 
                                     for(int k = 0; k < dim_elements_typedef_variables[0][num_t][j]; k++){
@@ -1797,13 +1861,27 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_struct, int n
         else fputs(chaine_tampon, variable_c_copy); //Ajout de la chaine de caractère dans le fichier généré
         printf("v84\t");
     }
+    
+    int error = 0;
+    for(int i = 0; i < 2; i++){
+        if(find_line[i] != 1){
+            printf("Erreur de syntaxe : La ligne %s n'a pas ete trouvee dans le fichier variable.c.\n", error_message[i]); //Détection de l'absence des lignes à modifier
+            error++;
+        }
+    }
+    if(error != 0){
+        fclose(variable_c);
+        fclose(variable_c_copy);
+        exit(EXIT_FAILURE);
+    } //Si l'absence d'une ligne est détectée, l'exécution est stoppée
+
 
     free(find_line);
     free(error_message);
     fclose(variable_c);
     fclose(variable_c_copy);
     printf("vFin\t");
-} //A poursuivre
+}
 
 void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** locations, DBM* invariants, char** actions, int* nb_transitions_locations, Transition*** transitions, int nb_clines_init_variables, line* init_variables_function, int* nb_clines_updatef, line** update_functions, int* nb_clines_constraints, line** constraints_functions){
     FILE* model_c = fopen("modeles_generation/model.c", "r");
@@ -1819,8 +1897,8 @@ void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** 
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
 
-    int* find_line = calloc(11, sizeof(int));
-    char** error_message = malloc(11 * sizeof(char*));
+    int* find_line = calloc(12, sizeof(int));
+    char** error_message = malloc(12 * sizeof(char*));
     error_message[0] = "'    int nb_locations = model_c_nblocations;'";
     error_message[1] = "'    int nb_actions = model_c_nbactions;'";
     error_message[2] = "'    model_c_locations'";
@@ -1835,8 +1913,8 @@ void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** 
 
     char* chaine_tampon = malloc(1000 * sizeof(char));
     while(1){
-        chaine_tampon = fgets(chaine_tampon, 1000, model_c);
-        if(chaine_tampon == NULL){
+        char* result = fgets(chaine_tampon, 1000, model_c);
+        if(result == NULL){
             if(feof(model_c)) break;
             else{
                 printf("Erreur de lecture du fichier model.c.\n");
@@ -1845,7 +1923,7 @@ void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** 
                 exit(EXIT_FAILURE);
             } //Détection d'une erreur de lecture du fichier model.c
         }
-        else if(strchr(chaine_tampon, '\n') == NULL){
+        else if(strchr(result, '\n') == NULL){
             printf("Erreur de taille : La ligne (%s) du fichier model.c depasse 1000 caracteres.\n", chaine_tampon);
             fclose(model_c);
             fclose(model_c_copy);
@@ -2045,14 +2123,18 @@ void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** 
         else fputs(chaine_tampon, model_c_copy); //Copie si la ligne n'est pas une ligne à modifier
     }
 
+    int error = 0;
     for(int i = 0; i < 11; i++){
         if(find_line[i] != 1){
-            printf("Erreur de syntaxe : La ligne %s n'a pas ete trouvee dans le fichier model.c.\n", error_message[i]);
-            fclose(model_c);
-            fclose(model_c_copy);
-            exit(EXIT_FAILURE);
-        } //Détection de l'absence de la ligne à modifier
+            printf("Erreur de syntaxe : La ligne %s n'a pas ete trouvee dans le fichier model.c.\n", error_message[i]); //Détection de l'absence des lignes à modifier
+            error++;
+        }
     }
+    if(error != 0){
+        fclose(model_c);
+        fclose(model_c_copy);
+        exit(EXIT_FAILURE);
+    } //Si l'absence d'une ligne est détectée, l'exécution est stoppée
 
     free(find_line);
     free(error_message);
@@ -2074,7 +2156,7 @@ void generation_ta_extended_builder_c(){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
     
-    char tampon;
+    int tampon;
     while(1){
         tampon = fgetc(ta_extended_builder_c);
         if(tampon == EOF){
@@ -2107,7 +2189,7 @@ void generation_main_c(){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
     
-    char tampon;
+    int tampon;
     while(1){
         tampon = fgetc(main_c);
         if(tampon == EOF){
@@ -2140,7 +2222,7 @@ void generation_gitignore(){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de création du fichier
     
-    char tampon;
+    int tampon;
     while(1){
         tampon = fgetc(gitignore);
         if(tampon == EOF){
@@ -2177,9 +2259,9 @@ void generation(ParseInfos* parseInfos){
     printf("7\n");
     generation_DBM_c(); //Fonction de génération du fichier DBM.c
     printf("8\n");
-    generation_structure_variable_h(parseInfos->nb_define, parseInfos->def_variables_define, parseInfos->nb_clines_typedef, parseInfos->nb_typedef_struct, parseInfos->nb_typedef_primitive, parseInfos->label_typedef, parseInfos->def_variables_typedef); //Fonction de génération du fichier structure_variable.h
+    generation_structure_variable_h(parseInfos->nb_define, parseInfos->def_variables_define, parseInfos->nb_clines_typedef, parseInfos->nb_typedef_structure, parseInfos->nb_typedef_alias, parseInfos->label_typedef, parseInfos->def_variables_typedef); //Fonction de génération du fichier structure_variable.h
     printf("9\n");
-    generation_variable_c(parseInfos->nb_clines_typedef, parseInfos->nb_typedef_struct, parseInfos->nb_typedef_primitive, parseInfos->label_typedef, parseInfos->def_variables_typedef, parseInfos->dim_elements_typedef_variables); //Fonction de génération du fichier variable.c
+    generation_variable_c(parseInfos->nb_clines_typedef, parseInfos->nb_typedef_structure, parseInfos->nb_typedef_alias, parseInfos->label_typedef, parseInfos->def_variables_typedef, parseInfos->dim_elements_typedef_variables); //Fonction de génération du fichier variable.c
     printf("10\n");
     generation_model_c(parseInfos->nb_locations, parseInfos->nb_actions, parseInfos->nb_clocks, parseInfos->locations, parseInfos->invariants, parseInfos->actions, parseInfos->nb_transitions_locations, parseInfos->transitions, parseInfos->nb_clines_init_variables, parseInfos->init_variables_function, parseInfos->nb_clines_updatef, parseInfos->update_functions, parseInfos->nb_clines_constraints, parseInfos->constraints_functions); //Fonction de génération du fichier model.c
     printf("11\n");
