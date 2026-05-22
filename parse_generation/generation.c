@@ -1268,7 +1268,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                         case 0 : {
                             printf("v71\t");
                             char convert[1000];
-                            snprintf(convert, sizeof(convert), "  printf(\"\\t %s = ", field_names[i]);
+                            snprintf(convert, sizeof(convert), "  printf(\"\\t\\t %s = ", field_names[i]);
                             if((strcmp(field_types[i],"int") == 0)||(strcmp(field_types[i],"bool") == 0)||(strcmp(field_types[i],"signedint") == 0)||(strcmp(field_types[i],"signed") == 0)){
                                 char convertBis[1000];
                                 snprintf(convertBis, sizeof(convertBis), "%%d\\n\", variable->%s);\n", field_names[i]);
@@ -1357,7 +1357,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                                 if(dim_elements_typedef_variables[0][num_t][j] == 0){
                                     printf("v74\t");
                                     char convert[1000];
-                                    snprintf(convert, sizeof(convert), "  printf(\"\\t %s.%s = ", field_names[i], field_struct_names[i][j]);
+                                    snprintf(convert, sizeof(convert), "  printf(\"\\t\\t %s.%s = ", field_names[i], field_struct_names[i][j]);
                                     if((strcmp(field_struct_types[i][j],"int") == 0)||(strcmp(field_struct_types[i][j],"bool") == 0)||(strcmp(field_struct_types[i][j],"signedint") == 0)||(strcmp(field_struct_types[i][j],"signed") == 0)){
                                         char convertBis[1000];
                                         snprintf(convertBis, sizeof(convertBis), "%%d\\n\", variable->%s.%s);\n",field_names[i], field_struct_names[i][j]);
@@ -1436,7 +1436,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                                     char level_print[1000] = "";
                                     char level = 'i';
                                     char convert_name[1000];
-                                    snprintf(convert_name, sizeof(convert_name), "  printf(\"\\t %s.%s :\");\n", field_names[i], field_struct_names[i][j]);
+                                    snprintf(convert_name, sizeof(convert_name), "  printf(\"\\t\\t %s.%s :\\n\");\n", field_names[i], field_struct_names[i][j]);
                                     fputs(convert_name, variable_c_copy);
 
                                     for(int k = 0; k < dim_elements_typedef_variables[0][num_t][j]; k++){
@@ -1457,7 +1457,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                                     printf("v77\t");
 
                                     char convert[1000];
-                                    snprintf(convert, sizeof(convert), "%sprintf(\"\\t %s.%s%s = ", indent[dim_elements_typedef_variables[0][num_t][j]], field_names[i], field_struct_names[i][j], dim_print);
+                                    snprintf(convert, sizeof(convert), "%sprintf(\"\\t\\t\\t %s.%s%s = ", indent[dim_elements_typedef_variables[0][num_t][j]], field_names[i], field_struct_names[i][j], dim_print);
                                     if((strcmp(field_struct_types[i][j],"int") == 0)||(strcmp(field_struct_types[i][j],"bool") == 0)||(strcmp(field_struct_types[i][j],"signedint") == 0)||(strcmp(field_struct_types[i][j],"signed") == 0)){
                                         char convertBis[1000];
                                         snprintf(convertBis, sizeof(convertBis), "%%d\\n\", variable->%s.%s%s%s);\n",field_names[i], field_struct_names[i][j], dim, level_print);
@@ -1550,7 +1550,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                     char level_print[1000] = "";
                     char level = 'i';
                     char convert_name[1000];
-                    snprintf(convert_name, sizeof(convert_name), "  printf(\"\\t %s :\");\n", field_names[i]);
+                    snprintf(convert_name, sizeof(convert_name), "  printf(\"\\t\\t %s :\\n\");\n", field_names[i]);
                     fputs(convert_name, variable_c_copy);
 
                     for(int j = 0; j < dim_l; j++){
@@ -1575,7 +1575,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                     switch(is_struct){
                         case 0 : {
                             char convert[1000];     
-                            snprintf(convert, sizeof(convert), "%sprintf(\"\\t %s%s = ", indent[dim_l], field_names[i], dim_print);
+                            snprintf(convert, sizeof(convert), "%sprintf(\"\\t\\t\\t %s%s = ", indent[dim_l], field_names[i], dim_print);
                             if((strcmp(field_types[i],"int") == 0)||(strcmp(field_types[i],"bool") == 0)||(strcmp(field_types[i],"signedint") == 0)||(strcmp(field_types[i],"signed") == 0)){
                                 char convertBis[1000];
                                 snprintf(convertBis, sizeof(convertBis), "%%d\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
@@ -1661,7 +1661,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
 
                                 if(dim_elements_typedef_variables[0][num_t][j] == 0){
                                     char convert[1000];
-                                    snprintf(convert, sizeof(convert), "  printf(\"\\t %s%s.%s = ", field_names[i], dim_print, field_struct_names[i][j]);
+                                    snprintf(convert, sizeof(convert), "  printf(\"\\t\\t\\t %s%s.%s = ", field_names[i], dim_print, field_struct_names[i][j]);
                                     if((strcmp(field_struct_types[i][j],"int") == 0)||(strcmp(field_struct_types[i][j],"bool") == 0)||(strcmp(field_struct_types[i][j],"signedint") == 0)||(strcmp(field_struct_types[i][j],"signed") == 0)){
                                         char convertBis[1000];
                                         snprintf(convertBis, sizeof(convertBis), "%%d\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
@@ -1742,7 +1742,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                                         indent_s[k] = strdup(indent[k]);
                                     }
                                     char convert_name[1000];
-                                    snprintf(convert_name, sizeof(convert_name), "%sprintf(\"\\t %s%s.%s :\"%s);\n", indent_s[dim_l_s], field_names[i], dim_print, field_struct_names[i][j], level_print);
+                                    snprintf(convert_name, sizeof(convert_name), "%sprintf(\"\\t\\t\\t %s%s.%s :\\n\"%s);\n", indent_s[dim_l_s], field_names[i], dim_print, field_struct_names[i][j], level_print);
                                     fputs(convert_name, variable_c_copy);
 
                                     for(int k = 0; k < dim_elements_typedef_variables[0][num_t][j]; k++){
@@ -1765,7 +1765,7 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
 
 
                                     char convert[1000];
-                                    snprintf(convert, sizeof(convert), "%sprintf(\"\\t %s%s.%s%s = ", indent_s[dim_l_s], field_names[i], dim_print, field_struct_names[i][j], dim_s_print);
+                                    snprintf(convert, sizeof(convert), "%sprintf(\"\\t\\t\\t\\t %s%s.%s%s = ", indent_s[dim_l_s], field_names[i], dim_print, field_struct_names[i][j], dim_s_print);
                                     if((strcmp(field_struct_types[i][j],"int") == 0)||(strcmp(field_struct_types[i][j],"bool") == 0)||(strcmp(field_struct_types[i][j],"signedint") == 0)||(strcmp(field_struct_types[i][j],"signed") == 0)){
                                         char convertBis[1000];
                                         snprintf(convertBis, sizeof(convertBis), "%%d\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print,field_names[i], dim, field_struct_names[i][j], dim_s);
