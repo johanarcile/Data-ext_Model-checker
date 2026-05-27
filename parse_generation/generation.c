@@ -344,10 +344,10 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
 
     char* types_four_words = "int"; //Quatrième mot que l'on peut trouver dans les noms des types en c
 
-    char seps[] = " [;]*"; //Chaine de caractères contenant les caractères de sépération pour le découpage MODIFIER
-    char* field_names[1000] = {NULL}; //Récupération des noms des champs de la structure Variable MODIFIER
-    char* field_types[1000] = {NULL}; //Récupération du nom du type de chaque champs de la structure Variable MODIFIER
-    char** size_tab[1000] = {NULL}; //Récupération des tailles des tableaux MODIFIER
+    char seps[] = " [;]*"; //Chaine de caractères contenant les caractères de sépération pour le découpage
+    char* field_names[1000] = {NULL}; //Tableau permettant de récupérer les noms des champs de la structure Variable
+    char* field_types[1000] = {NULL}; //Tableau permettant de récupérer le nom du type de chaque champs de la structure Variable
+    char** size_tab[1000] = {NULL}; //Tableau permettant de récupérer les tailles des tableaux
     char** size_tab_type[1000] = {NULL}; //Tableau qui permet de savoir si la taille de la dimension est définie dynamiquement ou statiquement
     char* field_types_def[1000] = {NULL}; //Tableau qui mémorise si le type du champ de la structure Variable est un alias, une structure ou un type natif
     printf("v5\t");
@@ -355,43 +355,43 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
     for(int i = 0; i < nb_clines_typedef[0][nb_typedef_structure-1]; i++){
         printf("v6\t");
         char *split_string = strtok(copy[0][nb_typedef_structure-1][i], seps); //Remplace les caractères indiqués par seps trouvé dans la chaine copy[0][nb_typedef_structure-1][i] (ligne de code de la structure Variable) par le caractère '\0'
-        int count = 0; //Variable pour savoir quel type de texte est attendu lors du parcours de la chaine découpée (type, nom ou dimension du champ)
+        int enum_words = 0; //Variable pour savoir quel type de texte est attendu lors du parcours de la chaine découpée (type : 0, nom : 1 ou dimension du champ : supérieur à 1)
         int count_types_words = 0; //Variable pour compter le nombre de mots dans le type du champ
-        int size_count = 0; //Variable pour compter le nombre de chaines de caractères à ajouter dans size_tab et size_tab_type (nom des variables mémorisant la taille des dimensions des tableaux) MODIFIER
+        int size_count = 0; //Variable pour compter le nombre de constantes symboliques utilisées pour mémoriser les tailles des dimensions des tableaux
         char* temp[1000]; //Tableau temporaire pour mémoriser les noms des variables mémorisant la taille des dimensions des tableaux
         printf("v7\t");
         while(split_string != NULL){
             printf("v8\t");
             printf("\n%s\n", split_string);
-            if((count_types_words > 0)&&(count == 0)){
+            if((count_types_words > 0)&&(enum_words == 0)){
                 switch(count_types_words){
                     case 1 : {
                         for(int j = 0; j < 5; j++){
                             if(strcmp(split_string, types_two_words[j]) == 0){
-                                count = 0;
+                                enum_words = 0;
                                 break;
                             }
-                            else count = 1;
+                            else enum_words = 1;
                         }
                         break;
                     } //Détecte si le deuxième mot appartient au type ou au nom du champ
                     case 2 : {
-                        if((strcmp(split_string, types_three_words[0]) != 0)&&(strcmp(split_string, types_three_words[1]) != 0)) count = 1;
+                        if((strcmp(split_string, types_three_words[0]) != 0)&&(strcmp(split_string, types_three_words[1]) != 0)) enum_words = 1;
                         break;
                     } //Détecte si le troisième mot appartient au type ou au nom du champ
                     case 3 : {
-                        if(strcmp(split_string, types_four_words) != 0) count = 1;
+                        if(strcmp(split_string, types_four_words) != 0) enum_words = 1;
                         break;
                     } //Détecte si le quatrième mot appartient au type ou au nom du champ
                     default : {
-                        count = 1;
+                        enum_words = 1;
                         break;
-                    } //incrémente count pour indiquer que le mot trouvé est le nom du champ
+                    } //incrémente enum_words pour indiquer que le mot trouvé est le nom du champ
                 }
             } //Détection d'un mot appartenant au type ou au nom du champ
-            printf("\n%d\n", count);
+            printf("\n%d\n", enum_words);
 
-            if(count == 0){ 
+            if(enum_words == 0){ 
                 printf("v9\t");
                 if(count_types_words == 0) field_types[i] = strdup(split_string); //Récupération du premier mot du type du champ
                 else{
@@ -408,17 +408,17 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                 printf("v10\t");
                 count_types_words++; //Incrémentation du nombre de mots trouvés désignant le type du champ
             }
-            else if(count == 1) {
+            else if(enum_words == 1) {
                 field_names[i] = strdup(split_string); //Récupération du nom du champ
-                count++;
+                enum_words++;
             }
-            else if(count > 1){
+            else if(enum_words > 1){
                 if(strcmp(split_string, "//") == 0) break; //Sortie de la boucle si la suite correspond à un commentaire
                 else{
                     temp[size_count] = strdup(split_string);
                     size_count++;
                 } //Récupération du nom de la variable sauvegardant la taille d'une dimension du champ
-                count++;
+                enum_words++;
             }
             split_string = strtok(NULL, seps); //Permet de passer au mot suivant de la chaine copy[0][nb_typedef_structure-1][i]
             printf("v11\t");
@@ -488,18 +488,18 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
         char* copy_name = strdup(field_names[i]); //Copie du nom du champ pour éviter des pertes d'informations
         char *split_name = strtok(copy_name, "_"); //Remplace les caractères '_' du nom du champ de la structure Variable (copy_name) par le caractère '\0'
         char* temp[1000]; //Tableau temporaire pour mémoriser chaque mot découpé du nom du champ
-        int count = 0;
+        int enum_words = 0; //Variable pour parcourir la chaine modifiée field_names[i]
         while(split_name != NULL){
-            temp[count] = strdup(split_name);
+            temp[enum_words] = strdup(split_name);
             split_name = strtok(NULL, "_"); //Permet de passer au mot suivant de la chaine copy_name
-            count++;
+            enum_words++;
         } //Parcours mot par mot de la chaine modifée copy_name
         printf("v15\t");
 
-        if(count == 1) continue; //Passe à l'itération de la boucle suivante si le nom ne contient pas le caractère '_'
+        if(enum_words == 1) continue; //Passe à l'itération de la boucle suivante si le nom ne contient pas le caractère '_'
 
         if(strcmp(temp[1], "size") == 0){
-            switch(count){
+            switch(enum_words){
                 case 2 : { 
                     printf("v16\t");
                     for(int j = 0; j < nb_clines_typedef[0][nb_typedef_structure-1]; j++){
@@ -601,41 +601,41 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
             for(int j = 0; j < nb_clines_typedef[0][num_t]; j++){
                 printf("v25\t");
                 char *split_struct = strtok(copy[0][num_t][j], seps); //Remplace les caractères seps par le caractère '\0' dans la ligne de code du champ de la structure
-                int count = 0; 
+                int enum_words = 0; 
                 int count_types_words = 0;
                 int size_count = 0;
                 char* temp[1000];
                 printf("v26\t");
                 while(split_struct != NULL){
                     printf("v27\t");
-                    if((count_types_words > 0)&&(count == 0)){
+                    if((count_types_words > 0)&&(enum_words == 0)){
                         switch(count_types_words){
                             case 1 : {
                                 for(int k = 0; k < 5; k++){
                                     if(strcmp(split_struct, types_two_words[k]) == 0){
-                                        count = 0;
+                                        enum_words = 0;
                                         break;
                                     }
-                                    else count = 1;
+                                    else enum_words = 1;
                                 }
                                 break;
                             }
                             case 2 : {
-                                if((strcmp(split_struct, types_three_words[0]) != 0)&&(strcmp(split_struct, types_three_words[1]) != 0)) count = 1;
+                                if((strcmp(split_struct, types_three_words[0]) != 0)&&(strcmp(split_struct, types_three_words[1]) != 0)) enum_words = 1;
                                 break;
                             }
                             case 3 : {
-                                if(strcmp(split_struct, types_four_words) != 0) count = 1;
+                                if(strcmp(split_struct, types_four_words) != 0) enum_words = 1;
                                 break;
                             }
                             default : {
-                                count = 1;
+                                enum_words = 1;
                                 break;
                             }
                         }
                     } //Détection des types c en plusieurs mots
 
-                    if(count == 0){
+                    if(enum_words == 0){
                         if(count_types_words == 0) field_struct_types[i][j] = strdup(split_struct);
                         else{
                             char* realloc_st = realloc(field_struct_types[i][j], strlen(field_struct_types[i][j])+strlen(split_struct)+1);
@@ -650,17 +650,17 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                         }
                         count_types_words++;
                     }
-                    else if(count == 1){
+                    else if(enum_words == 1){
                         field_struct_names[i][j] = strdup(split_struct);
-                        count++;
+                        enum_words++;
                     }
-                    else if (count > 1){
+                    else if (enum_words > 1){
                         if(strcmp(split_struct, "//") == 0) break;
                         else{
                             temp[size_count] = strdup(split_struct);
                             size_count++;
                         }
-                        count++;
+                        enum_words++;
                     }
                     split_struct = strtok(NULL, seps);
                     printf("v28\t");
@@ -711,18 +711,18 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
                 char* copy_name = strdup(field_struct_names[i][j]);
                 char *split_name = strtok(copy_name, "_");
                 char* temp[1000];
-                int count = 0;
+                int enum_words = 0;
                 while(split_name != NULL){
-                    temp[count] = strdup(split_name);
+                    temp[enum_words] = strdup(split_name);
                     split_name = strtok(NULL, "_");
-                    count++;
+                    enum_words++;
                 }
                 printf("v32\t");
 
-                if(count == 1) continue;
+                if(enum_words == 1) continue;
 
                 if(strcmp(temp[1], "size") == 0){
-                    switch(count){
+                    switch(enum_words){
                         case 2 : {
                             printf("v33\t");
                             for(int k = 0; k < nb_clines_typedef[0][num_t]; k++){
