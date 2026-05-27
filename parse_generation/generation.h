@@ -3,17 +3,17 @@
 
 #include "parse.h"
 
-void generation_uthash_h();
-void generation_structure_DBM_h(int nb_clocks);
-void generation_structure_variable_h(int nb_define, line* def_variables_define, int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef);
-void generation_structure_ta_h();
-void generation_structure_state_space_ta_h();
-void generation_DBM_c();
-void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef, int*** dim_elements_typedef_variables);
-void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** locations, DBM* invariants, char** actions, int* nb_transitions_locations, Transition*** transitions, int nb_clines_init_variables, line* init_variables_function, int* nb_clines_updatef, line** update_functions, int* nb_clines_constraints, line** constraints_functions);
-void generation_ta_extended_builder_c();
-void generation_main_c();
-void generation_gitignore();
-void generation(ParseInfos* parseInfos);
+void generation_uthash_h(char* copy_path);
+void generation_structure_DBM_h(char* copy_path, int nb_clocks);
+void generation_structure_variable_h(char* copy_path, int nb_define, line* def_variables_define, int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef);
+void generation_structure_ta_h(char* copy_path);
+void generation_structure_state_space_ta_h(char* copy_path);
+void generation_DBM_c(char* copy_path);
+void generation_variable_c(char* copy_path, int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef, int*** dim_elements_typedef_variables);
+void generation_model_c(char* copy_path, int nb_locations, int nb_actions, int nb_clocks, char** locations, DBM* invariants, char** actions, int* nb_transitions_locations, Transition*** transitions, int nb_clines_init_variables, line* init_variables_function, int* nb_clines_updatef, line** update_functions, int* nb_clines_constraints, line** constraints_functions);
+void generation_ta_extended_builder_c(char* copy_path);
+void generation_main_c(char* copy_path);
+void generation_gitignore(char* copy_path);
+void generation(char* copy_path, ParseInfos* parseInfos);
 
 #endif

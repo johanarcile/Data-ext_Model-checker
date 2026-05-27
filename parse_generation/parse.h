@@ -47,6 +47,6 @@ typedef struct ParseInfos {
 
 char* read_model_json(const char* filename);
 void parse_model_json(const char* json_donnees);
-void fill_parseInfos_structure(ParseInfos* parseInfos);
+void fill_parseInfos_structure(char* json_path, ParseInfos* parseInfos);
 
 #endif

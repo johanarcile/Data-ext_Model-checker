@@ -4,14 +4,17 @@
 
 #include "generation.h"
 
-void generation_uthash_h(){
+void generation_uthash_h(char* copy_path){
+    char* path = malloc(strlen(copy_path) + strlen("/uthash.c") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/uthash.h");
     FILE* uthash_h = fopen("modeles_generation/uthash.h", "r");
     if(!uthash_h){
         perror("Impossible d'ouvrir le fichier uthash.h.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier uthash.h
 
-    FILE* uthash_h_copy = fopen("../uthash.h", "w");
+    FILE* uthash_h_copy = fopen(path, "w");
     if(!uthash_h_copy){
         printf("Le fichier uthash.h n'a pas pu etre cree.\n");
         fclose(uthash_h);
@@ -37,14 +40,17 @@ void generation_uthash_h(){
     fclose(uthash_h_copy);
 }
 
-void generation_structure_DBM_h(int nb_clocks){ 
+void generation_structure_DBM_h(char* copy_path, int nb_clocks){ 
+    char* path = malloc(strlen(copy_path) + strlen("/structure_DBM.h") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/structure_DBM.h");
     FILE* structure_DBM_h = fopen("modeles_generation/structure_DBM.h", "r");
     if(!structure_DBM_h){
         perror("Impossible d'ouvrir le fichier structure_DBM.h.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier structure_DBM.h
 
-    FILE* structure_DBM_h_copy = fopen("../structure_DBM.h", "w");
+    FILE* structure_DBM_h_copy = fopen(path, "w");
     if(!structure_DBM_h_copy){
         printf("Le fichier structure_DBM.h n'a pas pu etre cree.\n");
         fclose(structure_DBM_h);
@@ -92,14 +98,17 @@ void generation_structure_DBM_h(int nb_clocks){
     fclose(structure_DBM_h_copy);
 }
 
-void generation_structure_variable_h(int nb_define, line* def_variables_define, int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef){
+void generation_structure_variable_h(char* copy_path, int nb_define, line* def_variables_define, int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef){
+    char* path = malloc(strlen(copy_path) + strlen("/structure_variable.h") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/structure_variable.h");
     FILE* structure_variable_h = fopen("modeles_generation/structure_variable.h", "r");
     if(!structure_variable_h){
         perror("Impossible d'ouvrir le fichier structure_variable.h.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier structure_variable.h
 
-    FILE* structure_variable_h_copy = fopen("../structure_variable.h", "w");
+    FILE* structure_variable_h_copy = fopen(path, "w");
     if(!structure_variable_h_copy){
         printf("Le fichier structure_variable.h n'a pas pu etre cree.\n");
         fclose(structure_variable_h);
@@ -193,14 +202,17 @@ void generation_structure_variable_h(int nb_define, line* def_variables_define, 
     fclose(structure_variable_h_copy);
 }
 
-void generation_structure_ta_h(){
+void generation_structure_ta_h(char* copy_path){
+    char* path = malloc(strlen(copy_path) + strlen("/structure_ta.h") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/structure_ta.h");
     FILE* structure_ta_h = fopen("modeles_generation/structure_ta.h", "r");
     if(!structure_ta_h){
         perror("Impossible d'ouvrir le fichier structure_ta.h.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier main.c
 
-    FILE* structure_ta_h_copy = fopen("../structure_ta.h", "w");
+    FILE* structure_ta_h_copy = fopen(path, "w");
     if(!structure_ta_h_copy){
         printf("Le fichier structure_ta.h n'a pas pu etre cree.\n");
         fclose(structure_ta_h);
@@ -226,14 +238,17 @@ void generation_structure_ta_h(){
     fclose(structure_ta_h_copy);
 }
 
-void generation_structure_state_space_ta_h(){
+void generation_structure_state_space_ta_h(char* copy_path){
+    char* path = malloc(strlen(copy_path) + strlen("/structure_state_space.h") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/structure_state_space_ta.h");
     FILE* structure_state_space_ta_h = fopen("modeles_generation/structure_state_space_ta.h", "r");
     if(!structure_state_space_ta_h){
         perror("Impossible d'ouvrir le fichier structure_state_space_ta.h.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier structure_state_space_ta.h
 
-    FILE* structure_state_space_ta_h_copy = fopen("../structure_state_space_ta.h", "w");
+    FILE* structure_state_space_ta_h_copy = fopen(path, "w");
     if(!structure_state_space_ta_h_copy){
         printf("Le fichier structure_state_space_ta.h n'a pas pu etre cree.\n");
         fclose(structure_state_space_ta_h);
@@ -259,14 +274,17 @@ void generation_structure_state_space_ta_h(){
     fclose(structure_state_space_ta_h_copy);
 }
 
-void generation_DBM_c(){
+void generation_DBM_c(char* copy_path){
+    char* path = malloc(strlen(copy_path) + strlen("/DBM.c") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/DBM.c");
     FILE* DBM_c = fopen("modeles_generation/DBM.c", "r");
     if(!DBM_c){
         perror("Impossible d'ouvrir le fichier DBM.c.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier DBM.c
 
-    FILE* DBM_c_copy = fopen("../DBM.c", "w");
+    FILE* DBM_c_copy = fopen(path, "w");
     if(!DBM_c_copy){
         printf("Le fichier DBM.c n'a pas pu etre cree.\n");
         fclose(DBM_c);
@@ -292,15 +310,18 @@ void generation_DBM_c(){
     fclose(DBM_c_copy);
 }
 
-void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef, int*** dim_elements_typedef_variables){
+void generation_variable_c(char* copy_path, int** nb_clines_typedef, int nb_typedef_structure, int nb_typedef_alias, char*** label_typedef, line*** def_variables_typedef, int*** dim_elements_typedef_variables){
+    char* path = malloc(strlen(copy_path) + strlen("/variable.c") + 1);
+    strcpy(path, copy_path);
     printf("v0\t");
+    strcat(path, "/variable.c");
     FILE* variable_c = fopen("modeles_generation/variable.c", "r");
     if(!variable_c){
         perror("Impossible d'ouvrir le fichier variable.c.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier variable.c
 
-    FILE* variable_c_copy = fopen("../variable.c", "w");
+    FILE* variable_c_copy = fopen(path, "w");
     if(!variable_c_copy){
         printf("Le fichier variable.c n'a pas pu etre cree.\n");
         fclose(variable_c);
@@ -1892,14 +1913,17 @@ void generation_variable_c(int** nb_clines_typedef, int nb_typedef_structure, in
     printf("vFin\t");
 }
 
-void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** locations, DBM* invariants, char** actions, int* nb_transitions_locations, Transition*** transitions, int nb_clines_init_variables, line* init_variables_function, int* nb_clines_updatef, line** update_functions, int* nb_clines_constraints, line** constraints_functions){
+void generation_model_c(char* copy_path, int nb_locations, int nb_actions, int nb_clocks, char** locations, DBM* invariants, char** actions, int* nb_transitions_locations, Transition*** transitions, int nb_clines_init_variables, line* init_variables_function, int* nb_clines_updatef, line** update_functions, int* nb_clines_constraints, line** constraints_functions){
+    char* path = malloc(strlen(copy_path) + strlen("/model.c") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/model.c");
     FILE* model_c = fopen("modeles_generation/model.c", "r");
     if(!model_c){
         perror("Impossible d'ouvrir le fichier model.c.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier model.c
 
-    FILE* model_c_copy = fopen("../model.c", "w");
+    FILE* model_c_copy = fopen(path, "w");
     if(!model_c_copy){
         printf("Le fichier model.c n'a pas pu etre cree.\n");
         fclose(model_c);
@@ -2151,14 +2175,17 @@ void generation_model_c(int nb_locations, int nb_actions, int nb_clocks, char** 
     fclose(model_c_copy);
 }
 
-void generation_ta_extended_builder_c(){
+void generation_ta_extended_builder_c(char* copy_path){
+    char* path = malloc(strlen(copy_path) + strlen("/ta_extended_builder.c") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/ta_extended_builder.c");
     FILE* ta_extended_builder_c = fopen("modeles_generation/ta_extended_builder.c", "r");
     if(!ta_extended_builder_c){
         perror("Impossible d'ouvrir le fichier ta_extended_builder.c.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier ta_extended_builder.c
 
-    FILE* ta_extended_builder_c_copy = fopen("../ta_extended_builder.c", "w");
+    FILE* ta_extended_builder_c_copy = fopen(path, "w");
     if(!ta_extended_builder_c_copy){
         printf("Le fichier ta_extended_builder.c n'a pas pu etre cree.\n");
         fclose(ta_extended_builder_c);
@@ -2184,14 +2211,17 @@ void generation_ta_extended_builder_c(){
     fclose(ta_extended_builder_c_copy);
 }
 
-void generation_main_c(){
+void generation_main_c(char* copy_path){
+    char* path = malloc(strlen(copy_path) + strlen("/main.c") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/main.c");
     FILE* main_c = fopen("modeles_generation/main.c", "r");
     if(!main_c){
         perror("Impossible d'ouvrir le fichier main.c.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier main.c
 
-    FILE* main_c_copy = fopen("../main.c", "w");
+    FILE* main_c_copy = fopen(path, "w");
     if(!main_c_copy){
         printf("Le fichier main.c n'a pas pu etre cree.\n");
         fclose(main_c);
@@ -2217,14 +2247,17 @@ void generation_main_c(){
     fclose(main_c_copy);
 }
 
-void generation_gitignore(){
+void generation_gitignore(char* copy_path){
+    char* path = malloc(strlen(copy_path) + strlen("/.gitignore") + 1);
+    strcpy(path, copy_path);
+    strcat(path, "/.gitignore");
     FILE* gitignore = fopen(".gitignore", "r");
     if(!gitignore){
         perror("Impossible d'ouvrir le fichier .gitignore.\n");
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier .gitignore
 
-    FILE* gitignore_copy = fopen("../.gitignore", "w");
+    FILE* gitignore_copy = fopen(path, "w");
     if(!gitignore_copy){
         printf("Le fichier .gitignore n'a pas pu etre cree.\n");
         fclose(gitignore);
@@ -2250,28 +2283,28 @@ void generation_gitignore(){
     fclose(gitignore_copy);
 }
 
-void generation(ParseInfos* parseInfos){
+void generation(char* copy_path, ParseInfos* parseInfos){
     printf("0\n");
-    generation_uthash_h(); //Fonction de génération du fichier uthash.h
+    generation_uthash_h(copy_path); //Fonction de génération du fichier uthash.h
     printf("1\n");
-    generation_structure_DBM_h(parseInfos->nb_clocks); //Fonction de génération du fichier structure_DBM.h
+    generation_structure_DBM_h(copy_path, parseInfos->nb_clocks); //Fonction de génération du fichier structure_DBM.h
     printf("2\n");
-    generation_structure_state_space_ta_h(); //Fonction de génération du fichier structure_state_space_ta.h
+    generation_structure_state_space_ta_h(copy_path); //Fonction de génération du fichier structure_state_space_ta.h
     printf("3\n");
-    generation_ta_extended_builder_c(); //Fonction de génération du fichier ta_extended_builder.c
+    generation_ta_extended_builder_c(copy_path); //Fonction de génération du fichier ta_extended_builder.c
     printf("4\n");
-    generation_main_c(); //Fonction de génération du fichier main.c
+    generation_main_c(copy_path); //Fonction de génération du fichier main.c
     printf("5\n");
-    generation_gitignore(); //Fonction de génération du fichier .gitignore
+    generation_gitignore(copy_path); //Fonction de génération du fichier .gitignore
     printf("6\n");
-    generation_structure_ta_h(); //Fonction de génération du fichier structure_ta.h
+    generation_structure_ta_h(copy_path); //Fonction de génération du fichier structure_ta.h
     printf("7\n");
-    generation_DBM_c(); //Fonction de génération du fichier DBM.c
+    generation_DBM_c(copy_path); //Fonction de génération du fichier DBM.c
     printf("8\n");
-    generation_structure_variable_h(parseInfos->nb_define, parseInfos->def_variables_define, parseInfos->nb_clines_typedef, parseInfos->nb_typedef_structure, parseInfos->nb_typedef_alias, parseInfos->label_typedef, parseInfos->def_variables_typedef); //Fonction de génération du fichier structure_variable.h
+    generation_structure_variable_h(copy_path, parseInfos->nb_define, parseInfos->def_variables_define, parseInfos->nb_clines_typedef, parseInfos->nb_typedef_structure, parseInfos->nb_typedef_alias, parseInfos->label_typedef, parseInfos->def_variables_typedef); //Fonction de génération du fichier structure_variable.h
     printf("9\n");
-    generation_variable_c(parseInfos->nb_clines_typedef, parseInfos->nb_typedef_structure, parseInfos->nb_typedef_alias, parseInfos->label_typedef, parseInfos->def_variables_typedef, parseInfos->dim_elements_typedef_variables); //Fonction de génération du fichier variable.c
+    generation_variable_c(copy_path, parseInfos->nb_clines_typedef, parseInfos->nb_typedef_structure, parseInfos->nb_typedef_alias, parseInfos->label_typedef, parseInfos->def_variables_typedef, parseInfos->dim_elements_typedef_variables); //Fonction de génération du fichier variable.c
     printf("10\n");
-    generation_model_c(parseInfos->nb_locations, parseInfos->nb_actions, parseInfos->nb_clocks, parseInfos->locations, parseInfos->invariants, parseInfos->actions, parseInfos->nb_transitions_locations, parseInfos->transitions, parseInfos->nb_clines_init_variables, parseInfos->init_variables_function, parseInfos->nb_clines_updatef, parseInfos->update_functions, parseInfos->nb_clines_constraints, parseInfos->constraints_functions); //Fonction de génération du fichier model.c
+    generation_model_c(copy_path, parseInfos->nb_locations, parseInfos->nb_actions, parseInfos->nb_clocks, parseInfos->locations, parseInfos->invariants, parseInfos->actions, parseInfos->nb_transitions_locations, parseInfos->transitions, parseInfos->nb_clines_init_variables, parseInfos->init_variables_function, parseInfos->nb_clines_updatef, parseInfos->update_functions, parseInfos->nb_clines_constraints, parseInfos->constraints_functions); //Fonction de génération du fichier model.c
     printf("11\n");
 }

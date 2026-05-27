@@ -1164,8 +1164,9 @@ void parse_model_json(const char* json_donnees){
     cJSON_Delete(json);
 }
 
-void fill_parseInfos_structure(ParseInfos* parseInfos){
-    char* json_donnee = read_model_json("json_model.json");
+void fill_parseInfos_structure(char* json_path, ParseInfos* parseInfos){
+    printf("%s\n", json_path);
+    char* json_donnee = read_model_json(json_path);
     if(json_donnee){
         parse_model_json(json_donnee);
         free(json_donnee);
