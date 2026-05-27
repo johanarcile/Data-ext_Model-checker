@@ -1,0 +1,199 @@
+Tests de la génération de code : 
+    - Tests des copies : 
+        - uthash.h : Succès.
+        - .gitignore : Succès.
+        - DBM.c : Succès.
+        - main.c : Succès.
+        - structure_state_space_ta.h : Succès.
+        - ta_extended_builder.c : Succès.
+        - structure_ta.h : Succès.
+    - Tests generation_structure_DBM_h : 
+        - Tests sur la comparaison exacte : Succès.
+        - Tests absence ligne : Succès.
+    - Tests generation_model_c :
+        - Absence d'une ligne : Succès.
+        - Absence de deux ligne : Succès.
+        - Absence de trois ligne : Succès.
+        - Absence de quatre ligne : Succès.
+        - Absence de cinq ligne : Succès.
+        - Absence de six ligne : Succès.
+        - Absence de sept ligne : Succès.
+        - Absence de huit ligne : Succès.
+        - Absence de neuf ligne : Succès.
+        - Absence de dix ligne : Succès.
+        - Absence de onze ligne :  Succès.
+        - Tests pour nb_locations : Succès.
+            - Tests comparaison exacte : Succès.
+            - Tests absence ligne : Succès.
+        - Tests pour nb_actions : 
+            - Tests comparaison exacte : Succès.
+            - Tests absence ligne : Succès.
+        - Tests pour les localités : Succès.
+        - Tests pour les actions : Succès.
+        - Tests pour les transitions : Succès. 
+        - Tests pour la fonction init_variables : Succès.
+        - Tests pour les fonctions d'update : Succès.
+        - Tests pour les fonctions de contraintes : Succès.
+        - Tests pour la fonction init_update_functions : Succès.
+        - Tests pour la fonction init_constraints : Succès.
+    - Tests generation_structure_variable_h : 
+        - Absence d'une ligne : Succès.
+        - Absence de deux ligne : Succès.
+        - Absence de trois ligne : Succès.
+        - Tests pour define : Succès.
+        - Tests pour structure : Succès.
+        - Tests pour alias : Succès.
+    - Tests generation_variable_c : 
+        - Absence d'une ligne : Succès.
+        - Absence de deux ligne : Succès.
+        - Tests pour equal : Succès.
+        - Tests pour print : Succès.
+        - Tests sur les types : 
+            - Variable : 
+                - int : Succès.
+                - bool : Succès.
+                - signed int : Succès.
+                - signed : Succès.
+                - float : Succès.
+                - char : Succès.
+                - signed char : Succès.
+                - unsigned char : Succès.
+                - unsigned int : Succès.
+                - unsigned : Succès.
+                - double : Succès.
+                - long double : Succès.
+                - short : Succès.
+                - short int : Succès.
+                - signed short : Succès.
+                - signed short int : Succès.
+                - unsigned short : Succès.
+                - unsigned short int : Succès.
+                - long : Succès.
+                - long int : Succès.
+                - signed long : Succès.
+                - signed long int : Succès.
+                - unsigned long : Succès.
+                - unsigned long int : Succès.
+                - long long : Succès.
+                - long long int : Succès.
+                - signed long long : Succès.
+                - signed long long int : Succès.
+                - unsigned long long : Succès.
+                - unsigned long long int : Succès.
+            - Alias : 
+                - int : Succès.
+                - bool : Succès.
+                - signed int : Succès.
+                - signed : Succès.
+                - float : Succès.
+                - char : Succès.
+                - signed char : Succès.
+                - unsigned char : Succès.
+                - unsigned int : Succès.
+                - unsigned : Succès.
+                - double : Succès.
+                - long double : Succès.
+                - short : Succès.
+                - short int : Succès.
+                - signed short : Succès.
+                - signed short int : Succès.
+                - unsigned short : Succès.
+                - unsigned short int : Succès.
+                - long : Succès.
+                - long int : Succès.
+                - signed long : Succès.
+                - signed long int : Succès.
+                - unsigned long : Succès.
+                - unsigned long int : Succès.
+                - long long : Succès.
+                - long long int : Succès.
+                - signed long long : Succès.
+                - signed long long int : Succès.
+                - unsigned long long : Succès.
+                - unsigned long long int : Succès.
+            - Structure : 
+                - int : Succès.
+                - bool : Succès.
+                - signed int : Succès.
+                - signed : Succès.
+                - float : Succès.
+                - char : Succès.
+                - signed char : Succès.
+                - unsigned char : Succès.
+                - unsigned int : Succès.
+                - unsigned : Succès.
+                - double : Succès.
+                - long double : Succès.
+                - short : Succès.
+                - short int : Succès.
+                - signed short : Succès.
+                - signed short int : Succès.
+                - unsigned short : Succès.
+                - unsigned short int : Succès.
+                - long : Succès.
+                - long int : Succès.
+                - signed long : Succès.
+                - signed long int : Succès.
+                - unsigned long : Succès.
+                - unsigned long int : Succès.
+                - long long : Succès.
+                - long long int : Succès.
+                - signed long long : Succès.
+                - signed long long int : Succès.
+                - unsigned long long : Succès.
+                - unsigned long long int : Succès.
+        - Tests pour les conflits de variables pour les tailles des tableaux : 
+            - Variable : 
+                - Constante symbolique et variable : Succès.
+                - Variable et variable : Succès.
+            - Structures : 
+                - Constante symbolique et variable : Succès.
+                - Variable et variable : Succès.
+        - Tests pour un trop grand nombre de variables pour les tailles des tableaux : 
+            - Variable : Succès.
+            - Structures : Succès.
+        - Test pour des variables de tailles définies pour des champs n'étant pas des tableaux : 
+            - Variable : Succès.
+            - Structure : Succès.
+        - Tests pour un manque de variables pour les tailles des tableaux : 
+            - Variable : Succès.
+            - Structures : Succès.
+        - Vérification des nombres de boucles générées : 
+            - Fonction equal : 
+                - Variable : Succès.
+                - Structures : Succès.
+                - Alias : Succès.
+            - Fonction print : 
+                - Variable : Succès.
+                - Structures : Succès.
+                - Alias : Succès.
+        - Vérification sur les entier de parcours : 
+            - Fonction equal : 
+                - Variable : Succès.
+                - Structures : Succès.
+                - Alias : Succès.
+            - Fonction print : 
+                - Variable : Succès.
+                - Structures : Succès.
+                - Alias : Succès.
+    - Tests des modèles sans variables : 
+        - Modèle 4 : Succès.
+        - Modèle 5 : Succès.
+        - Modèle 6 : Succès.
+        - Modèle 7 : Succès.
+        - Modèle 8 : Succès.
+    - Tests d'exécution des modèles sans variables : 
+        - Modèle 4 : Succès (cf executable_sv_modele4.txt et executable_sv_origin_modele4.txt).
+        - Modèle 5 : Succès (cf executable_sv_modele5.txt et executable_sv_origin_modele5.txt).
+        - Modèle 6 : Succès (cf executable_sv_modele6.txt et executable_sv_origin_modele6.txt).
+        - Modèle 7 : Succès (cf executable_sv_modele7.txt et executable_sv_origin_modele7.txt).
+        - Modèle 8 : Succès (cf executable_sv_modele8.txt et executable_sv_origin_modele8.txt).
+    - Tests d'exécution des modèles avec variables : Différences sur affichage des tableaux et des chaines de caractères.
+        - Modèle 4 : Succès (cf executable_v_modele4.txt et executable_v_origin_modele4.txt).
+        - Modèle 5 : Succès (cf executable_v_modele5.txt et executable_v_origin_modele5.txt).
+        - Modèle 6 : Succès (cf executable_v_modele6.txt et executable_v_origin_modele6.txt).
+        - Modèle 7 : Succès (cf executable_v_modele7.txt et executable_v_origin_modele7.txt).
+        - Modèle 8 : Succès (cf executable_v_modele8.txt et executable_v_origin_modele8.txt).
+        - ta_ext_fig2a : Succès (cf executable_v_modelegit.txt, executable_v_origin_modelegit.txt et executable_origin_taextfig2a.txt).
+    - Tests affichage des variables avec des structures : 
+        - Structure contenant un tableau de chaine de caractères : Succès (cf executable_structures_imbriquees.txt).

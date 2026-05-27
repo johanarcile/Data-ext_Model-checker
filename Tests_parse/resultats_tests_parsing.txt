@@ -1,0 +1,289 @@
+Tests du parsing :
+    - Modèles :
+        - Modèle 4 : Succès.
+        - Modèle 5 : Succès.
+        - Modèle 6 : Succès.
+        - Modèle 7 : Succès.
+        - Modèle 8 : Succès.
+    - Fichier : 
+        - Fichier json vide : Succès, levée de l'erreur fichier vide.
+        - Fichier json sans contenu : Succès, levée de l'erreur absence de l'objet actions.
+    - Actions : 
+        - Absence de l'objet actions : Succès, levée de l'erreur absence de l'objet actions.
+        - Valeur de l'objet actions vide : 
+        - Type de valeur de l'objet actions : Succès.
+            - Objet : Succès, levée de l'erreur de type pour actions.
+            - Int : Succès, levée de l'erreur de type pour actions.
+            - String : Succès, levée de l'erreur de type pour actions. 
+            - Float : Succès, levée de l'erreur de type pour actions.
+        - Une valeur pour action de type : 
+            - Objet : Succès, levée de l'erreur de type.
+            - Float : Succès, levée de l'erreur de type.
+            - Int : Succès, levée de l'erreur de type.
+            - Tableau : Succès, levée de l'erreur de type.
+    - Clocks : 
+        - Absence de l'objet clocks : Succès, levée de l'erreur absence de l'objet clocks.
+        - Valeur de l'objet clocks vide : Succès.
+        - Type de valeur de l'objet clocks : 
+            - Objet : Succès, levée de l'erreur de type pour clocks.
+            - Int : Succès, levée de l'erreur de type pour clocks.
+            - String : Succès, levée de l'erreur de type pour clocks.
+            - Float : Succès, levée de l'erreur de type pour clocks.
+        - Une valeur pour clocks de type : 
+            - Objet : Succès, levée de l'erreur de type.
+            - Float : Succès, levée de l'erreur de type.
+            - Int : Succès, levée de l'erreur de type.
+            - Tableau : Succès, levée de l'erreur de type.
+    - Locations : 
+        - Absence de l'objet locations : Succès, levée de l'erreur d'absence de l'objet locations.
+        - Valeur de l'objet locations vide : Succès, levée de l'erreur de valeur de l'objet locations vide.
+        - Type de valeur de l'objet locations : 
+            - Objet : Succès, levée de l'erreur de type pour l'objet locations.
+            - Int : Succès, levée de l'erreur de type pour l'objet locations.
+            - Float : Succès, levée de l'erreur de type pour l'objet locations.
+            - String : Succès, levée de l'erreur de type pour l'objet locations.
+        - Une valeur pour locations de type : 
+            - Objet : Succès, levée de l'erreur de type pour une valeur de locations.
+            - Tableau : Succès, levée de l'erreur de type pour une valeur de locations.
+            - Int : Succès, levée de l'erreur de type pour une valeur de locations.
+            - Float : Succès, levée de l'erreur de type pour une valeur de locations.
+    - Localités : 
+        - Invariant : 
+            - Absence de l'objet de localité : Succès, levée de l'erreur pour le premier objet manquant.
+            - Valeur d'un objet localité vide : Succès, levée de l'erreur d'invariant null.
+            - Type de valeur d'un objet de localité : 
+                - Tableau : Succès, levée de l'erreur de type pour locations.
+                - Int : Succès, levée de l'erreur de type pour locations.
+                - String : Succès, levée de l'erreur de type pour locations.
+                - Float : Succès, levée de l'erreur de type pour locations.
+            - Absence de l'objet invariant : Succès, levée de l'erreur d'absence de l'objet invariant.
+            - Taille d'invariant : 
+                - Taille en ligne : Succès, levée de l'erreur de taille pour l'invariant.
+                - Taille en colonne : Succès, levée de l'erreur de taille pour l'invariant.
+            - Valeur de l'objet d'invariant vide : Succès, levée de l'erreur de taille pour l'invariant.
+            - Type de valeur de l'objet invariant :
+                - Objet : Succès, levée de l'erreur de type pour l'invariant.
+                - Tableau : Succès, levée de l'erreur de type pour l'invariant.
+                - String : Succès, levée de l'erreur de type pour l'invariant.
+                - Float : Succès, levée de l'erreur de type pour l'invariant.
+            - Une valeur pour invariant type (dimension 1): 
+                - Objet : Succès, levée de l'erreur de type pour l'invariant.
+                - Int : Succès, levée de l'erreur de type pour l'invariant.
+                - String : Succès, levée de l'erreur de type pour l'invariant.
+                - Float : Succès, levée de l'erreur de type pour l'invariant.
+            - Une valeur pour invariant type (dimension 2): 
+                - Objet : Succès, levée de l'erreur de type pour l'invariant.
+                - Int : Succès, levée de l'erreur de type pour l'invariant.
+                - String (autre que infty): Succès, levée de l'erreur de type pour l'invariant.
+                - Float : Echec, levée de l'erreur de type pour l'invariant.
+        - Transitions : 
+            - Absence de l'objet transitions : Succès, levée de l'erreur d'absence de l'objet transitions. 
+            - Valeur d'un objet de transitions vide : Succès, affichage du tableau de transitions vide.
+            - Valeur d'une valeur de la matrice d'invariant supérieure ou égale à un milliard : Succès, levée de l'erreur sur la valeur. (A revoir)
+            - Valeur d'une valeur de la matrice de garde d'une transition supérieure ou égale à un milliard : Succès, levée de l'erreur sur la valeur. (A revoir)
+            - Types :
+                - Type de valeur d'un objet transitions : 
+                    - Objet : Succès, levée de l'erreur de type pour transitions. 
+                    - String : Succès, levée de l'erreur de type pour transitions. 
+                    - Int : Succès, levée de l'erreur de type pour transitions. 
+                    - Float : Succès, levée de l'erreur de type pour transitions. 
+                - Une valeur pour transitions type : 
+                    - Objet : Succès, levée de l'erreur de type pour transitions. 
+                    - Int : Succès, levée de l'erreur de type pour transitions. 
+                    - String : Succès, levée de l'erreur de type pour transitions. 
+                    - Float : Succès, levée de l'erreur de type pour transitions. 
+                - Type de valeur d'action pour une transition : 
+                    - Objet : Succès, levée de l'erreur de type pour l'action de la transition.
+                    - Int : Succès, levée de l'erreur de type pour l'action de la transition.
+                    - Tableau : Succès, levée de l'erreur de type pour l'action de la transition.
+                    - Float : Succès, levée de l'erreur de type pour l'action de la transition.
+                - Type de valeur d'invariant pour une transition : 
+                    - Objet : Succès, levée de l'erreur de type pour l'invariant de la transition.
+                    - Int : Succès, levée de l'erreur de type pour l'invariant de la transition.
+                    - String : Succès, levée de l'erreur de type pour l'invariant de la transition.
+                    - Float : Succès, levée de l'erreur de type pour l'invariant de la transition.
+                    - Type d'une ligne de la matrice d'invariant : 
+                        - Objet : Succès, levée de l'erreur de type pour la ligne de la matrice de l'invariant.
+                        - Int : Succès, levée de l'erreur de type pour la ligne de la matrice de l'invariant.
+                        - Float : Succès, levée de l'erreur de type pour la ligne de la matrice de l'invariant.
+                        - String : Succès, levée de l'erreur de type pour la ligne de la matrice de l'invariant.
+                        - Type d'une valeur de l'invariant : 
+                            - Objet : Succès, levée de l'erreur de type pour une valeur de l'invariant.
+                            - Tableau : Succès, levée de l'erreur de type pour une valeur de l'invariant.
+                            - String (autre que infty) : Succès, levée de l'erreur de type pour une valeur de l'invariant.
+                            - Float : Echec, conversion en entier de la valeur.
+                - Type de valeur de reset pour une transition : 
+                    - Objet : Succès, levée de l'erreur de type pour reset.
+                    - Int : Succès, levée de l'erreur de type pour reset.
+                    - String : Succès, levée de l'erreur de type pour reset.
+                    - Float : Succès, levée de l'erreur de type pour reset.
+                    - Type d'une valeur du tableau reset : 
+                        - Objet : Succès, levée de l'erreur de type pour une valeur de reset.
+                        - Int : Succès, levée de l'erreur de type pour une valeur de reset.
+                        - Tableau : Succès, levée de l'erreur de type pour une valeur de reset.
+                        - Float : Succès, levée de l'erreur de type pour une valeur de reset.
+                - Type de valeur de localité d'entrée pour une transition : 
+                    - Objet : Succès, levée de l'erreur de type pour la localité d'entrée.
+                    - Int : Succès, levée de l'erreur de type pour la localité d'entrée.
+                    - Tableau : Succès, levée de l'erreur de type pour la localité d'entrée.
+                    - Float : Succès, levée de l'erreur de type pour la localité d'entrée.
+            - Taille :
+                - Transition : Succès, levée de l'erreur de taille pour la transition.
+                - Invariant : Succès, levée de l'erreur de taille pour l'invariant.
+                - Ligne de la matrice de l'invariant : Succès, levée de l'erreur de taille pour l'invariant. (A revoir)
+                - Reset : Succès, levée de l'erreur de taille pour le reset. 
+            - Définition : 
+                - Action non définie pour une transition : Succès, levée de l'erreur action non définie.
+                - Localité non définie pour une transition : Succès, levée de l'erreur localité non définie.
+                - Nom d'horloge non défini pour une transition : Succès, levée de l'erreur nom d'horloge non défini.
+    - Init : 
+        - Absence de l'objet init : Succès, levée de l'erreur d'absence de l'objet init.
+        - Valeur de l'objet init vide : Succès, levée de l'erreur de type init.
+        - Type de la valeur de l'objet init : 
+            - Objet : Succès, levée de l'erreur de type pour init.
+            - Tableau : Succès, levée de l'erreur de type pour init.
+            - Int : Succès, levée de l'erreur de type pour init.
+            - Float : Succès, levée de l'erreur de type pour init.
+        - Placement de la localité initiale au début de chaque tableau : Succès, placement de la localité initiale au début de chaque tableau.
+        - Localité initiale non définie : Succès, levée de l'erreur de localité initiale non définie.
+    - Doublons : 
+        - Actions : Succès, levée de l'erreur de détection de doublons pour actions.
+        - Clocks : Succès, levée de l'erreur de détection de doublons pour clocks.
+        - Locations : Succès, levée de l'erreur de détection de doublons pour locations.
+        - Reset : Succès, levée de l'erreur de détection de doublons pour reset.
+    - Tests de différence maj/min : 
+        - Init : Succès, levée de l'erreur d'absence de définition pour init.
+        - Reset : Succès, levée de l'erreur d'absence de définition pour reset.
+        - Action de transition : Succès, levée de l'erreur d'absence de définition pour l'action de transition.
+        - Location_in : Succès, levée de l'erreur d'absence de définition pour la localité d'entrée de la transition.
+    - Variables : 
+        - Absence de l'objet variables : Succès, levée de l'erreur d'absence de l'objet variables.
+        - Type de l'objet variables : 
+            - Tableau : Succès, levée de l'erreur de type pour l'objet variables.
+            - String : Succès, levée de l'erreur de type pour l'objet variables.
+            - Int : Succès, levée de l'erreur de type pour l'objet variables.
+            - Float : Succès, levée de l'erreur de type pour l'objet variables.
+        - Definition :  
+            - Absence de l'objet definition : Succès, levée de l'erreur d'absence de l'objet definition.
+            - Type de l'objet definition : 
+                - Tableau : Succès, levée de l'erreur de type pour l'objet definition.
+                - String : Succès, levée de l'erreur de type pour l'objet definition.
+                - Int : Succès, levée de l'erreur de type pour l'objet definition.
+                - Float : Succès, levée de l'erreur de type pour l'objet definition.
+            - Absence de l'objet define : Succès, levée de l'erreur d'absence de l'objet define.
+            - Type de l'objet define : 
+                - Objet : Succès, levée de l'erreur de type pour l'objet define.
+                - String : Succès, levée de l'erreur de type pour l'objet define.
+                - Int : Succès, levée de l'erreur de type pour l'objet define.
+                - Float : Succès, levée de l'erreur de type pour l'objet define.
+            - Type d'une ligne de code de l'objet define : 
+                - Tableau : Succès, levée de l'erreur de type la ligne de code de l'objet define.
+                - Objet : Succès, levée de l'erreur de type la ligne de code de l'objet define.
+                - Int : Succès, levée de l'erreur de type la ligne de code de l'objet define.
+                - Float : Succès, levée de l'erreur de type la ligne de code de l'objet define.
+            - Typedef : 
+                - Absence de l'objet typedef : Succès, levée de l'erreur d'absence de l'objet typedef.
+                - Type de l'objet typedef : 
+                    - Tableau : Succès, levée de l'erreur de type pour l'objet typedef.
+                    - String : Succès, levée de l'erreur de type pour l'objet typedef.
+                    - Int : Succès, levée de l'erreur de type pour l'objet typedef.
+                    - Float : Succès, levée de l'erreur de type pour l'objet typedef.
+                - Absence de l'objet struct : Succès, levée de l'erreur d'absence de l'objet struct.
+                - Type de l'objet struct : 
+                    - Tableau : Succès, levée de l'erreur de type pour l'objet struct.
+                    - String : Succès, levée de l'erreur de type pour l'objet struct.
+                    - Int : Succès, levée de l'erreur de type pour l'objet struct.
+                    - Float : Succès, levée de l'erreur de type pour l'objet struct.
+                - Type d'un typedef struct : 
+                    - Objet : Succès, levée de l'erreur de type pour le typedef struct.
+                    - String : Succès, levée de l'erreur de type pour le typedef struct.
+                    - Int : Succès, levée de l'erreur de type pour le typedef struct.
+                    - Float : Succès, levée de l'erreur de type pour le typedef struct.
+                - Type d'une ligne de code d'un typedef struct : 
+                    - Tableau : Succès, levée de l'erreur de type la ligne de code d'un typedef struct.
+                    - Objet : Succès, levée de l'erreur de type la ligne de code d'un typedef struct.
+                    - Int : Succès, levée de l'erreur de type la ligne de code d'un typedef struct.
+                    - Float : Succès, levée de l'erreur de type la ligne de code d'un typedef struct.
+                - Test sur ordonnancement des typedef struct types : Succès, placement de variable en dernier.
+                - Absence de l'objet primitive : Succès, levée de l'erreur d'absence de l'objet primitive.
+                - Type de l'objet primitive : 
+                    - Tableau : Succès, levée de l'erreur de type pour l'objet primitive.
+                    - String : Succès, levée de l'erreur de type pour l'objet primitive.
+                    - Int : Succès, levée de l'erreur de type pour l'objet primitive.
+                    - Float : Succès, levée de l'erreur de type pour l'objet primitive.
+                - Type d'un typedef primitive : 
+                    - Objet : Succès, levée de l'erreur de type pour le typedef primitive.
+                    - String : Succès, levée de l'erreur de type pour le typedef primitive.
+                    - Int : Succès, levée de l'erreur de type pour le typedef primitive.
+                    - Float : Succès, levée de l'erreur de type pour le typedef primitive. 
+                - Type d'une ligne de code d'un typedef primitive : 
+                    - Tableau : Succès, levée de l'erreur de type la ligne de code d'un typedef primitive.
+                    - Objet : Succès, levée de l'erreur de type la ligne de code d'un typedef primitive.
+                    - Int : Succès, levée de l'erreur de type la ligne de code d'un typedef primitive.
+                    - Float : Succès, levée de l'erreur de type la ligne de code d'un typedef primitive.
+                - Absence de l'objet variable : Succès, levée de l'erreur d'absence de définition du typedef type variable.
+                - Type de l'objet variable : 
+                    - Objet : Succès, levée de l'erreur de type pour l'objet variable.
+                    - String : Succès, levée de l'erreur de type pour l'objet variable.
+                    - Int : Succès, levée de l'erreur de type pour l'objet variable.
+                    - Float : Succès, levée de l'erreur de type pour l'objet variable.
+        - Absence de l'objet init_variables : Succès, levée de l'erreur d'absence de l'objet init_variables.
+        - Type de l'objet init_variables : 
+            - Objet : Succès, levée de l'erreur de type pour l'objet init_variables.
+            - String : Succès, levée de l'erreur de type pour l'objet init_variables.
+            - Int : Succès, levée de l'erreur de type pour l'objet init_variables.
+            - Float : Succès, levée de l'erreur de type pour l'objet init_variables.
+        - Type d'une ligne de code d'init_variables : 
+            - Tableau : Succès, levée de l'erreur de type la ligne de code d'init_variables.
+            - Objet : Succès, levée de l'erreur de type la ligne de code d'init_variables.
+            - Int : Succès, levée de l'erreur de type la ligne de code d'init_variables.
+            - Float : Succès, levée de l'erreur de type la ligne de code d'init_variables.
+        - Absence de l'objet update_functions : Succès, levée de l'erreur d'absence de l'objet update_functions.
+        - Absence d'une fonction d'update : Succès, levée de l'erreur de son absence.
+        - Type de l'objet update_functions : 
+            - Tableau : Succès, levée de l'erreur de type pour l'objet update_functions.
+            - String : Succès, levée de l'erreur de type pour l'objet update_functions.
+            - Int : Succès, levée de l'erreur de type pour l'objet update_functions.
+            - Float : Succès, levée de l'erreur de type pour l'objet update_functions.
+        - Type d'une fonction de mise à jour : 
+            - String : Succès, levée de l'erreur de type pour la fonction d'upadate.
+            - Objet : Succès, levée de l'erreur de type pour la fonction d'upadate.
+            - Int : Succès, levée de l'erreur de type pour la fonction d'upadate.
+            - Float : Succès, levée de l'erreur de type pour la fonction d'upadate.
+        - Type d'une ligne de code d'une fonction de mise à jour : 
+            - Tableau : Succès, levée de l'erreur de type la ligne de code d'une fonction d'update.
+            - Objet : Succès, levée de l'erreur de type la ligne de code d'une fonction d'update.
+            - Int : Succès, levée de l'erreur de type la ligne de code d'une fonction d'update.
+            - Float : Succès, levée de l'erreur de type la ligne de code d'une fonction d'update.
+        - Absence de l'objet constraints : Succès, levée de l'erreur d'absence de l'objet constraints.
+        - Absence d'une fonction de contraintes : Succès, levée de l'erreur de son absence.
+        - Type de l'objet constraints : 
+            - Tableau : Succès, levée de l'erreur de type pour l'objet constraints.
+            - String : Succès, levée de l'erreur de type pour l'objet constraints.
+            - Int : Succès, levée de l'erreur de type pour l'objet constraints.
+            - Float : Succès, levée de l'erreur de type pour l'objet constraints.
+        - Type d'une fonction de contraintes : 
+            - String : Succès, levée de l'erreur de type pour la fonction de contraintes.
+            - Objet : Succès, levée de l'erreur de type pour la fonction de contraintes.
+            - Int : Succès, levée de l'erreur de type pour la fonction de contraintes.
+            - Float : Succès, levée de l'erreur de type pour la fonction de contraintes.
+        - Type d'une ligne de code d'une fonction de contraintes : 
+            - Tableau : Succès, levée de l'erreur de type la ligne de code d'une fonction de contraintes.
+            - Objet : Succès, levée de l'erreur de type la ligne de code d'une fonction de contraintes.
+            - Int : Succès, levée de l'erreur de type la ligne de code d'une fonction de contraintes.
+            - Float : Succès, levée de l'erreur de type la ligne de code d'une fonction de contraintes.
+        - Modèles : 
+            - 4 : Succès.
+            - 5 : Succès.
+            - 6 : Succès.
+            - 7 : Succès.
+            - 8 : Succès.
+        - Taille des lignes de code : 
+            - Definition : 
+                - Define : Succès.
+                - Typedef : 
+                    - Alias : Succès.
+                    - Structure : Succès.
+            - Init_variables : Succès.
+            - Update_functions : Succès.
+            - Constraints : Succès.

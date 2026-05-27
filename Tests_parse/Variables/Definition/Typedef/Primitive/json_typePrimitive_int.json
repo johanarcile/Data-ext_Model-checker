@@ -1,0 +1,109 @@
+{
+    "actions": ["a", "b", "c"],
+    "clocks": ["x", "y"],
+    "locations": ["l0", "l1", "l2", "l3"],
+    "l0": {
+        "invariant": [[0,0,0], [16,0,"infty"], [16,"infty",0]],
+        "transitions": [
+            ["a", [[0,0,-1], ["infty",0,"infty"], ["infty","infty",0]], [], "l1"],
+            ["c", [[0,-1,0], ["infty",0,"infty"], ["infty","infty",0]], [], "l2"]
+        ]
+    },
+    "l1": {
+        "invariant": [[0,0,0], [16,0,"infty"], [16,"infty",0]],
+        "transitions": [["c", [[0,-1,0], ["infty",0,"infty"], ["infty","infty",0]], [], "l3"]]
+    },
+    "l2": {
+        "invariant": [[0,0,0], [16,0,"infty"], [16,"infty",0]],
+        "transitions": [["a", [[0,0,-1], ["infty",0,"infty"], ["infty","infty",0]], [], "l3"]]
+    },
+    "l3": {
+        "invariant": [[0,0,0], [16,0,"infty"], [16,"infty",0]],
+        "transitions": [
+            ["b", [[0,-8,-8], ["infty",0,"infty"], ["infty","infty",0]], ["x", "y"], "l0"],
+            ["b", [[0,-1,-1], ["infty",0,"infty"], ["infty","infty",0]], ["x"], "l0"]
+        ]
+    },
+    "init": "l0",
+    "variables": {
+        "definition": {
+            "define" : [
+                "#define TABLE_SIZE 3",
+                "#define NAME_SIZE 50"
+            ],
+            "typedef": {
+                "struct": {
+                    "variable": [
+                        "    int v;",
+                        "    int x;",
+                        "    int table[TABLE_SIZE];   // tableau d'int",
+                        "    int table_size;          // nombre d'éléments utilisés",
+                        "    char name[NAME_SIZE];    // string",
+                        "    bool active;             // booléen",
+                        "    name nom;"
+                    ]
+                },
+                "primitive": 0
+            }
+        },
+        "init_variables": [
+            "    variable.v = 0;",
+            "    variable.x = 0;",
+            "    variable.active=false;",
+            "    variable.table_size = 3;",
+            "    variable.table[0] = 0;",
+            "    variable.table[1] = 0;",
+            "    variable.table[2] = 0;",
+            "    strcpy(variable.name, \"start\");"
+        ],
+        "update_functions": {
+            "a": [
+                "    if (var.v + 2 <= 30 && var.v + 2 >= -10){",
+                "        var.v += 2;",
+                "        var.x *= 2;",
+                "        var.active = true;",
+                "        // var.table[0]++;",
+                "        // var.table[1] = var.v;",
+                "        // var.table[2] = var.v;",
+                "        // snprintf(var.name, NAME_SIZE, \"transition a\");",
+                "    }",
+                "    return var;"
+            ],
+            "b": [
+                "    if (var.v *2 <= 30 && var.v + 1 >= -10){",
+                "        var.v *= 2;",
+                "        var.x += 2;",
+                "        var.active = true;",
+                "        // var.table[0]++;",
+                "        // var.table[1] = var.v;",
+                "        // var.table[2] = var.v;",
+                "        // snprintf(var.name, NAME_SIZE, \"transition b\");",
+                "    }",
+                "    return var;"
+            ],
+            "c": [
+                "    if (var.v + 1 <= 30 && var.v * 2 >= -10) {",
+                "        var.v += 1;",
+                "        var.x += 1;",
+                "        var.active = true;",
+                "        //   var.table[0]++;",
+                "        //   var.table[1] = var.v;",
+                "        //   var.table[2] = var.v;",
+                "        //   snprintf(var.name, NAME_SIZE, \"transition c\");",
+                "    }",
+                "    return var;"
+            ]
+        },
+        "constraints": {
+            "a": [
+                "return true;"
+            ],
+            "b": [
+                "return true;"
+            ],
+            "c": [
+                "return true;"
+            ]
+        }
+    }
+}

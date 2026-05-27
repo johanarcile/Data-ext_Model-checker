@@ -179,7 +179,6 @@ State* get_successors(TA* ta, State* source, int* num_successors) {
     }
 
     return successors;
-
 }
 
 //Print contents of a state
@@ -201,6 +200,5 @@ void explore_state_space_ta(TA* ta) {
     State* successors = get_successors(ta, init_state, &num_successors); //Compute successors of init_state
     for (int i = 0; i < num_successors; i++) {
         print_state(&successors[i], ta->locations); //Print successor at index i
-    }
-        
+    }      
 }

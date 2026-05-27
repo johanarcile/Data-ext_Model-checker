@@ -671,6 +671,11 @@ void parse_model_json(const char* json_donnees){
         } //Détection d'une erreur de type pour la ligne de code i de define
 
         def_variables_define[i] = strdup(define_code_line->valuestring);
+        if(strlen(def_variables_define[i]) >= 1000){
+            printf("Erreur de syntaxe : La ligne de code %d de define depasse 999 caracteres.\n", i);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une taille trop grande pour la ligne i de define
     }
 
     cJSON* typedef_json = cJSON_GetObjectItemCaseSensitive(definition_json, "typedef"); //Récupération de la valeur associée à l'item typedef
@@ -830,6 +835,12 @@ void parse_model_json(const char* json_donnees){
             } //Détection d'une erreur de type pour la ligne de code j de la structure
 
             def_variables_typedef[0][i][j] = strdup(structure_code_line->valuestring);
+            if(strlen(def_variables_typedef[0][i][j]) >= 1000){
+                printf("Erreur de syntaxe : La ligne de code %d de la structure %s depasse 999 caracteres.\n", j, label_typedef[0][i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une taille trop grande pour la ligne de code j de la structure
+
             int count_dim = 0;
             for(int k = 0; k < strlen(def_variables_typedef[0][i][j]); k++){
                 if((def_variables_typedef[0][i][j][k] == '*')||(def_variables_typedef[0][i][j][k] == '[')) count_dim++;
@@ -945,6 +956,12 @@ void parse_model_json(const char* json_donnees){
             } //Détection d'une erreur de type pour la ligne de code j de l'alias
 
             def_variables_typedef[1][i][j] = strdup(alias_code_line->valuestring);
+            if(strlen(def_variables_typedef[1][i][j]) >= 1000){
+                printf("Erreur de syntaxe : La ligne de code %d de l'alias %s depasse 999 caracteres.\n", j, label_typedef[1][i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une taille trop grande pour la ligne de code j de l'alias
+
             int count_dim = 0;
             for(int k = 0; k < strlen(def_variables_typedef[1][i][j]); k++){
                 if((def_variables_typedef[1][i][j][k] == '*')||(def_variables_typedef[1][i][j][k] == '[')) count_dim++;
@@ -991,6 +1008,11 @@ void parse_model_json(const char* json_donnees){
         } //Détection d'une erreur de type pour la ligne de code i de la fonction init_variables
 
         init_variables_function[i] = strdup(init_variables_code_line->valuestring);
+        if(strlen(init_variables_function[i]) >= 1000){
+            printf("Erreur de syntaxe : La ligne de code %d de init_variables depasse 999 caracteres.\n", i);
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        } //Détection d'une taille trop grande pour la ligne de code i de la fonction init_variables
     }
 
     //Parsing des update_functions
@@ -1059,6 +1081,11 @@ void parse_model_json(const char* json_donnees){
             } //Détection d'une erreur de type pour la ligne j de la fonction d'update de l'action i
 
             update_functions[i][j] = strdup(update_code_line->valuestring);
+            if(strlen(update_functions[i][j]) >= 1000){
+                printf("Erreur de syntaxe : La ligne de code %d de la fonction d'udpate de l'action %s depasse 999 caracteres.\n", j, actions[i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une taille trop grande pour la ligne de code j de la fonction d'update de l'action i
         }
     }
 
@@ -1127,6 +1154,11 @@ void parse_model_json(const char* json_donnees){
             } //Détection d'une erreur de type pour la ligne j de la fonction de contrainte de l'action i
 
             constraints_functions[i][j] = strdup(constraint_code_line->valuestring);
+            if(strlen(constraints_functions[i][j]) >= 1000){
+                printf("Erreur de syntaxe : La ligne de code %d de la fonction de contrainte de l'action %s depasse 999 caracteres.\n", j, actions[i]);
+                cJSON_Delete(json);
+                exit(EXIT_FAILURE);
+            } //Détection d'une taille trop grande pour la ligne de code j de la fonction de contrainte de l'action i
         }
     }
     cJSON_Delete(json);

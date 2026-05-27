@@ -1,0 +1,6 @@
+{
+    "actions": ["a", "b", "c"],
+    "clocks": ["x", "y"],
+    "locations": ["l0", "l1"],
+    "init": "l0"
+}

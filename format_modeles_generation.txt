@@ -1,0 +1,29 @@
+Attendus du code des fonctions de génération : 
+    - Aucun espace en fin de ligne.
+    - Taille maximale des lignes : 1000 caractères.
+    - Les comparaisons se font sur les tableau pour les alias et structures contenus dans la structure Variable. Elles se font sur les adresses pour les structure et alias contenus dans une autre structure que Variable.
+    - generation_structure_DBM_h : Fichier structure_DBM.h
+        - '#define NB_CLOCKS structure_DBM_nbclocks' : structure_DBM_nbclocks est remplacé par la valeur de nombre d'horloges par la fonction.
+    - generation_model_c : Fichier model.c
+        - '    int nb_locations = model_c_nblocations;' : model_c_nblocations est remplacé par la valeur de nombre de localités par la fonction.
+        - '    int nb_actions = model_c_nbactions;' : model_c_nbactions est remplacé par la valeur de nombre d'actions par la fonction.
+        - '    model_c_locations' : Lorsque model_c_locations est détecté, la fonction va le remplacer par une suite de code pour les affectations des noms de localité dans le tabelau : 
+            - locations[0] = "nom_localite_initiale"; ...
+        - '    model_c_invariants' : Lorsque model_c_invariants est détecté, la fonction va le remplacer par une suite de code pour les affectations des invariants dans le tableau : 
+            - static DBM i_0 = {{0,0,0},{2,0,infty},{2,infty,0}}; ...; invariants[0] = &i_0; ...
+        - '    model_c_actions' : Lorsque model_c_actions est détecté, la fonction va le remplacer par une suite de code pour les affectations des actions dans le tableau : 
+            - actions[0] = "a"; ...
+        - '    model_c_transitions' : Lorsque model_c_transitions est détecté, la fonction va le remplacer par une suite de code pour les affectations du nombre de transitions par localité, pour l'affectation de la taille de la transition et pour l'affectation des valeurs de transitions dans les tableau nb_trans_par_location et transitions : 
+            - nb_trans_par_location[0] = 1; ...; transitions[0] = malloc(nb_trans_par_location[0] * sizeof(Transition)); ...; transitions[0][0] = (Transition){.location_in = 0, .label_action = 0, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}}; ...
+        - '    model_c_init_variables' : model_c_init_variables est remplacé par les lignes de code de la fonction init_variables.
+        - 'model_c_update_functions' : model_c_update_functions est remplacé par les fonctions d'update pour chaque action.
+        - '    model_c_init_update_functions' : model_c_init_update_functions est remplacé par l'initialisation du tableau des fonctions d'update.
+        - 'model_c_constraints' : model_c_constraints est remplacé par les fonctions de contraintes pour chaque action.
+        - '    model_c_init_constraints' : model_c_init_constraints est remplacé par l'initialisation du tableau des fonctions de contraintes.
+    - generation_structure_variable_h : Fichier structure_variable.h
+        - 'structure_variable_h_define' : structure_variable_h_define est remplacé par les lignes de code placées dans le tableau define du fichier json.
+        - 'structure_variable_h_typedef_alias' : structure_variable_h_typedef_alias est remplacé par les lignes de code de l'objet alias du fichier json.
+        - 'structure_variable_h_typedef_structure' : structure_variable_h_typedef_structure est remplacé par les lignes de code de l'objet structure du fichier json.
+    - generation_variable_c : Fichier variable.C 
+        - '  variable_c_equal_function' : variable_c_equal_function est remplacé par le contenu de la fonction d'équivalence.
+        - '  variable_c_print_function' : variable_c_print_function est remplacé par la fonction d'afichage de la variable.

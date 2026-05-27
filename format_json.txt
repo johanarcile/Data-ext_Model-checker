@@ -1,0 +1,135 @@
+Règles du format json : 
+    - Le fichier json peut contenir : 
+        - Des objets javascript.
+        - Des tableaux.
+        - Des chaines de caractères.
+        - Des nombres.
+        - Des booléens.
+        - Des références.
+        - Des lignes.
+        - Le symbole null.
+    - Formalisme json (exemples valides) : 
+        - Les objets ne peuvent contenir que des lites d'objets (clé) : 
+            - {}
+            - "Item_name" : {}
+            - { "Sous_item_name" : <value> }
+            - "Item_name" : { "Sous_item_name" : <value> }
+            - Les objets peuvent contenir toute valeur sauf des objets. 
+        - Les tableaux peuvent contenir tout type de valeur sauf des objets : 
+            - []
+            - ["a"]
+            - [0]
+            - [0.0]
+            - [{}]
+            - [true]
+            - [null]
+        - Les chaines de caractères sont impérativements entre guillemets, le type primitif char n'est pas reconnu en json : "chaine"
+        - Les nombres peuvent être des entiers ou des réels : 
+            - 0
+            - 0.0
+        - Les booléens peuvent prendre deux valeur {true, false}.
+        - Les références sont des pointeurs sur une autre donnée qui doit elle même être valide.
+        - Les lignes peuvent être utilisées pour convertir du JSON en JSON sans à passer par le parsing des données.
+        - Le symbole null représente le vide, il n'est pas le symbole pour une chaine de caractère vide comme dans les autres langages.
+
+Explications du format json retenu : 
+    - L'ordre des objets est indifférent.
+    - Possibilité d'ajouter des objets sauf exceptions (noms différents de ceux déjà présents).
+        - Liste des exceptions, il est incorrect d'ajouter des objets dans les objets suivants : 
+            - Actions.
+            - Clocks.
+            - Locations.
+            - Init.
+            - Invariant.
+            - Transitions.
+            - Define.
+            - Structure ne peut contenir que des objets contenant des lignes de code de déclaration de structures.
+            - Variable.
+            - Les objets contenant les lignes de code d'autres structures que Variable.
+            - Alias ne peut contenir que des objets contenant des lignes de code d'alias.
+            - Les objets contenant les lignes de code des alias.
+            - Init_variables.
+            - Les objets contenant les lignes de code des fonctions d'update.
+            - Les objets contenant les lignes de code des fonctions de contraintes.
+    - Type et syntaxe des valeurs d'objets : 
+        - Actions : Tableau de chaines de caractères (pas d'ordre précis).
+        - Clocks : Tableau de chaines de caractères (pas d'ordre précis).
+        - Locations : Tableau de chaines de caractères (pas d'ordre précis). 
+        - Init : Chaine de caractères contenant le nom de la localité initiale.
+        - Objets pour chaque nom de localité : Objet contenant au moins deux objets :
+            - Invariant pour chaque localité (même s'il n'y en a pas, matrice): Tableau à deux dimensions d'entiers et de chaine de caractères "infty" qui représente l'infini comme borne pour une valeur.
+            - Transitions : Tableau à deux dimensions de transitions (si aucune action n'est définie, ce tableau doit être vide) :
+                - Un tableau de transition (représentant une transition pour une localité donnée, taille 4) : 
+                    - indice 0 : Une chaine de caractère contenant le nom de l'action de la transition ou null s'il n'y a pas d'action.
+                    - indice 1 : Invariant de transition (guard) qui est comme l'invariant de localité, une matrice à deux dimensions qui doit respecter la même syntaxe.
+                    - indice 2 : L'ensemble des horloges à reset (reset) qui doit être un tableau à une dimension contenant les noms des horloges à reset sous forme de chaines de caractères (pas d'ordre).
+                    - indice 3 : Le nom de la locatité d'entrée de l'arc de transition (location_in ou l') sous forme d'une chaine de caractères.
+        - Variables : Objet contenant au moins 4 objets : 
+            - Definition : Objet contenant au moins deux objets :
+                - Define : Tableau des lignes de code de déclaration des constantes symboliques (#define) ainsi que les typedef types pour lesquels l'utilisateur ne souhaite pas une comparaison sur les valeurs mais sur les adresses (alias et typedef Structure).
+                - Typedef : Objet contenant au moins deux objets : 
+                    - Structure : Objet contenant au moins un objet : 
+                        - Variable : Tableau des lignes de code (chaines de caractères) des champs de la structure Variable.
+                        - D'autres structures peuvent être ajoutées de la même manière que Variable. 
+                        - Les items de chaque objet doivent commencer par une majuscule et l'item Variable est attendu.
+                    - Alias : Objet contenant 0 ou plus objets : 
+                        - Les items sont les noms des alias.
+                        - Chaque objet contient un tableau la ligne de code (chaine de caractères) de la déclaration de l'alias (une seule ligne (chaine de caractères)) : 
+                            - Exemple : "typedef int nom_alias;\n".
+                        - Les items doivent contenir la même chaine de caractères que celle donnée comme nom : 
+                            - Exemple : Si l'alias a été déclaré comme nom_alias alors l'item devra être "nom_alias".
+            - Init_variables : Tableau des lignes de code de la fonction init_variables.
+            - Update_functions : Objet contenant au moins autant d'objets que d'actions :
+                - Chaque item d'objet est le nom d'une action et contient un tableau des lignes de code (chaines de caractères) de la fonction d'update associée à cette même action.
+            - Constraints : Objet contenant au moins autant d'objets que d'actions : 
+                - Chaque item d'objet est le nom d'une action et contient un tableau des lignes de code (chaines de caractères) de la fonction de contraintes associée à cette même action.
+    - Contraintes dans le code concernant les variables : Chaque objet Variable utilisé dans les fonctions d'update, de contrainte, init_variable doit être nommé variable.
+
+
+Exemple : 
+
+Considérons n actions, m horloges, l localités. 
+
+{
+    "actions": [ <liste des actions> ],
+    "clocks": [ <liste des horloges> ],
+    "l0": {
+        "invariant": [[0, i01, i02, ..., i0m], [i10, 0, i12, ..., i1m], ..., [im0, im1, ..., im(m-1), 0]],
+        "transitions": [[<action>, [<guards>], [<reset>], l'], ...]
+    },
+    .
+    .
+    .,
+    "init": "l0",
+    "variables": {
+        "definition": {
+            "define": [<lignes de code commençant par #define>],
+            "typedef": {
+                "Structure": {
+                    "variable": [<lignes de code du contenu de la structure variable>],
+                    .
+                    .
+                    .
+                },
+                "Alias": {
+                    "nom_type" : [<une seule ligne de code du type>], 
+                    .
+                    .
+                }
+            }
+        },
+        "init_variables": [<lignes de code de la fonction init_variables>],
+        "update_functions": {
+            "a0": [<lignes de code de la fonction update_a0>],
+            .
+            .
+            .
+        },
+        "constraints": {
+            "a0": [<lignes de code de la fonction const_a0>],
+            .
+            .
+            .
+        }
+    }
+}
