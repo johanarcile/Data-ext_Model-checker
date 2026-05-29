@@ -8,7 +8,7 @@
 
 //Définition des champs de ParseInfos
 int nb_actions; //Variable pour conserver le nombre d'actions
-char** actions; //Tableau des nom des actions
+char** actions; //Tableau des noms des actions
 int nb_clocks; //Variable pour conserver le nombre d'horloges
 char** names_clocks; //Tableau de sauvegarde des noms d'horloges
 int nb_locations; //Variable pour conserver le nombre de localités
@@ -23,7 +23,7 @@ int** nb_clines_typedef;
 int nb_typedef_structure;
 int nb_typedef_alias;
 char*** label_typedef;
-line*** def_variables_typedef; //Taleau des lignes de codes des typdef
+line*** def_variables_typedef; //Tableau des lignes de codes des typdef
 int*** dim_elements_typedef_variables; //Sauvegarde des dimensions des champs de la structure définie pour Variable qui servira pour l'écriture des fonctions de comparaison et d'affichage du fichier variable.c
 int nb_clines_init_variables;
 line* init_variables_function;
@@ -40,11 +40,11 @@ char* read_model_json(const char* filename){
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'ouverture du fichier
 
-    fseek(file, 0, SEEK_END); //Place la tête de lecture ou curseur à la fin du fichier pour obtenir sa taille
+    fseek(file, 0, SEEK_END); //Place la tête de lecture ou le curseur à la fin du fichier pour obtenir sa taille
     long length = ftell(file); //Récupération de la taille du fichier passé en entrée
-    fseek(file, 0, SEEK_SET); //Replace la tête de lecture ou curseur au début du fichier
+    fseek(file, 0, SEEK_SET); //Replace la tête de lecture ou le curseur au début du fichier
 
-    char* contenu = (char*)malloc(length+1); //Création d'une chaine de caractère vide de même taille que le fichier.
+    char* contenu = (char*)malloc(length+1); //Création d'une chaine de caractères vide de même taille que le fichier.
     if(!contenu){
         perror("Erreur d'allocation memoire.\n");
         fclose(file);
@@ -52,7 +52,7 @@ char* read_model_json(const char* filename){
     } //Détection d'une erreur d'allocation mémoire pour la chaine
 
     fread(contenu, 1, length, file); //Copie chaque caractère du fichier json lu dans la chaine contenu
-    contenu[length] = '\0'; //Place le marqueur de fin de le chaine
+    contenu[length] = '\0'; //Place le marqueur de fin de la chaine
     fclose(file);
     return contenu;
 }
@@ -134,7 +134,7 @@ void parse_model_json(const char* json_donnees){
         printf("Erreur d'allocation memoire pour le tableau des noms d'horloges (names_clocks).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
-    } //Détection d'un erreur d'allocation mémoire pour names_clocks
+    } //Détection d'une erreur d'allocation mémoire pour names_clocks
 
     for(int i = 0; i < length_clocks; i++){
         cJSON* clock = cJSON_GetArrayItem(clocks_json, i); //Récupération de la valeur de clocks à l'indice i
@@ -182,7 +182,7 @@ void parse_model_json(const char* json_donnees){
     } //Détection d'une absence de localité dans la définition 
 
     nb_locations = length_locations; //Récupération du nombre de localités définies
-    locations = malloc((length_locations+1) * sizeof(char*)); //Allocations de l'espace mémoire pour le tableau des localités
+    locations = malloc((length_locations+1) * sizeof(char*)); //Allocation de l'espace mémoire pour le tableau des localités
     if(!locations){
         printf("Erreur d'allocation memoire pour le tableau des localites (locations).\n");
         cJSON_Delete(json);
@@ -215,7 +215,7 @@ void parse_model_json(const char* json_donnees){
     }
 
     //Parsing de la localité initiale
-    cJSON* init_json = cJSON_GetObjectItemCaseSensitive(json, "init"); //Récupéartion de la chaine de caractères du nom de la localité initiale
+    cJSON* init_json = cJSON_GetObjectItemCaseSensitive(json, "init"); //Récupération de la chaine de caractères du nom de la localité initiale
     if(!init_json){
         printf("Erreur de syntaxe : Aucune localite initiale definie.\n");
         cJSON_Delete(json);
@@ -409,12 +409,12 @@ void parse_model_json(const char* json_donnees){
                 printf("Erreur de syntaxe : La taille de la transition %d de la localite %s est incorrecte.\n", k, locations[i]);
                 cJSON_Delete(json);
                 exit(EXIT_FAILURE);
-            } //Détection d'une taille de transition inattendue pour la ransition k de la localité i
+            } //Détection d'une taille de transition inattendue pour la transition k de la localité i
 
             for(int l = 0; l < length_transition; l++){
                 cJSON* transition_value_json = cJSON_GetArrayItem(transition_json, l); //Récupération de chaque valeur de la transition k de la localité i
                 if(!transition_value_json){
-                    printf("Erreur de syntaxe : La valeur d'indice %l de la transition %d de la localite %s est vide.\n", k, locations[i]);
+                    printf("Erreur de syntaxe : La valeur d'indice %d de la transition %d de la localite %s est vide.\n", l, k, locations[i]);
                     cJSON_Delete(json);
                     exit(EXIT_FAILURE);
                 } //Détection d'une absence de définition de la valeur l de la transition k de la localité i
@@ -494,7 +494,7 @@ void parse_model_json(const char* json_donnees){
                                 } //Détection d'une absence de définition d'une valeur de garde de la transition k de la localité i
 
                                 if(cJSON_IsNumber(transition_value_guard_value_json)){
-                                    transitions[i][k]->guard[m][n] = transition_value_guard_value_json->valueint; //Si la valeur est un nombre, alore elle est récupérée dans l'invariant de la transition k de la localité i à l'indice [m][n]                                   
+                                    transitions[i][k]->guard[m][n] = transition_value_guard_value_json->valueint; //Si la valeur est un nombre, alors elle est récupérée dans l'invariant de la transition k de la localité i à l'indice [m][n]                                   
                                     if(transitions[i][k]->guard[m][n] >= limit){
                                         printf("Erreur de syntaxe : La valeur de garde d'indice [%d][%d] de la transition %d de la localite %s est superieure a la limite fixee (%d).\n", m, n, k, locations[i], limit);
                                         cJSON_Delete(json);
@@ -506,7 +506,7 @@ void parse_model_json(const char* json_donnees){
                                     printf("Erreur de syntaxe : Le type de la valeur de garde d'indice [%d][%d] de la transition %d de la localite %s est incorrect.\nType attendu : Int ou String infty.\n", m, n, k, locations[i]);
                                     cJSON_Delete(json);
                                     exit(EXIT_FAILURE);
-                                } //Détection d'une erreur de type pour une valeur de garde de la transition k de la lcoalité i
+                                } //Détection d'une erreur de type pour une valeur de garde de la transition k de la localité i
                             }
                         }
                         break;
@@ -539,7 +539,7 @@ void parse_model_json(const char* json_donnees){
                             printf("Erreur d'allocation memoire pour le tableau de chaine de caractère temporaire de verification de doublons pour l'ensemble reset de la transition %d de la localite %s.\n", k, locations[i]);
                             cJSON_Delete(json);
                             exit(EXIT_FAILURE);
-                        } //Détection d'une erreur d'allocation mémoire por doublons_reset
+                        } //Détection d'une erreur d'allocation mémoire pour doublons_reset
 
                         for(int m = 0; m < length_transition_array; m++){
                             cJSON* transition_value_reset_json = cJSON_GetArrayItem(transition_value_json, m); //Récupération du nom de l'horloge à reset pour la transition k de la localité i
@@ -555,7 +555,7 @@ void parse_model_json(const char* json_donnees){
                                 exit(EXIT_FAILURE);
                             } //Détection d'une erreur de type pour le nom d'une horloge à reset pour la transition k de la localité i
 
-                            int count_reset = 0; //Variable permetttant de déterminer si le nom d'horloge entré pour la transition k de la localité i est défini
+                            int count_reset = 0; //Variable permettant de déterminer si le nom d'horloge entré pour la transition k de la localité i est défini
                             for(int n = 0; n < nb_clocks; n++){
                                 if(strcmp(transition_value_reset_json->valuestring, names_clocks[n]) == 0){
                                     doublons_reset[index_d] = strdup(transition_value_reset_json->valuestring);
@@ -585,7 +585,7 @@ void parse_model_json(const char* json_donnees){
                             printf("Erreur de syntaxe : Le type de la localite d'entree de la transition %d de la localite %s est incorrect.\nType attendu : String.\n", k, locations[i]);
                             cJSON_Delete(json);
                             exit(EXIT_FAILURE);
-                        } //Détection d'une erreur de type pour l' de la transition k de la localité i
+                        } //Détection d'une erreur de type pour la localité d'entrée de la transition k de la localité i
 
                         int count_loc = 0;
                         for(int m = 0; m < nb_locations; m++){
@@ -788,7 +788,7 @@ void parse_model_json(const char* json_donnees){
             label_typedef[0][i] = label_typedef[0][count_names_typedef-1];
             label_typedef[0][count_names_typedef-1] = "Variable";
         }
-    } //Placement de la structure variable en premier
+    } //Placement de la structure variable en dernier
 
     for(int i = 0; i < length_structure; i++){
         cJSON* typedef_structure_json = cJSON_GetObjectItem(structure_json, label_typedef[0][i]);
@@ -844,7 +844,7 @@ void parse_model_json(const char* json_donnees){
             int count_dim = 0;
             for(int k = 0; k < strlen(def_variables_typedef[0][i][j]); k++){
                 if((def_variables_typedef[0][i][j][k] == '*')||(def_variables_typedef[0][i][j][k] == '[')) count_dim++;
-            } //Compte la dimension du champ de la structure
+            } //Compte les dimensions du champ de la structure
             dim_elements_typedef_variables[0][i][j] = count_dim;      
         }
     }
@@ -899,7 +899,7 @@ void parse_model_json(const char* json_donnees){
             printf("Erreur de syntaxe : Un item de l'objet alias n'est pas defini.\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'un item vide dans l'objet structure
+        } //Détection d'un item vide dans l'objet alias
 
         label_typedef[1][count_names_typedef] = strdup(item_alias->string);
         count_names_typedef++;
@@ -921,7 +921,7 @@ void parse_model_json(const char* json_donnees){
 
         int length_typedef_alias = cJSON_GetArraySize(typedef_alias_json);
         if(length_typedef_alias != 1){
-            printf("Erreur de syntaxe : Un alias ne peux pas avoir plusieurs lignes.\n");
+            printf("Erreur de syntaxe : Un alias ne peut pas avoir plusieurs lignes.\n");
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
         } //Détection d'une erreur sur le nombre de lignes
@@ -965,7 +965,7 @@ void parse_model_json(const char* json_donnees){
             int count_dim = 0;
             for(int k = 0; k < strlen(def_variables_typedef[1][i][j]); k++){
                 if((def_variables_typedef[1][i][j][k] == '*')||(def_variables_typedef[1][i][j][k] == '[')) count_dim++;
-            } //Compte la dimension du champ de l'alias
+            } //Compte les dimensions du champ de l'alias
             dim_elements_typedef_variables[1][i][j] = count_dim;      
         }
     }
@@ -999,7 +999,7 @@ void parse_model_json(const char* json_donnees){
             printf("Erreur de syntaxe : La ligne de code %d de init_variables est vide.\n", i);
             cJSON_Delete(json);
             exit(EXIT_FAILURE);
-        } //Détection d'une ligne de code % d'init_variables non définie
+        } //Détection d'une ligne de code d'init_variables non définie
 
         if(!cJSON_IsString(init_variables_code_line)){
             printf("Erreur de syntaxe : Le type de la ligne de code  %d  de init_variables est incorrect.\nType attendu : String.\n", i);
@@ -1031,7 +1031,7 @@ void parse_model_json(const char* json_donnees){
 
     nb_clines_updatef = malloc((nb_actions+1) * sizeof(int));
     if(!nb_clines_updatef){
-        printf("Erreur d'allocation memoire pour le tableau de sauvegarde du nombre de ligne de code pour chaque fonction d'update (nb_clines_updatef).\n");
+        printf("Erreur d'allocation memoire pour le tableau de sauvegarde du nombre de lignes de code pour chaque fonction d'update (nb_clines_updatef).\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur d'allocation mémoire pour nb_clines_updatef
@@ -1082,7 +1082,7 @@ void parse_model_json(const char* json_donnees){
 
             update_functions[i][j] = strdup(update_code_line->valuestring);
             if(strlen(update_functions[i][j]) >= 1000){
-                printf("Erreur de syntaxe : La ligne de code %d de la fonction d'udpate de l'action %s depasse 999 caracteres.\n", j, actions[i]);
+                printf("Erreur de syntaxe : La ligne de code %d de la fonction d'update de l'action %s depasse 999 caracteres.\n", j, actions[i]);
                 cJSON_Delete(json);
                 exit(EXIT_FAILURE);
             } //Détection d'une taille trop grande pour la ligne de code j de la fonction d'update de l'action i
@@ -1097,7 +1097,7 @@ void parse_model_json(const char* json_donnees){
     } //Détection de l'absence de l'objet pour les contraintes
 
     if(!cJSON_IsObject(constraints_json)){
-        printf("Erreur de syntaxe : Le type de la ligne de la valeur de l'objet constraints est incorrect.\nType attendu : Object.\n");
+        printf("Erreur de syntaxe : Le type de la valeur de l'objet constraints est incorrect.\nType attendu : Object.\n");
         cJSON_Delete(json);
         exit(EXIT_FAILURE);
     } //Détection d'une erreur de type pour l'objet constraints
@@ -1165,7 +1165,6 @@ void parse_model_json(const char* json_donnees){
 }
 
 void fill_parseInfos_structure(char* json_path, ParseInfos* parseInfos){
-    printf("%s\n", json_path);
     char* json_donnee = read_model_json(json_path);
     if(json_donnee){
         parse_model_json(json_donnee);
