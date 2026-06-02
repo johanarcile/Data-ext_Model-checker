@@ -1,166 +1,84 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <windows.h>
 
 #include "parse.h"
 #include "generation.h"
 
 int main(int argc, char *argv[]){
     char *modelesPath = getenv("ModelesLocation");
+    char newModelesPath[4000];
+    int change = 0;
+    if(modelesPath == NULL){
+        printf("Erreur de syntaxe : La variable d'environnement ModelesLocation n'a pas ete definie. Veuillez entrer le chemin d'acces au dossier modeles_generation.\n");
+        if(fgets(newModelesPath, sizeof(newModelesPath), stdin) != NULL) newModelesPath[strcspn(newModelesPath, "\n")] = '\0';
+#ifdef _WIN32
+        if(_putenv_s("ModelesLocation", newModelesPath) != 0){
+#else
+        if(setenv("ModelesLocation", newModelesPath, 1) != 0){
+#endif
+            printf("Erreur setenv.\n");
+            free(modelesPath);
+            exit(EXIT_FAILURE);
+        }
+        modelesPath = getenv("ModelesLocation");
+        change = 1;
+    } //Création de la variable d'environnement ModelesLocation si elle n'existe pas
+
+    else{
+        char testPath[4096];
+        strcpy(testPath, modelesPath);
+        strcat(testPath, "/test.txt");
+        FILE* test = fopen(testPath, "w");
+        if(!test){
+            printf("Erreur de syntaxe : Le chemin d'acces du dossier modeles_generation n'est pas a jour. Veuillez entrer le nouveau chemin.\n");
+            if(fgets(newModelesPath, sizeof(newModelesPath), stdin) != NULL) newModelesPath[strcspn(newModelesPath, "\n")] = '\0';
+#ifdef _WIN32
+            if(_putenv_s("ModelesLocation", newModelesPath) != 0){
+#else
+            if(setenv("ModelesLocation", newModelesPath, 1) != 0){
+#endif
+                printf("Erreur setenv.\n");
+                free(modelesPath);
+                fclose(test);
+                exit(EXIT_FAILURE);
+            }
+            modelesPath = getenv("ModelesLocation");
+            change = 1;
+        }
+        fclose(test);
+    } //Modification de la variable d'environnement ModelesLocation si elle est incorrecte
 
     ParseInfos parseInfos;
     fill_parseInfos_structure(argv[1], &parseInfos);
-    // printf("Proprietes du TA (Timed Automata) passees en entree : \n");
-    // printf("\tNombre d'actions : %d\n", parseInfos.nb_actions);
-    // printf("\tNombre de clocks : %d\n", parseInfos.nb_clocks);
-    // printf("\tNombre de localites : %d\n", parseInfos.nb_Paths);
-
-    // if(parseInfos.nb_actions != 0){
-    //     printf("\nTableau des actions : [");
-    //     for(int i = 0; i < parseInfos.nb_actions; i++){
-    //         if(i == (parseInfos.nb_actions - 1)) printf("%s]\n", parseInfos.actions[i]);
-    //         else printf("%s, ", parseInfos.actions[i]);
-    //     }
-    // }
-    // else printf("\nTableau des actions : []\n");
-
-    // if(parseInfos.nb_clocks != 0){
-    //     printf("\nTableau des horloges : [");
-    //     for(int i = 0; i < parseInfos.nb_clocks; i++){
-    //         if(i == (parseInfos.nb_clocks - 1)) printf("%s]\n", parseInfos.names_clocks[i]);
-    //         else printf("%s, ", parseInfos.names_clocks[i]);
-    //     }
-    // }
-    // else printf("\nTableau des horloges : []\n");
-
-    // printf("\nTableau des localites : [");
-    // for(int i = 0; i < parseInfos.nb_Paths; i++){
-    //     if(i == (parseInfos.nb_Paths - 1)) printf("%s]\n", parseInfos.Paths[i]);
-    //     else printf("%s, ", parseInfos.Paths[i]);
-    // }
-
-    // printf("\nTableau des invariants par localite : [");
-    // for(int i = 0; i < parseInfos.nb_Paths; i++){
-    //     printf("[");
-    //     for(int j = 0; j < (parseInfos.nb_clocks+1); j++){
-    //         printf("[");
-    //         for(int k = 0; k < (parseInfos.nb_clocks+1); k++){
-    //             if(k == parseInfos.nb_clocks){
-    //                 if(j == parseInfos.nb_clocks){
-    //                     if(i == (parseInfos.nb_Paths-1)) printf("%d]]]\n", parseInfos.invariants[i][j][k]);
-    //                     else printf("%d]], ", parseInfos.invariants[i][j][k]);
-    //                 }
-    //                 else printf("%d], ", parseInfos.invariants[i][j][k]);
-    //             }
-    //             else printf("%d, ", parseInfos.invariants[i][j][k]);
-    //         }
-    //     }
-    // }
-
-    // printf("\nStructure des transitions : \n");
-    // for(int i = 0; i < parseInfos.nb_Paths; i++){
-    //     if(parseInfos.nb_transitions_Paths[i] != 0){
-    //         printf("Transitions sortantes de la localite %s : \n[", parseInfos.Paths[i]);
-    //         for(int j = 0; j < parseInfos.nb_transitions_Paths[i]; j++){
-    //             printf("[");
-    //             for(int k = 0; k < 4; k++){
-    //                 switch(k){
-    //                     case 0:
-    //                         if(parseInfos.transitions[i][j]->label_action == -1) printf("null, ");
-    //                         else printf("%s, ", parseInfos.actions[parseInfos.transitions[i][j]->label_action]);
-    //                         break;
-    //                     case 1:
-    //                         printf("[");
-    //                         for(int l = 0; l < (parseInfos.nb_clocks+1); l++){
-    //                             printf("[");
-    //                             for(int m = 0; m < (parseInfos.nb_clocks+1); m++){
-    //                                 if(m == parseInfos.nb_clocks){
-    //                                     if(l == parseInfos.nb_clocks) printf("%d]], ", parseInfos.transitions[i][j]->guard[l][m]);
-    //                                     else printf("%d], ", parseInfos.transitions[i][j]->guard[l][m]);
-    //                                 }
-    //                                 else printf("%d, ", parseInfos.transitions[i][j]->guard[l][m]);
-    //                             }
-    //                         }
-    //                         break;
-    //                     case 2:
-    //                         printf("[");
-    //                         for(int l = 0; l < parseInfos.nb_clocks; l++){
-    //                             if(l == (parseInfos.nb_clocks-1)) printf("%s: %d], ", parseInfos.names_clocks[l], parseInfos.transitions[i][j]->reset[l]);
-    //                             else printf("%s: %d, ", parseInfos.names_clocks[l], parseInfos.transitions[i][j]->reset[l]);
-    //                         }
-    //                         break;
-    //                     case 3:
-    //                         if(j == (parseInfos.nb_transitions_Paths[i]-1)) printf("%s]]\n", parseInfos.Paths[parseInfos.transitions[i][j]->Path_in]);
-    //                         else printf("%s],\n", parseInfos.Paths[parseInfos.transitions[i][j]->Path_in]);
-    //                         break;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     else printf("Transitions sortantes de la localite %s : []\n", parseInfos.Paths[i]);
-    // }
-
-    // printf("\nVariables :\n");
-    // printf("Definition :\n");
-    // printf("Define : [");
-    // for(int i = 0; i < parseInfos.nb_define; i++){
-    //     if(i == (parseInfos.nb_define-1)) printf("\"%s\"]\n", parseInfos.def_variables_define[i]);
-    //     else printf("\"%s\", ", parseInfos.def_variables_define[i]);
-    // }
-
-    // printf("\nTypedef :\n");
-    // printf("Struct :\n");
-    // for(int i = 0; i < parseInfos.nb_typedef_structure; i++){
-    //     printf("%s : Lignes de code : [\n", parseInfos.label_typedef[0][i]);
-    //     for(int j = 0; j < parseInfos.nb_clines_typedef[0][i]; j++){
-    //         if(j == (parseInfos.nb_clines_typedef[0][i]-1)) printf("%s\n],\nDimensions : [", parseInfos.def_variables_typedef[0][i][j]);
-    //         else printf("%s,\n", parseInfos.def_variables_typedef[0][i][j]);
-    //     }
-    //     for(int j = 0; j < parseInfos.nb_clines_typedef[0][i]; j++){
-    //         if(j == (parseInfos.nb_clines_typedef[0][i]-1)) printf("%d]\n", parseInfos.dim_elements_typedef_variables[0][i][j]);
-    //         else printf("%d, ", parseInfos.dim_elements_typedef_variables[0][i][j]);
-    //     }
-    // }
-    // if(parseInfos.nb_typedef_alias != 0){
-    //     printf("\nalias :\n");
-    //     for(int i = 0; i < parseInfos.nb_typedef_alias; i++){
-    //         printf("%s : Lignes de code : [", parseInfos.label_typedef[1][i]);
-    //         for(int j = 0; j < parseInfos.nb_clines_typedef[1][i]; j++){
-    //             if(j == (parseInfos.nb_clines_typedef[1][i]-1)) printf("%s], Dimensions : [", parseInfos.def_variables_typedef[1][i][j]);
-    //             else printf("%s, ", parseInfos.def_variables_typedef[1][i][j]);
-    //         }
-    //         for(int j = 0; j < parseInfos.nb_clines_typedef[1][i]; j++){
-    //             if(j == (parseInfos.nb_clines_typedef[1][i]-1)) printf("%d]\n", parseInfos.dim_elements_typedef_variables[1][i][j]);
-    //             else printf("%d, ", parseInfos.dim_elements_typedef_variables[1][i][j]);
-    //         }
-    //     }
-    // }
-    // else printf("\nalias : Aucune.\n");
-
-    // printf("\nInit_variables : [\n");
-    // for(int i = 0; i < parseInfos.nb_clines_init_variables; i++){
-    //     if(i == (parseInfos.nb_clines_init_variables-1)) printf("\"%s\"]\n", parseInfos.init_variables_function[i]);
-    //     else printf("\"%s\",\n", parseInfos.init_variables_function[i]);
-    // }
-
-    // printf("\nUpdate functions : \n");
-    // for(int i = 0; i < parseInfos.nb_actions; i++){
-    //     printf("Update function de l'action %s : [\n", parseInfos.actions[i]);
-    //     for(int j = 0; j < parseInfos.nb_clines_updatef[i]; j++){
-    //         if(j == (parseInfos.nb_clines_updatef[i]-1)) printf("%s]\n", parseInfos.update_functions[i][j]);
-    //         else printf("%s,\n", parseInfos.update_functions[i][j]);
-    //     }
-    // }
-
-    // printf("\nConstraints functions : \n");
-    // for(int i = 0; i < parseInfos.nb_actions; i++){
-    //     printf("Constraints function de l'action %s : [\n", parseInfos.actions[i]);
-    //     for(int j = 0; j < parseInfos.nb_clines_constraints[i]; j++){
-    //         if(j == (parseInfos.nb_clines_constraints[i]-1)) printf("%s]\n", parseInfos.constraints_functions[i][j]);
-    //         else printf("%s,\n", parseInfos.constraints_functions[i][j]);
-    //     }
-    // }
     generation(argv[2], modelesPath, &parseInfos);
-    
+    if(change == 1){
+#ifdef _WIN32
+        HKEY hKey;
+        LONG result = RegOpenKeyExA(HKEY_CURRENT_USER, "Environment", 0, KEY_SET_VALUE, &hKey);
+        if(result != ERROR_SUCCESS){
+            printf("Erreur d'acces aux cles pour enregistrer la variable d'environnement.\n");
+            free(modelesPath);
+            exit(EXIT_FAILURE);
+        }
+        result = RegSetValueExA(hKey, "ModelesLocation", 0, REG_SZ, (const BYTE *)modelesPath, (DWORD)(strlen(modelesPath) + 1));
+        RegCloseKey(hKey);
+        SendMessageTimeoutA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
+#else
+        char path[512];
+        snprintf(path, sizeof(path), "%s/.bashrc", getenv("HOME"));
+        FILE *f = fopen(path, "a");
+        if(f == NULL){
+            printf("Erreur d'ouverture du fichier contenant les variables d'environement.\n");
+            free(modelesPath);
+            fclose(f);
+            exit(EXIT_FAILURE);
+        }
+        fprintf(f, "\nexport ModelesLocation=\"%s\"\n", modelesPath);
+        fclose(f);
+#endif
+    }
     free(modelesPath);
     return 0;
 }

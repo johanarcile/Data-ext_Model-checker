@@ -263,10 +263,10 @@ void generation_structure_ta_h(char* copy_path, char* modeles_path){
 }
 
 void generation_structure_state_space_ta_h(char* copy_path, char* modeles_path){
-    char* copyPath = malloc(strlen(copy_path) + strlen("/structure_state_space.h") + 1);
+    char* copyPath = malloc(strlen(copy_path) + strlen("/structure_state_space_ta.h") + 1);
     strcpy(copyPath, copy_path);
     strcat(copyPath, "/structure_state_space_ta.h");
-    char* modelesPath = malloc(strlen(modeles_path) + strlen("/structure_state_space.h") + 1);
+    char* modelesPath = malloc(strlen(modeles_path) + strlen("/structure_state_space_ta.h") + 1);
     strcpy(modelesPath, modeles_path);
     strcat(modelesPath, "/structure_state_space_ta.h");
 
