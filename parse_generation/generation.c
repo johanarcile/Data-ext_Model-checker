@@ -169,7 +169,7 @@ void generation_structure_variable_h(char* copy_path, char* modeles_path, int nb
         else if(strcmp(chaine_tampon, "structure_variable_h_typedef_alias\n") == 0){
             for(int i = 0; i < nb_typedef_alias; i++){
                 for(int j = 0; j < nb_clines_typedef[1][i]; j++){
-                    char convert[1000];
+                    char convert[4096];
                     snprintf(convert, sizeof(convert), "%s\n", def_variables_typedef[1][i][j]);
                     fputs(convert, structure_variable_h_copy);
                 }
@@ -180,15 +180,15 @@ void generation_structure_variable_h(char* copy_path, char* modeles_path, int nb
 
         else if(strcmp(chaine_tampon, "structure_variable_h_typedef_structure\n") == 0){
             for(int i = 0; i < nb_typedef_structure; i++){
-                char convert[1000];
+                char convert[4096];
                 snprintf(convert, sizeof(convert), "typedef struct %s {\n", label_typedef[0][i]);
                 fputs(convert, structure_variable_h_copy);
                 for(int j = 0; j < nb_clines_typedef[0][i]; j++){
-                    char convertBis[1000];
+                    char convertBis[4096];
                     snprintf(convertBis, sizeof(convertBis), "%s\n", def_variables_typedef[0][i][j]);
                     fputs(convertBis, structure_variable_h_copy);
                 }
-                char convertBisS[1000];
+                char convertBisS[4096];
                 snprintf(convertBisS, sizeof(convertBisS), "} %s;\n", label_typedef[0][i]);
                 fputs(convertBisS, structure_variable_h_copy);
                 fputs("\n", structure_variable_h_copy);
@@ -891,7 +891,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                 if(dim_l == 0){
                     switch(is_struct){
                         case 0 : {
-                            char convert[1000];
+                            char convert[4096];
                             snprintf(convert, sizeof(convert), "  if(v1->%s != v2->%s){\n", field_names[i], field_names[i]);
                             fputs(convert, variable_c_copy);
                             fputs("    return false;\n", variable_c_copy);
@@ -914,7 +914,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                 } //Détection d'une absence de variables définissant des tailles du champ d'une structure
 
                                 if(dim_elements_typedef_variables[0][num_t][j] == 0){
-                                    char convert[1000];
+                                    char convert[4096];
                                     snprintf(convert, sizeof(convert), "  if(v1->%s.%s != v2->%s.%s){\n", field_names[i], field_struct_names[i][j], field_names[i], field_struct_names[i][j]);
                                     fputs(convert, variable_c_copy);
                                     fputs("    return false;\n", variable_c_copy);
@@ -928,7 +928,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                     char level = 'i';
 
                                     for(int k = 0; k < dim_elements_typedef_variables[0][num_t][j]; k++){
-                                        char convert[1000];
+                                        char convert[4096];
                                         char temp[1000];
                                         if(strcmp(size_struct_tab_type[i][j][k], "define") == 0) snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < %s; %c++){\n", indent[k], level, level, size_struct_tab[i][j][k], level);
                                         else snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < v1->%s.%s; %c++){\n", indent[k], level, level, field_names[i], size_struct_tab[i][j][k], level);
@@ -941,7 +941,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                     } //Génération des boucles itératives
 
                                     for(int k = 0; k < 3; k++){
-                                        char convert[1000];
+                                        char convert[4096];
                                         switch(k){
                                             case 0 :
                                                 snprintf(convert, sizeof(convert), "%sif(v1->%s.%s%s != v2->%s.%s%s){\n", indent[dim_elements_typedef_variables[0][num_t][j]], field_names[i], field_struct_names[i][j], dim, field_names[i], field_struct_names[i][j], dim);
@@ -959,7 +959,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                     } //Génération du contenu des boucles
 
                                     for(int k = (dim_elements_typedef_variables[0][num_t][j]-1); k >= 0 ; k--){
-                                        char convert[1000];
+                                        char convert[4096];
                                         snprintf(convert, sizeof(convert), "%s}\n", indent[k]);
                                         fputs(convert, variable_c_copy);
                                     }
@@ -979,7 +979,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                     char level = 'i';
 
                     for(int j = 0; j < dim_l; j++){
-                        char convert[1000];
+                        char convert[4096];
                         char temp[1000];
                         if(strcmp(size_tab_type[i][j], "define") == 0) snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < %s; %c++){\n", indent[j], level, level, size_tab[i][j], level);
                         else snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < v1->%s; %c++){\n", indent[j], level, level, size_tab[i][j], level);
@@ -994,7 +994,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                     switch(is_struct){
                         case 0 : {
                             for(int j = 0; j < 3; j++){
-                                char convert[1000];
+                                char convert[4096];
                                 switch(j){
                                     case 0 :
                                         snprintf(convert, sizeof(convert), "%sif(v1->%s%s != v2->%s%s){\n", indent[dim_l], field_names[i], dim, field_names[i], dim);
@@ -1029,7 +1029,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
 
                                 if(dim_elements_typedef_variables[0][num_t][j] == 0){
                                     for(int k = 0; k < 3; k++){
-                                        char convert[1000];
+                                        char convert[4096];
                                         switch(k){
                                             case 0 : {
                                                 snprintf(convert, sizeof(convert), "%sif(v1->%s%s.%s != v2->%s%s.%s){\n", indent[dim_l], field_names[i], dim, field_struct_names[i][j], field_names[i], dim, field_struct_names[i][j]);
@@ -1061,7 +1061,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                     }
 
                                     for(int k = 0; k < dim_elements_typedef_variables[0][num_t][j]; k++){
-                                        char convert[1000];
+                                        char convert[4096];
                                         char temp[1000];
                                         if(strcmp(size_struct_tab_type[i][j][k], "define") == 0) snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < %s; %c++){\n", indent_s[dim_l_s], level_s, level_s, size_struct_tab[i][j][k], level_s);
                                         else snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < v1->%s%s.%s; %c++){\n", indent_s[dim_l_s], level_s, level_s, field_names[i], dim, size_struct_tab[i][j][k], level_s);
@@ -1075,7 +1075,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                     } //Génération des boucles itératives
 
                                     for(int k = 0; k < 3; k++){
-                                        char convert[1000];
+                                        char convert[4096];
                                         switch(k){
                                             case 0 : {
                                                 snprintf(convert, sizeof(convert), "%sif(v1->%s%s.%s%s != v2->%s%s.%s%s){\n", indent_s[dim_l_s], field_names[i], dim, field_struct_names[i][j], dim_s, field_names[i], dim, field_struct_names[i][j], dim_s);
@@ -1096,7 +1096,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                     } //Génération du contenu des boucles itératives
 
                                     for(int k = (dim_elements_typedef_variables[0][num_t][j]-1); k >= 0; k--){
-                                        char convert[1000];
+                                        char convert[4096];
                                         dim_l_s--;
                                         snprintf(convert, sizeof(convert), "%s}\n", indent_s[dim_l_s]);
                                         fputs(convert, variable_c_copy);
@@ -1108,7 +1108,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                     }
 
                     for(int j = (dim_l-1); j >= 0 ; j--){
-                        char convert[1000];
+                        char convert[4096];
                         snprintf(convert, sizeof(convert), "%s}\n", indent[j]);
                         fputs(convert, variable_c_copy);
                     } //Génération de la fermeture des boucles itératives
@@ -1225,7 +1225,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                 if(dim_l == 0){
                     switch(is_struct){
                         case 0 : {
-                            char convert[1000];
+                            char convert[4096];
                             snprintf(convert, sizeof(convert), "  printf(\"\\t\\t %s = ", field_names[i]);
                             if((strcmp(field_types[i],"int") == 0)||(strcmp(field_types[i],"bool") == 0)||(strcmp(field_types[i],"signedint") == 0)||(strcmp(field_types[i],"signed") == 0)){
                                 char convertBis[1000];
@@ -1311,7 +1311,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                 }
 
                                 if(dim_elements_typedef_variables[0][num_t][j] == 0){
-                                    char convert[1000];
+                                    char convert[4096];
                                     snprintf(convert, sizeof(convert), "  printf(\"\\t\\t %s.%s = ", field_names[i], field_struct_names[i][j]);
                                     if((strcmp(field_struct_types[i][j],"int") == 0)||(strcmp(field_struct_types[i][j],"bool") == 0)||(strcmp(field_struct_types[i][j],"signedint") == 0)||(strcmp(field_struct_types[i][j],"signed") == 0)){
                                         char convertBis[1000];
@@ -1382,21 +1382,21 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                 }
 
                                 else{
-                                    char* indent[1000] = {NULL};
+                                    char* indent[100] = {NULL};
                                     indent[0] = "  ";
-                                    char dim[1000] = "";
-                                    char dim_print[1000] = "";
-                                    char level_print[1000] = "";
+                                    char dim[100] = "";
+                                    char dim_print[100] = "";
+                                    char level_print[100] = "";
                                     char level = 'i';
-                                    char convert_name[1000];
+                                    char convert_name[4096];
                                     int dim_count = 0;
                                     snprintf(convert_name, sizeof(convert_name), "  printf(\"\\t\\t %s.%s :\\n\");\n", field_names[i], field_struct_names[i][j]);
                                     fputs(convert_name, variable_c_copy);
 
                                     for(int k = 0; k < dim_elements_typedef_variables[0][num_t][j]; k++){
-                                        char convert[1000];
-                                        char temp[1000];
-                                        char temp_l[1000];
+                                        char convert[4096];
+                                        char temp[100];
+                                        char temp_l[100];
                                         if(((strcmp(field_struct_types[i][j], "char") == 0)||(strcmp(field_struct_types[i][j], "signedchar") == 0)||(strcmp(field_struct_types[i][j], "unsignedchar") == 0))&&((dim_elements_typedef_variables[0][num_t][j]-k) == 1)) break;
                                         else if(strcmp(size_struct_tab_type[i][j][k], "define") == 0) snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < %s; %c++){\n", indent[k], level, level, size_struct_tab[i][j][k], level);
                                         else snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < variable->%s.%s; %c++){\n", indent[k], level, level, field_names[i], size_struct_tab[i][j][k], level);
@@ -1411,7 +1411,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                         dim_count++;
                                     }
 
-                                    char convert[1000];
+                                    char convert[4096];
                                     snprintf(convert, sizeof(convert), "%sprintf(\"\\t\\t\\t %s.%s%s = ", indent[dim_count], field_names[i], field_struct_names[i][j], dim_print);
                                     if((strcmp(field_struct_types[i][j],"int") == 0)||(strcmp(field_struct_types[i][j],"bool") == 0)||(strcmp(field_struct_types[i][j],"signedint") == 0)||(strcmp(field_struct_types[i][j],"signed") == 0)){
                                         char convertBis[1000];
@@ -1481,7 +1481,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                     fputs(convert, variable_c_copy);
 
                                     for(int k = (dim_count-1); k >= 0 ; k--){
-                                        char convert[1000];
+                                        char convert[4096];
                                         snprintf(convert, sizeof(convert), "%s}\n", indent[k]);
                                         fputs(convert, variable_c_copy);
                                     }
@@ -1495,21 +1495,21 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                 } //Génération du code de comparaison s'il ne s'agit pas d'un tableau
 
                 else{
-                    char* indent[1000] = {NULL};
+                    char* indent[100] = {NULL};
                     indent[0] = "  ";
-                    char dim[1000] = "";
-                    char dim_print[1000] = "";
-                    char level_print[1000] = "";
+                    char dim[100] = "";
+                    char dim_print[100] = "";
+                    char level_print[100] = "";
                     char level = 'i';
                     int dim_count = 0;
-                    char convert_name[1000];
+                    char convert_name[4096];
                     snprintf(convert_name, sizeof(convert_name), "  printf(\"\\t\\t %s :\\n\");\n", field_names[i]);
                     fputs(convert_name, variable_c_copy);
 
                     for(int j = 0; j < dim_l; j++){
-                        char convert[1000];
-                        char temp[1000];
-                        char temp_l[1000];
+                        char convert[4096];
+                        char temp[100];
+                        char temp_l[100];
                         if(((strcmp(field_types[i], "char") == 0)||(strcmp(field_types[i], "signedchar") == 0)||(strcmp(field_types[i], "unsignedchar") == 0))&&((dim_l-j) == 1)) break;
                         if(strcmp(size_tab_type[i][j], "define") == 0) snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < %s; %c++){\n", indent[j], level, level, size_tab[i][j], level);
                         else snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < variable->%s; %c++){\n", indent[j], level, level, size_tab[i][j], level);
@@ -1528,70 +1528,70 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
 
                     switch(is_struct){
                         case 0 : {
-                            char convert[1000];     
+                            char convert[4096];     
                             snprintf(convert, sizeof(convert), "%sprintf(\"\\t\\t\\t %s%s = ", indent[dim_count], field_names[i], dim_print);
                             if((strcmp(field_types[i],"int") == 0)||(strcmp(field_types[i],"bool") == 0)||(strcmp(field_types[i],"signedint") == 0)||(strcmp(field_types[i],"signed") == 0)){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%d\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if(strcmp(field_types[i],"float") == 0){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%f\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if((strcmp(field_types[i],"char") == 0)||(strcmp(field_types[i],"signedchar") == 0)||(strcmp(field_types[i],"unsignedchar") == 0)){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%s\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if((strcmp(field_types[i],"unsignedint") == 0)||(strcmp(field_types[i],"unsigned") == 0)){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%u\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if(strcmp(field_types[i],"double") == 0){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%lf\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if(strcmp(field_types[i],"longdouble") == 0){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%Lf\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if((strcmp(field_types[i],"short") == 0)||(strcmp(field_types[i],"shortint") == 0)||(strcmp(field_types[i],"signedshort") == 0)||(strcmp(field_types[i],"signedshortint") == 0)){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%hd\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if((strcmp(field_types[i],"unsignedshort") == 0)||(strcmp(field_types[i],"unsignedshortint") == 0)){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%hu\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if((strcmp(field_types[i],"long") == 0)||(strcmp(field_types[i],"longint") == 0)||(strcmp(field_types[i],"signedlong") == 0)||(strcmp(field_types[i],"signedlongint") == 0)){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%ld\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if((strcmp(field_types[i],"unsignedlong") == 0)||(strcmp(field_types[i],"unsignedlongint") == 0)){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%lu\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if((strcmp(field_types[i],"longlong") == 0)||(strcmp(field_types[i],"longlongint") == 0)||(strcmp(field_types[i],"signedlonglong") == 0)||(strcmp(field_types[i],"signedlonglongint") == 0)){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%lld\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else if((strcmp(field_types[i],"unsignedlonglong") == 0)||(strcmp(field_types[i],"unsignedlonglongint") == 0)){
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%llu\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
                             else{
-                                char convertBis[1000];
+                                char convertBis[3000];
                                 snprintf(convertBis, sizeof(convertBis), "%%p\\n\"%s, variable->%s%s);\n", level_print, field_names[i], dim);
                                 strcat(convert, convertBis);
                             }
@@ -1614,70 +1614,70 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                 }
 
                                 if(dim_elements_typedef_variables[0][num_t][j] == 0){
-                                    char convert[1000];
+                                    char convert[4096];
                                     snprintf(convert, sizeof(convert), "%sprintf(\"\\t\\t\\t %s%s.%s = ", indent[dim_count], field_names[i], dim_print, field_struct_names[i][j]);
                                     if((strcmp(field_struct_types[i][j],"int") == 0)||(strcmp(field_struct_types[i][j],"bool") == 0)||(strcmp(field_struct_types[i][j],"signedint") == 0)||(strcmp(field_struct_types[i][j],"signed") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%d\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if(strcmp(field_struct_types[i][j],"float") == 0){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%f\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"char") == 0)||(strcmp(field_struct_types[i][j],"signedchar") == 0)||(strcmp(field_struct_types[i][j],"unsignedchar") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%c\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"unsignedint") == 0)||(strcmp(field_struct_types[i][j],"unsigned") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%u\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if(strcmp(field_struct_types[i][j],"double") == 0){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%lf\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if(strcmp(field_struct_types[i][j],"longdouble") == 0){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%Lf\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"short") == 0)||(strcmp(field_struct_types[i][j],"shortint") == 0)||(strcmp(field_struct_types[i][j],"signedshort") == 0)||(strcmp(field_struct_types[i][j],"signedshortint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%hd\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"unsignedshort") == 0)||(strcmp(field_struct_types[i][j],"unsignedshortint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%hu\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"long") == 0)||(strcmp(field_struct_types[i][j],"longint") == 0)||(strcmp(field_struct_types[i][j],"signedlong") == 0)||(strcmp(field_struct_types[i][j],"signedlongint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%ld\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"unsignedlong") == 0)||(strcmp(field_struct_types[i][j],"unsignedlongint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%lu\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"longlong") == 0)||(strcmp(field_struct_types[i][j],"longlongint") == 0)||(strcmp(field_struct_types[i][j],"signedlonglong") == 0)||(strcmp(field_struct_types[i][j],"signedlonglongint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%lld\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"unsignedlonglong") == 0)||(strcmp(field_struct_types[i][j],"unsignedlonglongint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%llu\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
                                     else{
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%p\\n\"%s, variable->%s%s.%s);\n", level_print, field_names[i], dim, field_struct_names[i][j]);
                                         strcat(convert, convertBis);
                                     }
@@ -1685,10 +1685,10 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                 }
 
                                 else{
-                                    char* indent_s[1000] = {NULL};
-                                    char dim_s[1000] = "";
-                                    char dim_s_print[1000] = "";
-                                    char level_s_print[1000] = "";
+                                    char* indent_s[100] = {NULL};
+                                    char dim_s[100] = "";
+                                    char dim_s_print[100] = "";
+                                    char level_s_print[100] = "";
                                     char level_s = level;
                                     int dim_l_s = dim_l;
                                     int dim_count_s = 0;
@@ -1696,14 +1696,14 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                     for(int k = 0; k <= dim_l; k++){
                                         indent_s[k] = strdup(indent[k]);
                                     }
-                                    char convert_name[1000];
+                                    char convert_name[4096];
                                     snprintf(convert_name, sizeof(convert_name), "%sprintf(\"\\t\\t\\t %s%s.%s :\\n\"%s);\n", indent_s[dim_l_s], field_names[i], dim_print, field_struct_names[i][j], level_print);
                                     fputs(convert_name, variable_c_copy);
 
                                     for(int k = 0; k < dim_elements_typedef_variables[0][num_t][j]; k++){
-                                        char convert[1000];
-                                        char temp[1000];
-                                        char temp_l[1000];
+                                        char convert[4096];
+                                        char temp[100];
+                                        char temp_l[100];
                                         if(((strcmp(field_struct_types[i][j], "char") == 0)||(strcmp(field_struct_types[i][j], "signedchar") == 0)||(strcmp(field_struct_types[i][j], "unsignedchar") == 0))&&((dim_elements_typedef_variables[0][num_t][j]-k) == 1)) break;
                                         if(strcmp(size_struct_tab_type[i][j][k], "define") == 0) snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < %s; %c++){\n", indent_s[dim_l_s], level_s, level_s, size_struct_tab[i][j][k], level_s);
                                         else snprintf(convert, sizeof(convert), "%sfor(int %c = 0; %c < variable->%s%s.%s; %c++){\n", indent_s[dim_l_s], level_s, level_s, field_names[i], dim, size_struct_tab[i][j][k], level_s);
@@ -1721,77 +1721,77 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                                     }
 
 
-                                    char convert[1000];
+                                    char convert[4096];
                                     snprintf(convert, sizeof(convert), "%sprintf(\"\\t\\t\\t\\t %s%s.%s%s = ", indent_s[dim_count_s+dim_count], field_names[i], dim_print, field_struct_names[i][j], dim_s_print);
                                     if((strcmp(field_struct_types[i][j],"int") == 0)||(strcmp(field_struct_types[i][j],"bool") == 0)||(strcmp(field_struct_types[i][j],"signedint") == 0)||(strcmp(field_struct_types[i][j],"signed") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%d\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print,field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if(strcmp(field_struct_types[i][j],"float") == 0){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%f\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"char") == 0)||(strcmp(field_struct_types[i][j],"signedchar") == 0)||(strcmp(field_struct_types[i][j],"unsignedchar") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%s\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"unsignedint") == 0)||(strcmp(field_struct_types[i][j],"unsigned") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%u\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if(strcmp(field_struct_types[i][j],"double") == 0){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%lf\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if(strcmp(field_struct_types[i][j],"longdouble") == 0){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%Lf\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"short") == 0)||(strcmp(field_struct_types[i][j],"shortint") == 0)||(strcmp(field_struct_types[i][j],"signedshort") == 0)||(strcmp(field_struct_types[i][j],"signedshortint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%hd\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"unsignedshort") == 0)||(strcmp(field_struct_types[i][j],"unsignedshortint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%hu\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"long") == 0)||(strcmp(field_struct_types[i][j],"longint") == 0)||(strcmp(field_struct_types[i][j],"signedlong") == 0)||(strcmp(field_struct_types[i][j],"signedlongint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%ld\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"unsignedlong") == 0)||(strcmp(field_struct_types[i][j],"unsignedlongint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%lu\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"longlong") == 0)||(strcmp(field_struct_types[i][j],"longlongint") == 0)||(strcmp(field_struct_types[i][j],"signedlonglong") == 0)||(strcmp(field_struct_types[i][j],"signedlonglongint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%lld\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else if((strcmp(field_struct_types[i][j],"unsignedlonglong") == 0)||(strcmp(field_struct_types[i][j],"unsignedlonglongint") == 0)){
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%ll\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     else{
-                                        char convertBis[1000];
+                                        char convertBis[3000];
                                         snprintf(convertBis, sizeof(convertBis), "%%p\\n\"%s%s, variable->%s%s.%s%s);\n", level_print, level_s_print, field_names[i], dim, field_struct_names[i][j], dim_s);
                                         strcat(convert, convertBis);
                                     }
                                     fputs(convert, variable_c_copy);
 
                                     for(int k = (dim_count_s-1); k >= 0 ; k--){
-                                        char convert[1000];
+                                        char convert[4096];
                                         dim_l_s--;
                                         snprintf(convert, sizeof(convert), "%s}\n", indent_s[dim_l_s]);
                                         fputs(convert, variable_c_copy);
@@ -1802,7 +1802,7 @@ void generation_variable_c(char* copy_path, char* modeles_path, int** nb_clines_
                     }
 
                     for(int j = (dim_count-1); j >= 0 ; j--){
-                        char convert[1000];
+                        char convert[4096];
                         snprintf(convert, sizeof(convert), "%s}\n", indent[j]);
                         fputs(convert, variable_c_copy);
                     } //Génération de la fermeture des boucles itératives
@@ -1920,7 +1920,7 @@ void generation_model_c(char* copy_path, char* modeles_path, int nb_locations, i
                 for(int j = 0; j < (nb_clocks+1); j++){
                     strcat(convert, "{");
                     for(int k = 0; k < (nb_clocks+1); k++){
-                        char temp[9];
+                        char temp[16];
                         if(k == nb_clocks){
                             if(j == nb_clocks){
                                 if(invariants[i][j][k] == infty) snprintf(temp, sizeof(temp), "infty}};\n");
@@ -1980,7 +1980,7 @@ void generation_model_c(char* copy_path, char* modeles_path, int nb_locations, i
                     for(int k = 0; k < (nb_clocks+1); k++){
                         strcat(convert, "{");
                         for(int l = 0; l < (nb_clocks+1); l++){
-                            char temp[9];
+                            char temp[16];
                             if(l == nb_clocks){
                                 if(k == nb_clocks){
                                     if(transitions[i][j]->guard[k][l] == infty) snprintf(temp, sizeof(temp), "infty}}, ");
@@ -2001,7 +2001,7 @@ void generation_model_c(char* copy_path, char* modeles_path, int nb_locations, i
 
                     strcat(convert, ".reset = {");
                     for(int k = 0; k < nb_clocks; k++){
-                        char temp[7];
+                        char temp[16];
                         if(k == (nb_clocks-1)){
                             if(transitions[i][j]->reset[k] == infty) snprintf(temp, sizeof(temp), "infty}");
                             else snprintf(temp, sizeof(temp), "%d}", transitions[i][j]->reset[k]);
@@ -2036,7 +2036,7 @@ void generation_model_c(char* copy_path, char* modeles_path, int nb_locations, i
                 snprintf(convert, sizeof(convert), "Variable update_%s(Variable variable) {\n", actions[i]);
                 fputs(convert, model_c_copy);
                 for(int j = 0; j < nb_clines_updatef[i]; j++){
-                    char convertBis[1000];
+                    char convertBis[4096];
                     snprintf(convertBis, sizeof(convertBis), "%s\n", update_functions[i][j]);
                     fputs(convertBis, model_c_copy);
                 }
@@ -2061,7 +2061,7 @@ void generation_model_c(char* copy_path, char* modeles_path, int nb_locations, i
                 snprintf(convert, sizeof(convert), "bool const_%s(Variable variable) {\n", actions[i]);
                 fputs(convert, model_c_copy);
                 for(int j = 0; j < nb_clines_constraints[i]; j++){
-                    char convertBis[1000];
+                    char convertBis[4096];
                     snprintf(convertBis, sizeof(convertBis), "%s\n", constraints_functions[i][j]);
                     fputs(convertBis, model_c_copy);
                 }

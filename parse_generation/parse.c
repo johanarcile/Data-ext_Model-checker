@@ -842,7 +842,7 @@ void parse_model_json(const char* json_donnees){
             } //Détection d'une taille trop grande pour la ligne de code j de la structure
 
             int count_dim = 0;
-            for(int k = 0; k < strlen(def_variables_typedef[0][i][j]); k++){
+            for(size_t k = 0; k < strlen(def_variables_typedef[0][i][j]); k++){
                 if((def_variables_typedef[0][i][j][k] == '*')||(def_variables_typedef[0][i][j][k] == '[')) count_dim++;
             } //Compte les dimensions du champ de la structure
             dim_elements_typedef_variables[0][i][j] = count_dim;      
@@ -963,7 +963,7 @@ void parse_model_json(const char* json_donnees){
             } //Détection d'une taille trop grande pour la ligne de code j de l'alias
 
             int count_dim = 0;
-            for(int k = 0; k < strlen(def_variables_typedef[1][i][j]); k++){
+            for(size_t k = 0; k < strlen(def_variables_typedef[1][i][j]); k++){
                 if((def_variables_typedef[1][i][j][k] == '*')||(def_variables_typedef[1][i][j][k] == '[')) count_dim++;
             } //Compte les dimensions du champ de l'alias
             dim_elements_typedef_variables[1][i][j] = count_dim;      
