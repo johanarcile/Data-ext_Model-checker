@@ -79,6 +79,5 @@ int main(int argc, char *argv[]){
         fclose(f);
 #endif
     }
-    free(modelesPath);
     return 0;
 }
