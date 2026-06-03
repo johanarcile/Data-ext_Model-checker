@@ -45,13 +45,11 @@ int main(int argc, char *argv[]){
             if(setenv("ModelesLocation", newModelesPath, 1) != 0){
 #endif
                 printf("Erreur setenv.\n");
-                fclose(test);
                 exit(EXIT_FAILURE);
             }
             modelesPath = getenv("ModelesLocation");
             change = 1;
         }
-        fclose(test);
     } //Modification de la variable d'environnement ModelesLocation si elle est incorrecte
 
     if(argc < 3){
@@ -86,21 +84,18 @@ int main(int argc, char *argv[]){
                 }
                 if((_mkdir(fullPath) != 0)&&(errno != EEXIST)){
                     printf("Erreur de creation du repertoire %s.\n", fullPath);
-                    fclose(test_copy);
                     exit(EXIT_FAILURE);
                 }
                 split_path = strtok(NULL, "\\");
-            }
+            }  
+            free(tempCopyPath);
 #else
             if((mkdir(argv[2], (mode_t)0755) != 0)&&(errno != EEXIST)){
                 printf("Erreur de creation du repertoire pour le code source genere.\n");
-                fclose(test_copy);
                 exit(EXIT_FAILURE);
             }
 #endif
-            free(tempCopyPath);
         }
-        fclose(test_copy);
     }
 
     ParseInfos parseInfos;
