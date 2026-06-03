@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #ifdef _WIN32
 #include <windows.h>
+#include <direct.h>
 #endif
 
 #include "parse.h"
@@ -21,7 +25,6 @@ int main(int argc, char *argv[]){
         if(setenv("ModelesLocation", newModelesPath, 1) != 0){
 #endif
             printf("Erreur setenv.\n");
-            free(modelesPath);
             exit(EXIT_FAILURE);
         }
         modelesPath = getenv("ModelesLocation");
@@ -42,7 +45,6 @@ int main(int argc, char *argv[]){
             if(setenv("ModelesLocation", newModelesPath, 1) != 0){
 #endif
                 printf("Erreur setenv.\n");
-                free(modelesPath);
                 fclose(test);
                 exit(EXIT_FAILURE);
             }
@@ -51,6 +53,55 @@ int main(int argc, char *argv[]){
         }
         fclose(test);
     } //Modification de la variable d'environnement ModelesLocation si elle est incorrecte
+
+    if(argc < 3){
+        printf("Erreur d'execution : Il manque un ou plusieurs arguments.\n");
+        exit(EXIT_FAILURE);
+    } //Vérification que deux arguments sont passés à l'exécution
+
+    if(strstr(argv[1], ".json") == 0){
+        printf("Erreur d'execution : Le premier argument n'est pas le chemin d'acces du fichier json comme attendu.\n");
+        exit(EXIT_FAILURE);
+    } //Vérification que le premier argument est bien le chemin d'accès du fichier json
+
+    if(argv[2] != NULL){
+        printf("Chemin d'acces generation detecte\n");
+        char testCopyPath[4096];
+        strcpy(testCopyPath, argv[2]);
+        strcat(testCopyPath, "/test.txt");
+        FILE* test_copy = fopen(testCopyPath, "w");
+        if(!test_copy){
+            printf("test_copy n'a pas fonctionne\n");
+#ifdef _WIN32
+            char *tempCopyPath = strdup(argv[2]);
+            char *split_path = strtok(tempCopyPath, "\\");
+            char fullPath[4000] = "";
+            while(split_path != NULL){
+                printf("%s\n", split_path);
+                if(fullPath[0] != '\0') strcat(fullPath, "\\");
+                strcat(fullPath, split_path);
+                if((strlen(split_path) == 2)&&(split_path[1] == ':')){
+                    split_path = strtok(NULL, "\\");
+                    continue;
+                }
+                if((_mkdir(fullPath) != 0)&&(errno != EEXIST)){
+                    printf("Erreur de creation du repertoire %s.\n", fullPath);
+                    fclose(test_copy);
+                    exit(EXIT_FAILURE);
+                }
+                split_path = strtok(NULL, "\\");
+            }
+#else
+            if((mkdir(argv[2], (mode_t)0755) != 0)&&(errno != EEXIST)){
+                printf("Erreur de creation du repertoire pour le code source genere.\n");
+                fclose(test_copy);
+                exit(EXIT_FAILURE);
+            }
+#endif
+            free(tempCopyPath);
+        }
+        fclose(test_copy);
+    }
 
     ParseInfos parseInfos;
     fill_parseInfos_structure(argv[1], &parseInfos);
@@ -80,6 +131,7 @@ int main(int argc, char *argv[]){
         fprintf(f, "\nexport ModelesLocation=\"%s\"\n", modelesPath);
         fclose(f);
 #endif
+        printf("Warning : Pour une nouvelle execution, veuillez ouvrir un nouveau terminal.\n");
     }
     return 0;
 }
