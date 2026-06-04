@@ -28,7 +28,7 @@ Transition** transitions;        // Transitions sortantes de chaque état
 Variable variable;               // Variable de données
 UpdateFunction* update_functions; // Fonctions d'update
 Constraint* constraints;         // Contraintes
-int vmax = 500;
+int vmax = 3000 ;
 //int vmax = 1000;
 
 // ---------------------Instantiation TA ---------------------
@@ -53,7 +53,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 
     
     // Invariants
-    static DBM i_0 = {{0,0,0},{2,0,infty},{2,infty,0}};
+    static DBM i_0 = {{0,0,0},{32,0,infty},{32,infty,0}};
     invariants[0] = &i_0;
     invariants[1] = &i_0;
    
@@ -124,8 +124,8 @@ Variable update_b(Variable var) {
     if (var.v * 2 <= vmax && var.v * 2 >= -10) {
 
       var.v *= 2;
-     if (var.v >= vmax) var.active = true;
-     else 
+    if (var.v >= vmax) var.active = true;
+    else 
      var.active = false;
       var.x += 1;
      
@@ -145,8 +145,8 @@ Variable update_c(Variable var) {
     if (var.v + 1 <= vmax && var.v + 1 >= -10){
         
         var.v += 1;
-     if (var.v >= vmax) var.active = true;
-     else
+    if (var.v >= vmax) var.active = true;
+    else
       var.active = false;
         var.x += 1;
         //  var.table[c

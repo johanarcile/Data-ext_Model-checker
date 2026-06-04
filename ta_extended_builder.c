@@ -2327,7 +2327,7 @@ int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,St
     int init_weight = heuristique_check(init_state, goal);
     sw_add(&visiting, *init_state, init_weight);
     visit_add(&visited,  *init_state);
-   nbr_border_state ++;
+  // nbr_border_state ++;
    //num_found++;
     //free(init_state);
 
@@ -2391,7 +2391,7 @@ int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,St
                
             }
         }
-        num_visited++;
+      //  num_visited++;
         free(successors);
     }
 
@@ -2813,33 +2813,18 @@ int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, GoalCondition* goal,
         /* Cas général : on n'ajoute que les successeurs qui satisfont check */
         for (int i = 0; i < num_succ; i++) {
             State* s = &successors[i];
-           
-
             /* EG : inutile d'explorer un état qui viole la propriété */
-             if (!check(s, goal, ta))
-                 continue;
-
-           
-           
-            /* un successor déja visité */
-            // if (visit_find(&visited, *s) != NULL)
-            //       continue;
-          
-           
-
+            //  if (!check(s, goal, ta))
+            //      continue;
             int w = heuristique_check(s, goal);
-           
-            sw_add(&visiting, *s, w);
-           // visit_add(&visited, *s);
-            
+            sw_add(&visiting, *s, w);    
         }
        
         free(successors);
     }
 
     /* open vide : aucun chemin infini satisfaisant trouvé */
-    sw_destroy(&visiting);
-    //visit_destroy(&visited);
+   sw_destroy(&visiting);
    printf("\n nombre d etats vistes: %d", num_visited);
 
      return 0 ;
@@ -2900,7 +2885,6 @@ int EF_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal, State** 
                 **result = current;
                 free(exploring);
                 free(finals);
-                //visit_destroy(&border_visited);
                 visitState_destroy(&layer_visited);
                  printf("\n nombre d etats vistes: %d", num_visited);
                 return 1;
@@ -2925,7 +2909,6 @@ int EF_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal, State** 
                         StateWeight* tmp = realloc(finals, capacity_finals * sizeof(StateWeight));
                         if (!tmp) {
                             free(finals); free(exploring); free(succs);
-                            //visit_destroy(&border_visited);
                             visitState_destroy(&layer_visited);
                             return 0;
                         }
@@ -2990,7 +2973,6 @@ int EF_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal, State** 
 
     free(exploring);
     free(finals);
-    //visit_destroy(&border_visited);
     visitState_destroy(&layer_visited);
     return 0;
 }

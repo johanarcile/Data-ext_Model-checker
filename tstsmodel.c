@@ -5,8 +5,6 @@
 #include "structure_ta.h"
 
 
-
-
 // --------------------- Variables globales ---------------------
 
 char** locations;                 // Locations du TA
@@ -17,12 +15,11 @@ Transition** transitions;        // Transitions sortantes de chaque état
 Variable variable;               // Variable de données
 UpdateFunction* update_functions; // Fonctions d'update
 Constraint* constraints;         // Contraintes
-int vmax = 10000;
+
 // ---------------------Instantiation TA ---------------------
 
-
 void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND HAVING ALL VARIABLES BE ARRAYS
-    int nb_locations = 4;
+    int nb_locations = 6;
     int nb_actions = 3;
 
     locations = malloc(nb_locations * sizeof(char*));
@@ -34,21 +31,21 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     constraints = malloc(nb_actions * sizeof(Constraint));
 
     // Locations
-    locations[0] = "l0";
-    locations[1] = "l1";
-    locations[2] = "l2";
-    locations[3] = "l3";
+    locations[0] = "l0l3";
+    locations[1] = "l0l4";
+    locations[2] = "l1l3";
+    locations[3] = "l1l4";
    
-
-
     
     // Invariants
-    static DBM i_0 = {{0,0,0},{12,0,infty},{12,infty,0}};
+    static DBM i_0 = {{0,0,0},{2,0,infty},{2,infty,0}};
     invariants[0] = &i_0;
     invariants[1] = &i_0;
     invariants[2] = &i_0;
     invariants[3] = &i_0;
-   
+    invariants[4] = &i_0;
+    invariants[5] = &i_0;
+
 
     // Actions
     actions[0] = "a";
@@ -58,37 +55,32 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
     // Transitions
     nb_trans_par_location[0] = 2;
     transitions[0] = malloc(nb_trans_par_location[0] * sizeof(Transition));
-    transitions[0][0] = (Transition){.location_in = 1, .label_action = 0, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
-    transitions[0][1] = (Transition){.location_in = 2, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
-    
-    nb_trans_par_location[1] = 1;
+    transitions[0][0] = (Transition){.location_in = 1, .label_action = 2, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+    transitions[0][1] = (Transition){.location_in = 2, .label_action = 0, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+
+    nb_trans_par_location[1] = 2;
     transitions[1] = malloc(nb_trans_par_location[1] * sizeof(Transition));
-    transitions[1][0] = (Transition){.location_in = 3, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
-    
-    nb_trans_par_location[2] = 1;
+    transitions[1][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
+    transitions[1][1] = (Transition){.location_in = 3, .label_action = 0, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+
+    nb_trans_par_location[2] = 2;
     transitions[2] = malloc(nb_trans_par_location[2] * sizeof(Transition));
-    transitions[2][0] = (Transition){.location_in = 3, .label_action = 0, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
-    
+    transitions[2][0] = (Transition){.location_in = 3, .label_action = 2, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {infty,infty}};
+    transitions[2][1] = (Transition){.location_in = 0, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
 
     nb_trans_par_location[3] = 2;
     transitions[3] = malloc(nb_trans_par_location[3] * sizeof(Transition));
-    transitions[3][0] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-1,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
-    transitions[3][1] = (Transition){.location_in = 0, .label_action = 1, .guard = {{0,-1,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
-
-
-
+    transitions[3][0] = (Transition){.location_in = 2, .label_action = 1, .guard = {{0,0,-1},{infty,0,infty},{infty,infty,0}}, .reset = {0,0}};
+    transitions[3][1] = (Transition){.location_in = 1, .label_action = 2, .guard = {{0,-1,0},{infty,0,infty},{infty,infty,0}}, .reset = {0,infty}};
     
-  
-    
-
-}
+    }
 
 // --------------------- Initialisation des variables ---------------------
 
 void init_variables() { 
     variable.v = 0;
     variable.active=false;
-    variable.table_size = 3;
+    variable.table_size = 2;
     variable.table[0] = 0;
     variable.table[1] = 0;
     variable.table[2] = 0;
@@ -97,22 +89,14 @@ void init_variables() {
 
 // --------------------- Update functions ---------------------
 
-
+// Variable update_a(Variable var) { if (var.v + 2 <= 100 && var.v + 2 >= -10) var.v += 2; return var; }
+// Variable update_b(Variable var) { if (var.v + 1 <= 100 && var.v + 1 >= -10) var.v += 1; return var; }//pour garantir acyclicité - --> +
+// Variable update_c(Variable var) { if (var.v * 2 <= 100 && var.v * 2 >= -10) var.v *= 2; return var; }
 Variable update_a(Variable var) {
     
 
    
-     if (var.v + 2 <= vmax && var.v + 2 >= -10){ 
-        
-        var.v += 2;
-         //var.x *= 2;
-         var.active = false;
-         if(var.v == vmax){var.active = true;}
-        // var.table[0]++;
-        // var.table[1] = var.v;
-        // var.table[2] = var.v;
-        // snprintf(var.name, NAME_SIZE, "transition a");
-    } 
+ 
   
     return var;
 }
@@ -121,17 +105,6 @@ Variable update_b(Variable var) {
    
    
    
-    if (var.v *2 <= vmax && var.v + 1 >= -10){
-        
-        var.v *= 2;
-       // var.x += 2;
-        var.active = false;
-       if(var.v == vmax){var.active = true;}
-        //  var.table[0]++;
-        // var.table[1] = var.v;
-        // var.table[2] = var.v;
-        // snprintf(var.name, NAME_SIZE, "transition b");
-    } 
 
     
     return var;
@@ -139,20 +112,6 @@ Variable update_b(Variable var) {
 
 Variable update_c(Variable var) {
   
-    if (var.v + 1 <= vmax && var.v * 2 >= -10) {
-
-      var.v += 1;
-      //var.x += 1;
-
-      var.active = false;
-
-     if(var.v == vmax){var.active = true;}
-    //   var.table[0]++;
-    //   var.table[1] = var.v;
-    //   var.table[2] = var.v;
-    //   snprintf(var.name, NAME_SIZE, "transition c");
-    }
- 
     return var;
 }
 void init_update_functions() {
