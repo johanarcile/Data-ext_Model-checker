@@ -1,0 +1,12 @@
+Informations sur le contenu de la branche json_parser : 
+
+Le répertoire nommé parse_generation contient le code source du générateur automatique de code source ainsi qu'un README.md explicatif.
+Dans ce répertoire, le répertoire nommé modeles_generation contient les fichiers de modèles de génération du code source. 
+
+Le répertoire nommé Tests_parse contient les tests effectués concernant la partie parsing.
+Le répertoire nommé Tests_generation contient les tests effectués concernant la partie génération. 
+
+Le fichier executable_structure_imbriquees.txt contient le résultat de l'exécution du code source généré pour un modèles contenant des typedef structure et alias.
+Le fichier format_json.txt contient les explications relatives au format du fichier json.
+Le fichier format_modeles_generation.txt contient les explications relatives au format des fichiers modèles pour la génération du code source. 
+Le fichier README.md contient les explications concernant la compilation et l'exécution du code source généré. 

@@ -63,13 +63,11 @@ int main(int argc, char *argv[]){
     } //Vérification que le premier argument est bien le chemin d'accès du fichier json
 
     if(argv[2] != NULL){
-        printf("Chemin d'acces generation detecte\n");
         char testCopyPath[4096];
         strcpy(testCopyPath, argv[2]);
         strcat(testCopyPath, "/test.txt");
         FILE* test_copy = fopen(testCopyPath, "w");
         if(!test_copy){
-            printf("test_copy n'a pas fonctionne\n");
 #ifdef _WIN32
             char *tempCopyPath = strdup(argv[2]);
             char *split_path = strtok(tempCopyPath, "\\");
@@ -107,7 +105,6 @@ int main(int argc, char *argv[]){
         LONG result = RegOpenKeyExA(HKEY_CURRENT_USER, "Environment", 0, KEY_SET_VALUE, &hKey);
         if(result != ERROR_SUCCESS){
             printf("Erreur d'acces aux cles pour enregistrer la variable d'environnement.\n");
-            free(modelesPath);
             exit(EXIT_FAILURE);
         }
         result = RegSetValueExA(hKey, "ModelesLocation", 0, REG_SZ, (const BYTE *)modelesPath, (DWORD)(strlen(modelesPath) + 1));
