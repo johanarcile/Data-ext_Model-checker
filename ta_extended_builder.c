@@ -2563,7 +2563,7 @@ int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock, GoalCondition* go
     sw_add(&visiting, *init_state, init_weight);
     visit_add(&visited,  *init_state);
     //num_visited++;
-    num_borders++;
+    //num_borders++;
     free(init_state);
      int    num_succ = 0;
     while (HASH_COUNT(visiting) > 0) {
