@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Graph Viewer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #fff; font-family: sans-serif; }
+    #cy { width: 100vw; height: 100vh; }
+    #empty-msg {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      color: #888; font-size: 16px; pointer-events: none;
+    }
+    #mode-controls {
+      position: fixed; top: 12px; right: 12px; flex-direction: column;
+      display: flex; gap: 6px; z-index: 999;
+    }
+    #mode-controls button {
+      padding: 5px 14px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    #mode-controls button.active {
+      background: #7ea3f3;
+      color: #fff;
+      border-color: #556b9b;
+    }
+  </style>
+</head>
+<body>
+<div id="cy"></div>
+<div id="empty-msg">Entrez un ID d'état et cliquez sur "Afficher"</div>
+<div id="mode-controls">
+  <button id="btn-pred" onclick="setMode('pred')">Prédécesseurs</button>
+  <button id="btn-succ" onclick="setMode('succ')">Successeurs</button>
+</div>
+<script>
+
+document.addEventListener('mouseover', () => window.focus());
+document.addEventListener('click', () => window.focus());
+
+const params = new URLSearchParams(window.location.search);
+let MODE = params.get('mode') || 'both';
+
+function setMode(m) {
+  const newMode = (MODE === m) ? 'both' : m;
+  MODE = newMode;
+  document.getElementById('btn-pred').classList.toggle('active', MODE === 'pred');
+  document.getElementById('btn-succ').classList.toggle('active', MODE === 'succ');
+  restartWithCurrentState();
+}
+
+function restartWithCurrentState() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('mode', MODE);
+  window.history.replaceState({}, '', url);
+  startAtState(_currentStartId);
+}
+
+document.getElementById('btn-pred').classList.toggle('active', MODE === 'pred');
+document.getElementById('btn-succ').classList.toggle('active', MODE === 'succ');
+
+const cy = cytoscape({
+  container: document.getElementById('cy'),
+  elements: [],
+  layout: { name: 'preset' },
+  style: [
+    {
+      selector: 'node',
+      style: {
+        shape: 'rectangle',
+        content: 'data(label)',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        color: '#fff',
+        'background-color': '#6EA8FE',
+        width: 'label',
+        height: 'label',
+        'padding': '1px',
+        'font-size': 6,
+        'text-wrap': 'wrap',
+        'text-max-width': '80px'
+      }
+    },
+    { selector: 'node.root', style: { 'background-color': '#2563EB' } },
+    { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#000' } },
+    {
+      selector: 'edge',
+      style: {
+        'curve-style': 'straight',
+        'target-arrow-shape': 'triangle',
+        'arrow-scale': 0.5,
+        width: 1,
+        label: 'data(label)',
+        'font-size': 6,
+        'line-color': '#888',
+        'target-arrow-color': '#888',
+        'text-rotation': 'autorotate',
+        'text-background-color': '#fff',
+        'text-background-opacity': 1,
+        'text-background-padding': '2px'
+      }
+    },
+    { selector: 'edge:selected', style: { 'line-color': '#e24a4a', 'target-arrow-color': '#e24a4a' } }
+  ],
+  minZoom: 0.05,
+  maxZoom: 5
+});
+
+const nodeDataCache = {};
+const neighborCache = {};
+const assignedPositions = {};
+const inCy = new Set();
+const pinnedNodes = new Set();
+const fetchedNeighbors = new Set();
+
+let started = false;
+let _currentStartId = 0;
+let _isMoving = false;
+
+const GAP = 20;
+const FALLBACK_W = 70;
+const FALLBACK_H = 50;
+const LOOKAHEAD_MS = 900;
+const MARGIN_BASE = 0.5;
+const REMOVE_MARGIN_BASE = 0.05;
+const ADD_MARGIN_FACTOR = 2.6;
+const NODE_VISIBLE_MARGIN = Math.max(FALLBACK_W, FALLBACK_H);
+
+let _lastPanPos = null;
+let _lastZoom = null;
+let _lastVelTime = null;
+let _velPanX = 0;
+let _velPanY = 0;
+let _velZoom = 0;
+let _lastMoveTime = 0;
+let _rafId = null;
+let _cycleRunning = false;
+let _idleTimer = null;
+
+function _updateVelocity() {
+  const now = performance.now();
+  const zoom = cy.zoom();
+  const pan = cy.pan();
+  const gx = -pan.x / zoom;
+  const gy = -pan.y / zoom;
+  if (_lastPanPos !== null && _lastVelTime !== null) {
+    const dt = now - _lastVelTime;
+    if (dt > 0 && dt < 200) {
+      _velPanX = (gx - _lastPanPos.x) / dt;
+      _velPanY = (gy - _lastPanPos.y) / dt;
+      _velZoom = (zoom - _lastZoom) / dt;
+    }
+  }
+  _lastPanPos = { x: gx, y: gy };
+  _lastZoom = zoom;
+  _lastVelTime = now;
+}
+
+cy.on('pan zoom', _updateVelocity);
+
+function getMargin() {
+  const zoom = cy.zoom();
+  const w = cy.width() / zoom;
+  const h = cy.height() / zoom;
+  const diag = Math.sqrt(w * w + h * h) / 2;
+  const base = diag * MARGIN_BASE;
+  const panDist = Math.sqrt((_velPanX * LOOKAHEAD_MS) ** 2 + (_velPanY * LOOKAHEAD_MS) ** 2);
+  let zoomMargin = 0;
+  if (_velZoom < 0) {
+    const fz = Math.max(cy.minZoom(), zoom + _velZoom * LOOKAHEAD_MS);
+    const fw = cy.width() / fz;
+    const fh = cy.height() / fz;
+    zoomMargin = Math.sqrt(fw * fw + fh * fh) / 2 - diag;
+  }
+  return base + panDist + zoomMargin;
+}
+
+function getRemoveMargin() {
+  const zoom = cy.zoom();
+  const w = cy.width() / zoom;
+  const h = cy.height() / zoom;
+  const diag = Math.sqrt(w * w + h * h) / 2;
+  return diag * REMOVE_MARGIN_BASE;
+}
+
+function windowExtent() {
+  const zoom = cy.zoom();
+  const pan = cy.pan();
+  const x1 = -pan.x / zoom;
+  const y1 = -pan.y / zoom;
+  return { x1, y1, x2: x1 + cy.width() / zoom, y2: y1 + cy.height() / zoom };
+}
+
+function isInExtent(pos, ext, margin) {
+  return pos.x >= ext.x1 - margin && pos.x <= ext.x2 + margin && pos.y >= ext.y1 - margin && pos.y <= ext.y2 + margin;
+}
+
+function nodeHalfSize(id) {
+  if (inCy.has(String(id))) {
+    const n = cy.getElementById(String(id));
+    if (n.length) {
+      const w = n.width();
+      const h = n.height();
+      if (w > 0 && h > 0) return { hw: w / 2, hh: h / 2 };
+    }
+  }
+  const ap = assignedPositions[id];
+  if (ap?.hw) return { hw: ap.hw, hh: ap.hh };
+  return { hw: FALLBACK_W / 2, hh: FALLBACK_H / 2 };
+}
+
+function syncNodeSizes() {
+  cy.nodes().forEach(n => {
+    const id = Number(n.id());
+    const w = n.width();
+    const h = n.height();
+    if (w > 0 && h > 0 && assignedPositions[id]) {
+      assignedPositions[id].hw = w / 2;
+      assignedPositions[id].hh = h / 2;
+    }
+  });
+}
+
+function boxesOverlap(a, b) {
+  return Math.abs(a.x - b.x) < a.hw + b.hw + GAP && Math.abs(a.y - b.y) < a.hh + b.hh + GAP;
+}
+
+function minCenterDist(aHw, aHh, bHw, bHh) {
+  return Math.sqrt((aHw + bHw + GAP) ** 2 + (aHh + bHh + GAP) ** 2);
+}
+
+function minCircleRadius(n, pHw, pHh, cHw, cHh) {
+  const d = minCenterDist(pHw, pHh, cHw, cHh);
+  if (n <= 1) return d;
+  return (d / 2) / Math.sin(Math.PI / n) + 4;
+}
+
+function placeAround(parentId, childIds) {
+  const parent = assignedPositions[parentId];
+  if (!parent) return;
+
+  const unplaced = childIds.filter(cid => !assignedPositions[cid] && !pinnedNodes.has(String(cid)));
+  if (!unplaced.length) return;
+
+  const n = unplaced.length;
+  const { hw: pHw, hh: pHh } = nodeHalfSize(parentId);
+  const cHw = FALLBACK_W / 2;
+  const cHh = FALLBACK_H / 2;
+  const r0 = Math.max(minCircleRadius(n, pHw, pHh, cHw, cHh), minCenterDist(pHw, pHh, cHw, cHh));
+  const ext = windowExtent();
+  const vcx = (ext.x1 + ext.x2) / 2;
+  const vcy = (ext.y1 + ext.y2) / 2;
+  const dx = parent.x - vcx;
+  const dy = parent.y - vcy;
+  const baseAngle = (Math.abs(dx) + Math.abs(dy)) > 0.5 ? Math.atan2(dy, dx) : -Math.PI / 2;
+  const arc = n >= 3 ? 2 * Math.PI : Math.PI;
+  const step = n > 1 ? arc / n : 0;
+  const GROW = minCenterDist(pHw, pHh, cHw, cHh);
+  const taken = Object.entries(assignedPositions)
+    .filter(([k]) => !unplaced.includes(Number(k)))
+    .map(([k, v]) => {
+      const s = nodeHalfSize(Number(k));
+      return { x: v.x, y: v.y, hw: s.hw, hh: s.hh };
+    });
+  const batch = [];
+
+  unplaced.forEach((cid, i) => {
+    let r = r0;
+    let angle = baseAngle + i * step;
+    let pos = { x: parent.x + r * Math.cos(angle), y: parent.y + r * Math.sin(angle), hw: cHw, hh: cHh };
+    let attempts = 0;
+    while (attempts < 400 && [...taken, ...batch].some(p => boxesOverlap(pos, p))) {
+      angle += 0.15;
+      if (attempts > 0 && attempts % 20 === 0) r += GROW;
+      pos = { x: parent.x + r * Math.cos(angle), y: parent.y + r * Math.sin(angle), hw: cHw, hh: cHh };
+      attempts++;
+    }
+    assignedPositions[cid] = pos;
+    batch.push(pos);
+  });
+}
+
+function resolveOverlaps(ext) {
+  const movable = cy.nodes().toArray().filter(n => !isInExtent(n.position(), ext, 0) && !pinnedNodes.has(n.id()));
+  for (let pass = 0; pass < 10; pass++) {
+    let moved = false;
+    for (let i = 0; i < movable.length; i++) {
+      for (let j = i + 1; j < movable.length; j++) {
+        const a = movable[i];
+        const b = movable[j];
+        const ax = a.position('x');
+        const ay = a.position('y');
+        const bx = b.position('x');
+        const by = b.position('y');
+        const ox = a.width() / 2 + b.width() / 2 + GAP - Math.abs(ax - bx);
+        const oy = a.height() / 2 + b.height() / 2 + GAP - Math.abs(ay - by);
+        if (ox > 0 && oy > 0) {
+          let px = 0;
+          let py = 0;
+          if (ox < oy) px = (ox / 2 + 1) * (ax >= bx ? 1 : -1);
+          else py = (oy / 2 + 1) * (ay >= by ? 1 : -1);
+          a.position({ x: ax + px, y: ay + py });
+          const idA = Number(a.id());
+          if (assignedPositions[idA]) {
+            assignedPositions[idA].x += px;
+            assignedPositions[idA].y += py;
+          }
+          b.position({ x: bx - px, y: by - py });
+          const idB = Number(b.id());
+          if (assignedPositions[idB]) {
+            assignedPositions[idB].x -= px;
+            assignedPositions[idB].y -= py;
+          }
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+}
+
+async function fetchNeighbors(id) {
+  if (neighborCache[id]) return neighborCache[id];
+  const res = await fetch(`http://127.0.0.1:8051/neighbors/${id}`);
+  if (!res.ok) return [];
+  const raw = await res.json();
+  neighborCache[id] = raw.map(({ node: ndata, edge: edata, direction }) => ({ ndata, edata, direction }));
+  return neighborCache[id];
+}
+
+function filteredNeighbors(id) {
+  const all = neighborCache[id] || [];
+  if (MODE === 'succ') return all.filter(n => n.direction === 'successor');
+  if (MODE === 'pred') return all.filter(n => n.direction === 'predecessor');
+  return all;
+}
+
+async function fetchNodeData(id) {
+  if (nodeDataCache[id]) return nodeDataCache[id];
+  const res = await fetch(`http://127.0.0.1:8051/state/${id}`);
+  if (!res.ok) return null;
+  nodeDataCache[id] = await res.json();
+  return nodeDataCache[id];
+}
+
+function addNodeToCy(id) {
+  const sid = String(id);
+  if (inCy.has(sid)) return;
+  const data = nodeDataCache[id];
+  if (!data) return;
+  const ap = assignedPositions[id] || { x: 0, y: 0 };
+  cy.add({ data: { ...data, label: data.label || sid }, position: { x: ap.x, y: ap.y } });
+  inCy.add(sid);
+}
+
+function addEdgeToCy(edata) {
+  const src = String(edata.source);
+  const tgt = String(edata.target);
+  const eid = `${src}->${tgt}`;
+  if (cy.getElementById(eid).length) return;
+  if (!inCy.has(src) || !inCy.has(tgt)) return;
+  cy.add({ data: { ...edata, id: eid } });
+}
+
+async function runCycle() {
+  if (_cycleRunning) return;
+  _cycleRunning = true;
+  try {
+    cy.nodes().forEach(n => {
+      const id = Number(n.id());
+      const w = n.width();
+      const h = n.height();
+      assignedPositions[id] = {
+        x: n.position('x'),
+        y: n.position('y'),
+        hw: w > 0 ? w / 2 : FALLBACK_W / 2,
+        hh: h > 0 ? h / 2 : FALLBACK_H / 2
+      };
+    });
+
+    {
+      const ext = windowExtent();
+      const margin = getMargin();
+      const addMargin = margin * ADD_MARGIN_FACTOR;
+      let anyPlaced = true;
+      while (anyPlaced) {
+        anyPlaced = false;
+        const inZone = Object.keys(assignedPositions)
+          .map(Number)
+          .filter(id => isInExtent(assignedPositions[id], ext, addMargin));
+
+        for (const id of inZone) {
+          if (!fetchedNeighbors.has(id)) {
+            await fetchNeighbors(id);
+            for (const { ndata } of filteredNeighbors(id)) {
+              if (!nodeDataCache[Number(ndata.id)]) nodeDataCache[Number(ndata.id)] = ndata;
+            }
+            fetchedNeighbors.add(id);
+          }
+
+          const neighbors = filteredNeighbors(id);
+          const unpositioned = neighbors
+            .map(({ ndata }) => Number(ndata.id))
+            .filter(nid => !assignedPositions[nid] && !pinnedNodes.has(String(nid)));
+
+          if (unpositioned.length > 0) {
+            placeAround(id, neighbors.map(({ ndata }) => Number(ndata.id)));
+            anyPlaced = true;
+          }
+        }
+      }
+
+      for (const [idStr, ap] of Object.entries(assignedPositions)) {
+        if (isInExtent(ap, ext, addMargin) && nodeDataCache[Number(idStr)]) addNodeToCy(Number(idStr));
+      }
+
+      const inViewportNow = new Set(
+        [...inCy].filter(sid => {
+          const ap = assignedPositions[Number(sid)];
+          return ap && isInExtent(ap, ext, NODE_VISIBLE_MARGIN);
+        })
+      );
+      for (const sid of inViewportNow) {
+        for (const { ndata } of filteredNeighbors(Number(sid))) {
+          const nid = Number(ndata.id);
+          if (assignedPositions[nid] && nodeDataCache[nid]) addNodeToCy(nid);
+        }
+      }
+
+      if (!_isMoving) {
+        const inCySnapshot = [...inCy];
+        for (const sid of inCySnapshot) {
+          for (const { edata } of filteredNeighbors(Number(sid))) addEdgeToCy(edata);
+        }
+      }
+    }
+
+    if (!_isMoving) {
+      syncNodeSizes();
+
+      {
+        const ext = windowExtent();
+        const removeMargin = getRemoveMargin();
+        const margin = getMargin();
+        const addMargin = margin * ADD_MARGIN_FACTOR;
+        const inAddMargin = new Set();
+        for (const [idStr, ap] of Object.entries(assignedPositions)) {
+          if (isInExtent(ap, ext, addMargin)) inAddMargin.add(idStr);
+        }
+
+        const inViewport = new Set();
+        cy.nodes().forEach(n => {
+          if (isInExtent(n.position(), ext, NODE_VISIBLE_MARGIN)) inViewport.add(n.id());
+        });
+
+        const viewportNeighborIds = new Set();
+        for (const sid of inViewport) {
+          for (const { ndata } of filteredNeighbors(Number(sid))) {
+            viewportNeighborIds.add(String(ndata.id));
+          }
+        }
+
+        const toRemove = [];
+        cy.nodes().forEach(n => {
+          if (isInExtent(n.position(), ext, removeMargin)) return;
+          if (inAddMargin.has(n.id())) return;
+          if (viewportNeighborIds.has(n.id())) return;
+          const hasVisibleNeighbor = filteredNeighbors(Number(n.id()))
+            .some(({ ndata }) => inViewport.has(String(ndata.id)) || viewportNeighborIds.has(String(ndata.id)));
+          if (!hasVisibleNeighbor) toRemove.push(n);
+        });
+
+        toRemove.forEach(n => {
+          const id = Number(n.id());
+          cy.remove(n);
+          inCy.delete(String(id));
+          pinnedNodes.delete(String(id));
+        });
+
+        cy.edges().forEach(e => {
+          if (!inCy.has(e.data('source')) || !inCy.has(e.data('target'))) cy.remove(e);
+        });
+
+        for (const idStr of Object.keys(assignedPositions)) {
+          const id = Number(idStr);
+          if (inCy.has(idStr)) continue;
+          const ap = assignedPositions[id];
+          if (!ap || isInExtent(ap, ext, removeMargin)) continue;
+          const hasVisibleNeighbor = filteredNeighbors(id)
+            .some(({ ndata }) => inViewport.has(String(ndata.id)) || inAddMargin.has(String(ndata.id)));
+          if (!hasVisibleNeighbor) {
+            delete assignedPositions[id];
+          }
+        }
+
+        resolveOverlaps(windowExtent());
+      }
+
+      const snapshot2 = [...inCy];
+      for (const sid of snapshot2) {
+        for (const { edata } of filteredNeighbors(Number(sid))) addEdgeToCy(edata);
+      }
+    }
+
+  } finally {
+    _cycleRunning = false;
+  }
+}
+
+const IDLE_AFTER_MS = 180;
+
+function _onMove() {
+  if (!started) return;
+  _isMoving = true;
+  _lastMoveTime = performance.now();
+  _scheduleLoop();
+  clearTimeout(_idleTimer);
+  _idleTimer = setTimeout(() => {
+    _isMoving = false;
+    _scheduleLoop();
+  }, IDLE_AFTER_MS);
+}
+
+function _scheduleLoop() {
+  if (_rafId !== null) return;
+  _rafId = requestAnimationFrame(_loopFrame);
+}
+
+async function _loopFrame() {
+  _rafId = null;
+  if (!started) return;
+  if (!_cycleRunning) await runCycle();
+  if (performance.now() - _lastMoveTime < IDLE_AFTER_MS) _rafId = requestAnimationFrame(_loopFrame);
+}
+
+cy.on('pan zoom', _onMove);
+cy.on('dragfree', 'node', e => {
+  const n = e.target;
+  const id = Number(n.id());
+  pinnedNodes.add(n.id());
+  assignedPositions[id] = {
+    x: n.position('x'),
+    y: n.position('y'),
+    hw: n.width() / 2 || FALLBACK_W / 2,
+    hh: n.height() / 2 || FALLBACK_H / 2
+  };
+  _onMove();
+});
+cy.on('tap', 'node', () => _onMove());
+
+async function startAtState(stateId) {
+  _currentStartId = stateId;
+  cy.elements().remove();
+  Object.keys(assignedPositions).forEach(k => delete assignedPositions[k]);
+  inCy.clear();
+  pinnedNodes.clear();
+  fetchedNeighbors.clear();
+  _lastPanPos = null;
+  _lastZoom = null;
+  _lastVelTime = null;
+  _velPanX = 0;
+  _velPanY = 0;
+  _velZoom = 0;
+  _lastMoveTime = 0;
+  _isMoving = false;
+  if (_rafId !== null) {
+    cancelAnimationFrame(_rafId);
+    _rafId = null;
+  }
+  clearTimeout(_idleTimer);
+
+  document.getElementById('empty-msg').style.display = 'none';
+  started = true;
+
+  assignedPositions[stateId] = { x: 0, y: 0, hw: FALLBACK_W / 2, hh: FALLBACK_H / 2 };
+  await fetchNodeData(stateId);
+  addNodeToCy(stateId);
+  cy.getElementById(String(stateId)).addClass('root');
+  cy.viewport({ zoom: 5, pan: { x: cy.width() / 2, y: cy.height() / 2 } });
+  await runCycle();
+}
+
+window.addEventListener('keydown', e => {
+  const PAN = 100;
+  const ZOOM = 1.3;
+  const c = { x: cy.width() / 2, y: cy.height() / 2 };
+  if (e.key === 'ArrowUp') { cy.panBy({ x: 0, y: PAN }); e.preventDefault(); }
+  if (e.key === 'ArrowDown') { cy.panBy({ x: 0, y: -PAN }); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { cy.panBy({ x: PAN, y: 0 }); e.preventDefault(); }
+  if (e.key === 'ArrowRight') { cy.panBy({ x: -PAN, y: 0 }); e.preventDefault(); }
+  if (e.key === '+') { cy.zoom({ level: cy.zoom() * ZOOM, renderedPosition: c }); e.preventDefault(); }
+  if (e.key === '-') { cy.zoom({ level: cy.zoom() / ZOOM, renderedPosition: c }); e.preventDefault(); }
+  _onMove();
+});
+
+const startId = params.get('start');
+startAtState(startId !== null ? parseInt(startId, 10) : 0);
+
+</script>
+</body>
+</html>
