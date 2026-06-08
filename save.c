@@ -60,26 +60,11 @@ int save_to_fbs(State_space_TA *ss, const char *filename)
                                                   State_space_ta_State_transitions_create(&B,
                                                                                           State_space_ta_State_transition_vec_end(&B)));
     }
-    State_space_ta_State_transitions_vec_ref_t trans_ref =
+    State_space_ta_State_transitions_vec_ref_t succ_ref =
         State_space_ta_State_transitions_vec_end(&B);
 
-    flatbuffers_int32_vec_ref_t nb_trans_ref =
+    flatbuffers_int32_vec_ref_t nb_succ_ref =
         flatbuffers_int32_vec_create(&B, (int32_t *)ss->nb_trans_by_state, ss->nb_etats);
-
-    State_space_ta_State_transitions_vec_start(&B);
-    for (int i = 0; i < ss->nb_etats; i++)
-    {
-        State_space_ta_State_transition_vec_start(&B);
-        for (int j = 0; j < ss->nb_trans_by_state[i]; j++)
-        {
-            State_transition *t = &ss->state_transitions[i][j];
-            State_space_ta_State_transition_vec_push(&B,
-                                                     State_space_ta_State_transition_create(&B, t->cible, t->action_id));
-        }
-        State_space_ta_State_transitions_vec_push(&B,
-                                                  State_space_ta_State_transitions_create(&B,
-                                                                                          State_space_ta_State_transition_vec_end(&B)));
-    }
 
     State_space_ta_State_transitions_vec_start(&B);
     for (int i = 0; i < ss->nb_etats; i++)
@@ -88,8 +73,17 @@ int save_to_fbs(State_space_TA *ss, const char *filename)
         for (int j = 0; j < pred_count[i]; j++)
         {
             int pred_id = pred_lists[i][j];
+            int action_id = 0;
+            for (int k = 0; k < ss->nb_trans_by_state[pred_id]; k++)
+            {
+                if (ss->state_transitions[pred_id][k].cible == i)
+                {
+                    action_id = ss->state_transitions[pred_id][k].action_id;
+                    break;
+                }
+            }
             State_space_ta_State_transition_vec_push(&B,
-                                                     State_space_ta_State_transition_create(&B, pred_id, 0));
+                                                     State_space_ta_State_transition_create(&B, pred_id, action_id));
         }
         State_space_ta_State_transitions_vec_push(&B,
                                                   State_space_ta_State_transitions_create(&B,
@@ -98,7 +92,10 @@ int save_to_fbs(State_space_TA *ss, const char *filename)
     State_space_ta_State_transitions_vec_ref_t pred_ref =
         State_space_ta_State_transitions_vec_end(&B);
 
-    State_space_ta_State_space_ta_create_as_root(&B, etats_ref, trans_ref, pred_ref, nb_trans_ref);
+    flatbuffers_int32_vec_ref_t nb_pred_ref =
+        flatbuffers_int32_vec_create(&B, (int32_t *)pred_count, ss->nb_etats);
+
+    State_space_ta_State_space_ta_create_as_root(&B, etats_ref, succ_ref, pred_ref, nb_succ_ref, nb_pred_ref);
 
     size_t size;
     void *buf = flatcc_builder_finalize_buffer(&B, &size);
