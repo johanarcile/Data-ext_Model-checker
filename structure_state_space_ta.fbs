@@ -26,11 +26,17 @@ table State_transitions {
     items:[State_transition];
 }
 
+table Position {
+    x:float;
+    y:float;
+}
+
 table State_space_ta {
     etats:[State];
     state_transitions:[State_transitions];
     state_predecessors:[State_transitions];
     nb_trans_by_state:[int];
+    positions:[Position];
 }
 
 root_type State_space_ta;
