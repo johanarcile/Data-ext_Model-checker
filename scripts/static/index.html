@@ -31,6 +31,10 @@
       color: #fff;
       border-color: #556b9b;
     }
+    #loading-indicator {
+      position: fixed; bottom: 12px; right: 12px;
+      font-size: 12px; color: #888; pointer-events: none; display: none;
+    }
   </style>
 </head>
 <body>
@@ -40,6 +44,7 @@
   <button id="btn-pred" onclick="setMode('pred')">Prédécesseurs</button>
   <button id="btn-succ" onclick="setMode('succ')">Successeurs</button>
 </div>
+<div id="loading-indicator">Chargement positions…</div>
 <script>
 
 document.addEventListener('mouseover', () => window.focus());
@@ -47,6 +52,7 @@ document.addEventListener('click', () => window.focus());
 
 const params = new URLSearchParams(window.location.search);
 let MODE = params.get('mode') || 'both';
+let NAV  = params.get('nav')  || 'dynamic';
 
 function setMode(m) {
   const newMode = (MODE === m) ? 'both' : m;
@@ -119,6 +125,10 @@ const assignedPositions = {};
 const inCy = new Set();
 const pinnedNodes = new Set();
 const fetchedNeighbors = new Set();
+
+const staticPositions = {};
+let _staticPositionsReady = false;
+const STATIC_BATCH_SIZE = 500;
 
 let started = false;
 let _currentStartId = 0;
@@ -369,148 +379,210 @@ function addEdgeToCy(edata) {
   cy.add({ data: { ...edata, id: eid } });
 }
 
+async function loadAllStaticPositions() {
+  document.getElementById('loading-indicator').style.display = 'block';
+  const nbRes = await fetch('http://127.0.0.1:8051/nb_states');
+  if (!nbRes.ok) { document.getElementById('loading-indicator').style.display = 'none'; return; }
+  const { nb } = await nbRes.json();
+  for (let start = 0; start < nb; start += STATIC_BATCH_SIZE) {
+    const end = Math.min(start + STATIC_BATCH_SIZE, nb);
+    const res = await fetch(`http://127.0.0.1:8051/static_positions_range/${start}/${end}`);
+    if (!res.ok) break;
+    const batch = await res.json();
+    for (const { id, x, y } of batch) {
+      staticPositions[id] = { x, y };
+      assignedPositions[id] = { x, y, hw: FALLBACK_W / 2, hh: FALLBACK_H / 2 };
+    }
+  }
+  _staticPositionsReady = true;
+  document.getElementById('loading-indicator').style.display = 'none';
+}
+
 async function runCycle() {
   if (_cycleRunning) return;
   _cycleRunning = true;
   try {
-    cy.nodes().forEach(n => {
-      const id = Number(n.id());
-      const w = n.width();
-      const h = n.height();
-      assignedPositions[id] = {
-        x: n.position('x'),
-        y: n.position('y'),
-        hw: w > 0 ? w / 2 : FALLBACK_W / 2,
-        hh: h > 0 ? h / 2 : FALLBACK_H / 2
-      };
-    });
+    if (NAV === 'static') {
+      await runCycleStatic();
+    } else {
+      await runCycleDynamic();
+    }
+  } finally {
+    _cycleRunning = false;
+  }
+}
 
-    {
-      const ext = windowExtent();
-      const margin = getMargin();
-      const addMargin = margin * ADD_MARGIN_FACTOR;
-      let anyPlaced = true;
-      while (anyPlaced) {
-        anyPlaced = false;
-        const inZone = Object.keys(assignedPositions)
-          .map(Number)
-          .filter(id => isInExtent(assignedPositions[id], ext, addMargin));
+async function runCycleStatic() {
+  if (!_staticPositionsReady) return;
 
-        for (const id of inZone) {
-          if (!fetchedNeighbors.has(id)) {
-            await fetchNeighbors(id);
-            for (const { ndata } of filteredNeighbors(id)) {
-              if (!nodeDataCache[Number(ndata.id)]) nodeDataCache[Number(ndata.id)] = ndata;
-            }
-            fetchedNeighbors.add(id);
+  const ext = windowExtent();
+  const margin = getMargin();
+  const addMargin = margin * ADD_MARGIN_FACTOR;
+
+  const inZone = Object.keys(assignedPositions)
+    .map(Number)
+    .filter(id => isInExtent(assignedPositions[id], ext, addMargin));
+
+  for (const id of inZone) {
+    if (!fetchedNeighbors.has(id)) {
+      await fetchNeighbors(id);
+      for (const { ndata } of filteredNeighbors(id)) {
+        if (!nodeDataCache[Number(ndata.id)]) nodeDataCache[Number(ndata.id)] = ndata;
+      }
+      fetchedNeighbors.add(id);
+    }
+  }
+
+  for (const [idStr, ap] of Object.entries(assignedPositions)) {
+    if (isInExtent(ap, ext, addMargin) && nodeDataCache[Number(idStr)]) addNodeToCy(Number(idStr));
+  }
+
+  for (const sid of [...inCy]) {
+    for (const { ndata, edata } of filteredNeighbors(Number(sid))) {
+      const nid = Number(ndata.id);
+      if (!inCy.has(String(nid)) && nodeDataCache[nid] && assignedPositions[nid]) {
+        addNodeToCy(nid);
+      }
+      addEdgeToCy(edata);
+    }
+  }
+}
+
+async function runCycleDynamic() {
+  cy.nodes().forEach(n => {
+    const id = Number(n.id());
+    const w = n.width();
+    const h = n.height();
+    assignedPositions[id] = {
+      x: n.position('x'),
+      y: n.position('y'),
+      hw: w > 0 ? w / 2 : FALLBACK_W / 2,
+      hh: h > 0 ? h / 2 : FALLBACK_H / 2
+    };
+  });
+
+  {
+    const ext = windowExtent();
+    const margin = getMargin();
+    const addMargin = margin * ADD_MARGIN_FACTOR;
+    let anyPlaced = true;
+    while (anyPlaced) {
+      anyPlaced = false;
+      const inZone = Object.keys(assignedPositions)
+        .map(Number)
+        .filter(id => isInExtent(assignedPositions[id], ext, addMargin));
+
+      for (const id of inZone) {
+        if (!fetchedNeighbors.has(id)) {
+          await fetchNeighbors(id);
+          for (const { ndata } of filteredNeighbors(id)) {
+            if (!nodeDataCache[Number(ndata.id)]) nodeDataCache[Number(ndata.id)] = ndata;
           }
+          fetchedNeighbors.add(id);
+        }
 
-          const neighbors = filteredNeighbors(id);
-          const unpositioned = neighbors
-            .map(({ ndata }) => Number(ndata.id))
-            .filter(nid => !assignedPositions[nid] && !pinnedNodes.has(String(nid)));
+        const neighbors = filteredNeighbors(id);
+        const unpositioned = neighbors
+          .map(({ ndata }) => Number(ndata.id))
+          .filter(nid => !assignedPositions[nid] && !pinnedNodes.has(String(nid)));
 
-          if (unpositioned.length > 0) {
-            placeAround(id, neighbors.map(({ ndata }) => Number(ndata.id)));
-            anyPlaced = true;
-          }
+        if (unpositioned.length > 0) {
+          placeAround(id, neighbors.map(({ ndata }) => Number(ndata.id)));
+          anyPlaced = true;
         }
       }
+    }
 
-      for (const [idStr, ap] of Object.entries(assignedPositions)) {
-        if (isInExtent(ap, ext, addMargin) && nodeDataCache[Number(idStr)]) addNodeToCy(Number(idStr));
-      }
+    for (const [idStr, ap] of Object.entries(assignedPositions)) {
+      if (isInExtent(ap, ext, addMargin) && nodeDataCache[Number(idStr)]) addNodeToCy(Number(idStr));
+    }
 
-      const inViewportNow = new Set(
-        [...inCy].filter(sid => {
-          const ap = assignedPositions[Number(sid)];
-          return ap && isInExtent(ap, ext, NODE_VISIBLE_MARGIN);
-        })
-      );
-      for (const sid of inViewportNow) {
-        for (const { ndata } of filteredNeighbors(Number(sid))) {
-          const nid = Number(ndata.id);
-          if (assignedPositions[nid] && nodeDataCache[nid]) addNodeToCy(nid);
-        }
-      }
-
-      if (!_isMoving) {
-        const inCySnapshot = [...inCy];
-        for (const sid of inCySnapshot) {
-          for (const { edata } of filteredNeighbors(Number(sid))) addEdgeToCy(edata);
-        }
+    const inViewportNow = new Set(
+      [...inCy].filter(sid => {
+        const ap = assignedPositions[Number(sid)];
+        return ap && isInExtent(ap, ext, NODE_VISIBLE_MARGIN);
+      })
+    );
+    for (const sid of inViewportNow) {
+      for (const { ndata } of filteredNeighbors(Number(sid))) {
+        const nid = Number(ndata.id);
+        if (assignedPositions[nid] && nodeDataCache[nid]) addNodeToCy(nid);
       }
     }
 
     if (!_isMoving) {
-      syncNodeSizes();
-
-      {
-        const ext = windowExtent();
-        const removeMargin = getRemoveMargin();
-        const margin = getMargin();
-        const addMargin = margin * ADD_MARGIN_FACTOR;
-        const inAddMargin = new Set();
-        for (const [idStr, ap] of Object.entries(assignedPositions)) {
-          if (isInExtent(ap, ext, addMargin)) inAddMargin.add(idStr);
-        }
-
-        const inViewport = new Set();
-        cy.nodes().forEach(n => {
-          if (isInExtent(n.position(), ext, NODE_VISIBLE_MARGIN)) inViewport.add(n.id());
-        });
-
-        const viewportNeighborIds = new Set();
-        for (const sid of inViewport) {
-          for (const { ndata } of filteredNeighbors(Number(sid))) {
-            viewportNeighborIds.add(String(ndata.id));
-          }
-        }
-
-        const toRemove = [];
-        cy.nodes().forEach(n => {
-          if (isInExtent(n.position(), ext, removeMargin)) return;
-          if (inAddMargin.has(n.id())) return;
-          if (viewportNeighborIds.has(n.id())) return;
-          const hasVisibleNeighbor = filteredNeighbors(Number(n.id()))
-            .some(({ ndata }) => inViewport.has(String(ndata.id)) || viewportNeighborIds.has(String(ndata.id)));
-          if (!hasVisibleNeighbor) toRemove.push(n);
-        });
-
-        toRemove.forEach(n => {
-          const id = Number(n.id());
-          cy.remove(n);
-          inCy.delete(String(id));
-          pinnedNodes.delete(String(id));
-        });
-
-        cy.edges().forEach(e => {
-          if (!inCy.has(e.data('source')) || !inCy.has(e.data('target'))) cy.remove(e);
-        });
-
-        for (const idStr of Object.keys(assignedPositions)) {
-          const id = Number(idStr);
-          if (inCy.has(idStr)) continue;
-          const ap = assignedPositions[id];
-          if (!ap || isInExtent(ap, ext, removeMargin)) continue;
-          const hasVisibleNeighbor = filteredNeighbors(id)
-            .some(({ ndata }) => inViewport.has(String(ndata.id)) || inAddMargin.has(String(ndata.id)));
-          if (!hasVisibleNeighbor) {
-            delete assignedPositions[id];
-          }
-        }
-
-        resolveOverlaps(windowExtent());
-      }
-
-      const snapshot2 = [...inCy];
-      for (const sid of snapshot2) {
+      const inCySnapshot = [...inCy];
+      for (const sid of inCySnapshot) {
         for (const { edata } of filteredNeighbors(Number(sid))) addEdgeToCy(edata);
       }
     }
+  }
 
-  } finally {
-    _cycleRunning = false;
+  if (!_isMoving) {
+    syncNodeSizes();
+
+    {
+      const ext = windowExtent();
+      const removeMargin = getRemoveMargin();
+      const margin = getMargin();
+      const addMargin = margin * ADD_MARGIN_FACTOR;
+      const inAddMargin = new Set();
+      for (const [idStr, ap] of Object.entries(assignedPositions)) {
+        if (isInExtent(ap, ext, addMargin)) inAddMargin.add(idStr);
+      }
+
+      const inViewport = new Set();
+      cy.nodes().forEach(n => {
+        if (isInExtent(n.position(), ext, NODE_VISIBLE_MARGIN)) inViewport.add(n.id());
+      });
+
+      const viewportNeighborIds = new Set();
+      for (const sid of inViewport) {
+        for (const { ndata } of filteredNeighbors(Number(sid))) {
+          viewportNeighborIds.add(String(ndata.id));
+        }
+      }
+
+      const toRemove = [];
+      cy.nodes().forEach(n => {
+        if (isInExtent(n.position(), ext, removeMargin)) return;
+        if (inAddMargin.has(n.id())) return;
+        if (viewportNeighborIds.has(n.id())) return;
+        const hasVisibleNeighbor = filteredNeighbors(Number(n.id()))
+          .some(({ ndata }) => inViewport.has(String(ndata.id)) || viewportNeighborIds.has(String(ndata.id)));
+        if (!hasVisibleNeighbor) toRemove.push(n);
+      });
+
+      toRemove.forEach(n => {
+        const id = Number(n.id());
+        cy.remove(n);
+        inCy.delete(String(id));
+        pinnedNodes.delete(String(id));
+      });
+
+      cy.edges().forEach(e => {
+        if (!inCy.has(e.data('source')) || !inCy.has(e.data('target'))) cy.remove(e);
+      });
+
+      for (const idStr of Object.keys(assignedPositions)) {
+        const id = Number(idStr);
+        if (inCy.has(idStr)) continue;
+        const ap = assignedPositions[id];
+        if (!ap || isInExtent(ap, ext, removeMargin)) continue;
+        const hasVisibleNeighbor = filteredNeighbors(id)
+          .some(({ ndata }) => inViewport.has(String(ndata.id)) || inAddMargin.has(String(ndata.id)));
+        if (!hasVisibleNeighbor) {
+          delete assignedPositions[id];
+        }
+      }
+
+      resolveOverlaps(windowExtent());
+    }
+
+    const snapshot2 = [...inCy];
+    for (const sid of snapshot2) {
+      for (const { edata } of filteredNeighbors(Number(sid))) addEdgeToCy(edata);
+    }
   }
 }
 
@@ -542,6 +614,7 @@ async function _loopFrame() {
 
 cy.on('pan zoom', _onMove);
 cy.on('dragfree', 'node', e => {
+  if (NAV === 'static') return;
   const n = e.target;
   const id = Number(n.id());
   pinnedNodes.add(n.id());
@@ -579,11 +652,27 @@ async function startAtState(stateId) {
   document.getElementById('empty-msg').style.display = 'none';
   started = true;
 
-  assignedPositions[stateId] = { x: 0, y: 0, hw: FALLBACK_W / 2, hh: FALLBACK_H / 2 };
-  await fetchNodeData(stateId);
-  addNodeToCy(stateId);
-  cy.getElementById(String(stateId)).addClass('root');
-  cy.viewport({ zoom: 5, pan: { x: cy.width() / 2, y: cy.height() / 2 } });
+  if (NAV === 'static') {
+    if (!_staticPositionsReady) await loadAllStaticPositions();
+    else {
+      for (const [idStr, pos] of Object.entries(staticPositions))
+        assignedPositions[Number(idStr)] = { ...pos, hw: FALLBACK_W / 2, hh: FALLBACK_H / 2 };
+    }
+    const sp = staticPositions[stateId];
+    if (sp) {
+      await fetchNodeData(stateId);
+      addNodeToCy(stateId);
+      cy.getElementById(String(stateId)).addClass('root');
+      cy.viewport({ zoom: 5, pan: { x: cy.width() / 2 - sp.x * 5, y: cy.height() / 2 - sp.y * 5 } });
+    }
+  } else {
+    assignedPositions[stateId] = { x: 0, y: 0, hw: FALLBACK_W / 2, hh: FALLBACK_H / 2 };
+    await fetchNodeData(stateId);
+    addNodeToCy(stateId);
+    cy.getElementById(String(stateId)).addClass('root');
+    cy.viewport({ zoom: 5, pan: { x: cy.width() / 2, y: cy.height() / 2 } });
+  }
+
   await runCycle();
 }
 
