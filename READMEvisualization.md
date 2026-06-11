@@ -177,16 +177,16 @@ http://127.0.0.1:8050
 
 ## Interface
  **Navigation dynamique** : Charge les nœuds autour du viewport       
-  **Navigation statique** : Affiche le graphe complet avec layout BFS précalculé 
-| **Prédecesseurs** : Affiche uniquement les arcs entrants                
-| **Successeurs** : Affiche uniquement les arcs sortants                
-| **Préd + Succ** : Affiche les deux directions (par défaut)                 
-| **ID état + Afficher** : Démarre la visualisation depuis un état précis       
-| Molette / pinch : Zoom                                                 
-| Clic-glisser : Déplacer la vue                                      
-| Flèches clavier : Déplacer la vue                                      
-| `+` / `-` clavier Zoom                                                 
-| Glisser un nœud : Épingle le nœud à sa position                        
+ **Navigation statique** : Affiche le graphe complet avec layout BFS précalculé 
+ **Prédecesseurs** : Affiche uniquement les arcs entrants                
+ **Successeurs** : Affiche uniquement les arcs sortants                
+ **Préd + Succ** : Affiche les deux directions (par défaut)                 
+ **ID état + Afficher** : Démarre la visualisation depuis un état précis       
+ Molette / pinch : Zoom                                                 
+ Clic-glisser : Déplacer la vue                                      
+ Flèches clavier : Déplacer la vue                                      
+ `+` / `-` clavier Zoom                                                 
+ Glisser un nœud : Épingle le nœud à sa position                        
 
 ---
 
