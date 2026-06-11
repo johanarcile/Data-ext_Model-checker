@@ -1,12 +1,10 @@
 import os
 import dash
-from dash import dcc, html, no_update
+from dash import ctx, dcc, html, no_update
 from dash.dependencies import Input, Output, State
 from State_space_ta.State_space_ta import State_space_ta
 from server import init_tile_server, start_flask
 
-LOCATIONS = ["l0l3", "l0l4", "l1l3", "l1l4", "l2l3", "l2l4"]
-ACTIONS = ["a", "b", "c"]
 
 def open_flatbuffers(path: str):
     print(f"[open_flatbuffers] opening path={path}", flush=True)
@@ -19,9 +17,10 @@ def open_flatbuffers(path: str):
 
 
 def load_state(ss, state_id: int):
+    locations = [ss.Locations(i).decode() for i in range(ss.LocationsLength())]
     s = ss.Etats(state_id)
     loc = s.Location()
-    loc_name = LOCATIONS[loc] if loc < len(LOCATIONS) else str(loc)
+    loc_name = locations[loc] if loc < len(locations) else str(loc)
     dbm = s.ClockZone()
     if dbm is not None:
         dbm_dim = dbm.Dim()
@@ -34,8 +33,8 @@ def load_state(ss, state_id: int):
     var = s.Var()
     var_v = var.V() if var is not None else None
     constraints = convert_to_constraint_string(dbm_matrix)
-    constraints_str = "\n".join(constraints) if constraints else ""
-    label = f"{state_id},{loc_name}, v={var_v}\n{constraints_str}"
+    constraints_str = " ,".join(constraints) if constraints else ""
+    label = f"ID: {state_id}, {loc_name}\n {constraints_str}\n v= {var_v}"
     node = {
         "data": {
             "id": str(state_id),
@@ -56,6 +55,7 @@ def load_state(ss, state_id: int):
 
 
 def load_adjacent(ss, state_id: int):
+    actions = [ss.Actions(i).decode() for i in range(ss.ActionsLength())]
     st = ss.StateSuccessors(state_id)
     if st is None:
         return [], []
@@ -65,7 +65,7 @@ def load_adjacent(ss, state_id: int):
         tr = st.Items(j)
         succ_id = tr.Cible()
         action_id = tr.ActionId()
-        action_name = f"{ACTIONS[action_id]}" if action_id < len(ACTIONS) else str(action_id)
+        action_name = f"{actions[action_id]}" if action_id < len(actions) else str(action_id)
         adjacent_ids.append(succ_id)
         edges.append({
             "data": {
@@ -78,6 +78,7 @@ def load_adjacent(ss, state_id: int):
 
 
 def load_predecessors(ss, state_id: int):
+    actions = [ss.Actions(i).decode() for i in range(ss.ActionsLength())]
     st = ss.StatePredecessors(state_id)
     if st is None:
         return [], []
@@ -87,7 +88,7 @@ def load_predecessors(ss, state_id: int):
         tr = st.Items(j)
         pred_id = tr.Cible()
         action_id = tr.ActionId()
-        action_name = f"{ACTIONS[action_id]}" if action_id < len(ACTIONS) else str(action_id)
+        action_name = f"{actions[action_id]}" if action_id < len(actions) else str(action_id)
         predecessor_ids.append(pred_id)
         edges.append({
             "data": {
@@ -172,6 +173,11 @@ def serve(ss):
                             style={**btn_nav_base, "marginLeft": "4px"}),
             ], style={"display": "flex", "alignItems": "center"}),
             html.Div([
+                html.Button("Prédecesseurs", id="btn-pred", n_clicks=0, style=btn_nav_base),
+                html.Button("Successeurs", id="btn-succ", n_clicks=0, style=btn_nav_base),
+                html.Button("Préd + Succ", id="btn-both", n_clicks=0, style={**btn_nav_active, "marginLeft": "4px"}),
+            ], style={"display": "flex", "alignItems": "center"}),
+            html.Div([
                 html.Span("Entrez l'ID d'un état pour démarrer : ",
                           style={"marginRight": "8px"}),
                 dcc.Input(
@@ -187,11 +193,12 @@ def serve(ss):
         ], style={"margin": "10px", "display": "flex", "justifyContent": "flex-start", "alignItems": "center", "gap": "40px"}),
 
         dcc.Store(id="current-nav", data="dynamic"),
+        dcc.Store(id="current-mode", data="both"),
         dcc.Store(id="current-start", data=None),
 
         html.Iframe(
             id="graph-iframe",
-            src="http://127.0.0.1:8051/?start=0&nav=dynamic",
+            src="http://127.0.0.1:8051/?start=0&nav=dynamic&mode=both",
             style={
                 "width": "100%",
                 "height": "90vh",
@@ -234,17 +241,38 @@ def serve(ss):
         style_dyn = {**btn_nav_active} if nav == "dynamic" else {**btn_nav_base, "marginLeft": "24px"}
         style_sta = {**btn_nav_active} if nav == "static"  else {**btn_nav_base}
         return nav, style_dyn, style_sta
+    
+    @app.callback(
+    Output("current-mode", "data"),
+    Input("btn-pred", "n_clicks"),
+    Input("btn-succ", "n_clicks"),
+    Input("btn-both", "n_clicks"),
+    State("current-mode", "data"),
+    prevent_initial_call=True,
+    )
+    def update_mode(n_pred, n_succ, n_both, current):
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            raise dash.exceptions.PreventUpdate
+
+        trigger = ctx.triggered[0]["prop_id"].split(".")[0]
+        mode = "both" if trigger == "btn-both" else ("pred" if trigger == "btn-pred" else "succ")
+        style_pred = {**btn_nav_active} if mode =="pred" else {**btn_nav_base}
+        style_succ = {**btn_nav_active} if mode == "succ" else {**btn_nav_base}
+        style_both = {**btn_nav_active} if mode == "both" else {**btn_nav_base, "marginLeft": "24px"}
+        return mode, style_pred, style_succ, style_both
 
     @app.callback(
         Output("graph-iframe", "src"),
         Input("current-start", "data"),
         Input("current-nav", "data"),
+        Input("current-mode", "data"),
         State("start-state-btn", "n_clicks"),
         prevent_initial_call=True,
     )
-    def update_iframe(start_id, nav, n_clicks):
+    def update_iframe(start_id, nav, mode, n_clicks):
         sid = start_id if start_id is not None else 0
-        return f"http://127.0.0.1:8051/?start={sid}&nav={nav}&t={n_clicks}"
+        return f"http://127.0.0.1:8051/?start={sid}&nav={nav}&mode={mode}&t={n_clicks}"
 
     run = getattr(app, "run", None)
     if callable(run):

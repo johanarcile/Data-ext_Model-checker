@@ -16,6 +16,7 @@ _ss                = None
 
 _state_cache: dict     = {}
 _neighbors_cache: dict = {}
+_static_positions: dict = {}
 
 def _get_state_cached(state_id: int):
     if state_id not in _state_cache:
@@ -46,14 +47,83 @@ def _get_neighbors_cached(state_id: int):
     return _neighbors_cache[state_id]
 
 
+def _compute_bfs_layout(root_id: int = 0, x_spacing: float = 150.0, y_spacing: float = 100.0):
+    n = _ss.EtatsLength()
+    depth = [-1] * n
+    bfs_queue = []
+
+    depth[root_id] = 0
+    bfs_queue.append(root_id)
+    head = 0
+
+    while head < len(bfs_queue):
+        cur = bfs_queue[head]
+        head += 1
+        for nb in _neighbors_cache.get(cur, []):
+            if nb["direction"] != "successor":
+                continue
+            nxt = int(nb["node"]["id"])
+            if depth[nxt] == -1:
+                depth[nxt] = depth[cur] + 1
+                bfs_queue.append(nxt)
+
+    for i in range(n):
+        if depth[i] == -1:
+            depth[i] = 9999999
+
+    max_depth = max((d for d in depth if d != 9999999), default=0)
+    overflow = max_depth + 1
+
+    layer_count = [0] * (overflow + 1)
+    for i in range(n):
+        d = depth[i] if depth[i] <= overflow else overflow
+        layer_count[d] += 1
+
+    layer_cur = [0] * (overflow + 1)
+
+    for nid in bfs_queue:
+        d = depth[nid] if depth[nid] <= overflow else overflow
+        slot = layer_cur[d]
+        layer_cur[d] += 1
+        total = layer_count[d]
+        _static_positions[nid] = {
+            "x": d * x_spacing,
+            "y": (slot - (total - 1) / 2.0) * y_spacing,
+        }
+
+    for i in range(n):
+        if depth[i] == 9999999:
+            slot = layer_cur[overflow]
+            layer_cur[overflow] += 1
+            total = layer_count[overflow]
+            _static_positions[i] = {
+                "x": overflow * x_spacing,
+                "y": (slot - (total - 1) / 2.0) * y_spacing,
+            }
+
+
 def init_tile_server(ss, load_state_fn, load_adjacent_fn, load_predecessors_fn):
     global _ss, _load_state, _load_adjacent, _load_predecessors
     _state_cache.clear()
     _neighbors_cache.clear()
-    _ss               = ss
-    _load_state       = load_state_fn
-    _load_adjacent    = load_adjacent_fn
+    _static_positions.clear()
+    _ss                = ss
+    _load_state        = load_state_fn
+    _load_adjacent     = load_adjacent_fn
     _load_predecessors = load_predecessors_fn
+
+    n = ss.EtatsLength()
+    print(f"[server] Pré-chargement de {n} états...", flush=True)
+    for i in range(n):
+        _get_state_cached(i)
+    print(f"[server] États chargés, pré-chargement des voisins...", flush=True)
+    for i in range(n):
+        _get_neighbors_cached(i)
+    print(f"[server] Pré-chargement terminé.", flush=True)
+    print(f"[server] Calcul du layout BFS...", flush=True)
+    _compute_bfs_layout()
+    print(f"[server] Layout BFS terminé ({len(_static_positions)} noeuds).", flush=True)
+
 
 def _require_init():
     if _ss is None or _load_state is None:
@@ -110,14 +180,10 @@ def get_nb_states():
 def get_static_position(state_id):
     try:
         _require_init()
-        if state_id < 0 or state_id >= _ss.EtatsLength():
-            return jsonify({"error": f"ID {state_id} hors bornes."}), 404
-        if _ss.PositionsLength() == 0:
-            return jsonify({"error": "Positions non calculées."}), 404
-        pos = _ss.Positions(state_id)
-        if pos is None:
+        if state_id not in _static_positions:
             return jsonify({"error": "Position introuvable."}), 404
-        return jsonify({"id": state_id, "x": pos.X(), "y": pos.Y()})
+        pos = _static_positions[state_id]
+        return jsonify({"id": state_id, "x": pos["x"], "y": pos["y"]})
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 503
     except Exception as e:
@@ -127,15 +193,13 @@ def get_static_position(state_id):
 def get_static_positions_range(start, end):
     try:
         _require_init()
-        if _ss.PositionsLength() == 0:
-            return jsonify({"error": "Positions non calculées."}), 404
-        n   = _ss.EtatsLength()
+        n = _ss.EtatsLength()
         end = min(end, n)
-        out = []
-        for i in range(start, end):
-            pos = _ss.Positions(i)
-            if pos:
-                out.append({"id": i, "x": pos.X(), "y": pos.Y()})
+        out = [
+            {"id": i, "x": _static_positions[i]["x"], "y": _static_positions[i]["y"]}
+            for i in range(start, end)
+            if i in _static_positions
+        ]
         return jsonify(out)
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 503

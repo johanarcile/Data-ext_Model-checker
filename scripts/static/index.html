@@ -40,10 +40,6 @@
 <body>
 <div id="cy"></div>
 <div id="empty-msg">Entrez un ID d'état et cliquez sur "Afficher"</div>
-<div id="mode-controls">
-  <button id="btn-pred" onclick="setMode('pred')">Prédécesseurs</button>
-  <button id="btn-succ" onclick="setMode('succ')">Successeurs</button>
-</div>
 <div id="loading-indicator">Chargement positions…</div>
 <script>
 
@@ -54,12 +50,11 @@ const params = new URLSearchParams(window.location.search);
 let MODE = params.get('mode') || 'both';
 let NAV  = params.get('nav')  || 'dynamic';
 
-function setMode(m) {
-  const newMode = (MODE === m) ? 'both' : m;
-  MODE = newMode;
-  document.getElementById('btn-pred').classList.toggle('active', MODE === 'pred');
-  document.getElementById('btn-succ').classList.toggle('active', MODE === 'succ');
-  restartWithCurrentState();
+function setMode(mode) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('mode', mode);
+  window.history.replaceState({}, '', url);
+  startAtState(_currentStartId);
 }
 
 function restartWithCurrentState() {
@@ -68,9 +63,6 @@ function restartWithCurrentState() {
   window.history.replaceState({}, '', url);
   startAtState(_currentStartId);
 }
-
-document.getElementById('btn-pred').classList.toggle('active', MODE === 'pred');
-document.getElementById('btn-succ').classList.toggle('active', MODE === 'succ');
 
 const cy = cytoscape({
   container: document.getElementById('cy'),
@@ -115,7 +107,7 @@ const cy = cytoscape({
     },
     { selector: 'edge:selected', style: { 'line-color': '#e24a4a', 'target-arrow-color': '#e24a4a' } }
   ],
-  minZoom: 0.05,
+  minZoom: 2,
   maxZoom: 5
 });
 
