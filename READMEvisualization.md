@@ -1,39 +1,3 @@
-# Requirements
-
-Avant la compilation, récupérer le dossier flatcc avec la commande:
-
-````bash
-git clone https://github.com/dvidelabs/flatcc.git
-
-
-# Génération du code C
-
-flatcc -a structure_state_space_ta.fbs
-
-# Génération du code Python
-
-flatc --python structure_state_space_ta.fbs
-
-## Compilation
-
-gcc -I. -I./flatcc/include -o executable_name.exe main.c ta_extended_builder.c DBM.c variable.c ta_ext_fig2a.c save.c flatcc/src/runtime/builder.c flatcc/src/runtime/verifier.c flatcc/src/runtime/refmap.c flatcc/src/runtime/emitter.c
-
-## Génération de l'espace d'états
-
-.\executable_name.exe save state_space
-
-## Lancement de la visualisation
-
-python run_visualization.py state_space
-
-## Si dash et flask non installés:
-pip install dash flask
-
-
-## Si flatbuffers non installé
-pip install flatbuffers
-
-
 # State Space Visualizer
 
 Outil de visualisation interactive d'espaces d'états pour automates temporisés. Le pipeline complet se déroule en quatre étapes : génération des fichiers C depuis le schéma FlatBuffers → compilation C → exécution pour générer le fichier binaire → génération des fichiers Python depuis le schéma FlatBuffers → lancement de la visualisation Python.
@@ -111,13 +75,16 @@ Installer `flatcc` :
 **Linux :**
 
 ```bash
+sudo apt update
+sudo apt install -y build-essential cmake
 git clone https://github.com/dvidelabs/flatcc.git
 cd flatcc
-mkdir build && cd build
+mkdir build
+cd build
 cmake ..
 make
 sudo make install
-cd ../..
+cd ../.."
 ```
 
 **Windows :**  
@@ -209,20 +176,17 @@ http://127.0.0.1:8050
 ---
 
 ## Interface
-
-| Contrôle                 | Rôle                                                 |
-| ------------------------ | ---------------------------------------------------- |
-| **Navigation dynamique** | Charge les nœuds à la volée autour du viewport       |
-| **Navigation statique**  | Affiche le graphe complet avec layout BFS précalculé |
-| **Prédecesseurs**        | Affiche uniquement les arcs entrants                 |
-| **Successeurs**          | Affiche uniquement les arcs sortants                 |
-| **Préd + Succ**          | Affiche les deux directions (défaut)                 |
-| **ID état + Afficher**   | Démarre la visualisation depuis un état précis       |
-| Molette / pinch          | Zoom                                                 |
-| Clic-glisser             | Déplacer la vue                                      |
-| Flèches clavier          | Déplacer la vue                                      |
-| `+` / `-` clavier        | Zoom                                                 |
-| Glisser un nœud          | Épingle le nœud à sa position                        |
+ **Navigation dynamique** : Charge les nœuds autour du viewport       
+  **Navigation statique** : Affiche le graphe complet avec layout BFS précalculé 
+| **Prédecesseurs** : Affiche uniquement les arcs entrants                
+| **Successeurs** : Affiche uniquement les arcs sortants                
+| **Préd + Succ** : Affiche les deux directions (par défaut)                 
+| **ID état + Afficher** : Démarre la visualisation depuis un état précis       
+| Molette / pinch : Zoom                                                 
+| Clic-glisser : Déplacer la vue                                      
+| Flèches clavier : Déplacer la vue                                      
+| `+` / `-` clavier Zoom                                                 
+| Glisser un nœud : Épingle le nœud à sa position                        
 
 ---
 
@@ -270,6 +234,3 @@ Remplacer `8050` par `8051` si c'est l'autre port qui est bloqué. Remplacer `<P
 **Navigateur affiche "Entrez un ID d'état"**  
 Normal — entrer `0` dans le champ ID et cliquer sur "Afficher".
 
-```
-
-```
