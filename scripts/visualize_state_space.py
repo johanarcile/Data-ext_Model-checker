@@ -39,9 +39,6 @@ def load_state(ss, state_id: int):
         "data": {
             "id": str(state_id),
             "label": label,
-            "loc": loc,
-            "loc_name": loc_name,
-            "var_v": var_v,
         }
     }
     info = {
