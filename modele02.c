@@ -28,8 +28,8 @@ Transition** transitions;        // Transitions sortantes de chaque état
 Variable variable;               // Variable de données
 UpdateFunction* update_functions; // Fonctions d'update
 Constraint* constraints;         // Contraintes
-int vmax = 3000 ;
-//int vmax = 1000;
+//int vmax = 3000 ;
+int vmax = 1;
 
 // ---------------------Instantiation TA ---------------------
 
