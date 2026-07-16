@@ -109,7 +109,8 @@ void print_variable(Variable * v){
 bool check_p_var(Variable* V) {
 
    //9900000
-      if ((V->v == 10000 )&&(V->active == false)) return true;
+      if ((V->v > 500 ))//&&(V->active == false)) 
+      return true;
     
       else return false;
 }
@@ -119,7 +120,7 @@ bool check_p_var(Variable* V) {
 /*========================Heuristiques=============================================*/
 
  int heuristique_checkp_var(Variable* V){
-    return abs(V->v - 10000);
+    return abs(V->v - 0);
  }
 
 

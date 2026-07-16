@@ -287,3 +287,39 @@ void visitState_destroy(StateHash** table) {
         free(cur);
     }
 }
+
+
+
+/* ------------------------------------------------------------------ */
+/*  Structure unique : frontière avec booleen explored                   */
+/* ------------------------------------------------------------------ */
+
+
+ void swe_add(StateWeightExp** table, State s, int w) {
+    StateWeightExp* e = NULL;
+    HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
+    if (e == NULL) {
+        e = malloc(sizeof(StateWeightExp));
+        e->key      = s.var;
+        e->state    = s;
+        e->weight   = w;
+        e->explored = false;
+        HASH_ADD(hh, *table, key, sizeof(Variable), e);
+       
+
+    } 
+}
+
+StateWeightExp* swe_find(StateWeightExp** table, State s) {
+  StateWeightExp* e = NULL;
+    HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
+    return e;
+}
+
+ void swe_destroy(StateWeightExp** table) {
+   StateWeightExp *cur, *tmp;
+    HASH_ITER(hh, *table, cur, tmp) {  //Pourquoi tmp ? Parce que HASH_DEL modifie les pointeurs internes de cur. Sans tmp, on perdrait le lien vers le reste de la liste.
+        HASH_DEL(*table, cur);
+        free(cur);
+    }
+}

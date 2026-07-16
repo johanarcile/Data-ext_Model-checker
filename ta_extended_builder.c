@@ -479,6 +479,93 @@ State* EGNextBorder(TA* ta, State state, int location, DBM clock,
 /* ==========================================================================================EF(p)====================*/
 
 
+
+// // /*==========================================EFP table hashage avec champs exploring ====================================================*/
+
+
+int EF_p_1table(TA* ta, int location, DBM clock, State** result,
+                bool (*check)(State*s),
+         int (*heuristique_check)(State*s))
+{
+    bool   found      = false;
+    State* init_state = compute_init_state(ta);
+   int num_visited = 0; 
+
+    /* Sécuriser le padding de Var pour que HASH_FIND soit fiable */
+    // memset(&init_state->var, 0, sizeof(Variable));
+
+    StateWeightExp* states = NULL;  /* Table unique */
+
+    int init_weight = heuristique_check(init_state);
+    swe_add(&states, *init_state, init_weight);
+
+    StateWeightExp *best = swe_find(&states, *init_state);
+    while (best != NULL) {
+
+        State current    = best->state;
+        int   cur_weight  = best->weight;
+
+        if (check(&current)) {
+            swe_destroy(&states);
+            return 1;
+        }
+
+        best->explored = true;
+
+        int    num_succ   = 0;
+                                    
+
+        State* successors = NextBorder(ta, current, location, clock,
+                                        &num_succ, &found,&num_visited, check);
+
+       
+         if (found) {
+            *result = malloc(sizeof(State));
+            **result = *successors;
+            free(successors);
+            swe_destroy(&states);
+            return 1;
+        }
+
+        if (!((num_succ == 1) &&
+              equal_var(&current.var, &successors[0].var))) {
+            for (int i = 0; i < num_succ; i++) {
+                State* s = &successors[i];
+
+                StateWeightExp* existing = swe_find(&states, *s);
+
+                if (existing == NULL) {
+
+                    if (check(s)) {
+                        free(successors);
+                        swe_destroy(&states);
+                        return 1;
+                    }
+
+                    int w = heuristique_check(s);
+
+                    swe_add(&states, *s, w);
+                }
+            }
+        }
+
+        if (num_succ > 0)
+            free(successors);
+
+        best = NULL;
+        StateWeightExp *cur, *tmp;
+        HASH_ITER(hh, states, cur, tmp) {
+            if (!cur->explored) {
+                if (best == NULL || cur->weight < best->weight)
+                    best = cur;
+            }
+        }
+    }
+
+    swe_destroy(&states);
+    return 0;
+}
+
  /*==========================================   2 tabeles de hashage   ===================*/
 
 int EF_p(TA* ta, int location, DBM clock,State** result,
@@ -539,8 +626,7 @@ int EF_p(TA* ta, int location, DBM clock,State** result,
 
         if (!successors) continue;
 
-       // bool boucle = (num_succ == 1) && equal_var(&current.var, &successors[0].var);
-       // if (!boucle) {
+      
             for (int i = 0; i < num_succ; i++) {
                 State* s = &successors[i];
                
@@ -568,7 +654,7 @@ int EF_p(TA* ta, int location, DBM clock,State** result,
 
                
             }
-       // }
+      
 
         free(successors);
     }
@@ -605,7 +691,7 @@ int EF_p_HV(TA* ta, int location, DBM clock,State** result,
                     }
     MinHeap*     heap    = heap_create(64);
     visit* visited = NULL;
-
+     printf("size de heap %d",heap->size);
     int init_weight = heuristique_check(init_state);
     heap_push(heap, *init_state, init_weight);
     visit_add(&visited, *init_state);                
@@ -637,10 +723,7 @@ int EF_p_HV(TA* ta, int location, DBM clock,State** result,
 
         if (!successors) continue;
 
-        // bool boucle = (num_succ == 1) &&
-        //                equal_var(&current.var, &successors[0].var);
-
-        // if (!boucle) {
+      
             for (int i = 0; i < num_succ; i++) {
                 State* s = &successors[i];
 
@@ -661,7 +744,7 @@ int EF_p_HV(TA* ta, int location, DBM clock,State** result,
                 visit_add(&visited, *s);
                 nbr_border_state++;
             }
-       // }
+      
 
         free(successors);
     }
@@ -691,7 +774,7 @@ int EF_p_HV_M(TA* ta, int location, DBM clock,State** result,
 
     MinHeapP* heap = heap_createP(64);  
     visit* visited = NULL;
-
+    printf("size de heap %d",heap->size);
     int init_weight = heuristique_check(init_state);
 
     heap_pushP(heap, init_state, init_weight);
@@ -719,10 +802,7 @@ int EF_p_HV_M(TA* ta, int location, DBM clock,State** result,
 
         if (successors) {
 
-            // bool boucle = (num_succ == 1) &&
-            //               equal_var(&current->var, &successors[0].var);
-
-          //  if (!boucle) {
+            
 
                 for (int i = 0; i < num_succ; i++) {
 
@@ -754,7 +834,7 @@ int EF_p_HV_M(TA* ta, int location, DBM clock,State** result,
                     heap_pushP(heap, new_state, w);
                     visit_add(&visited, *new_state);
                 }
-          //  }
+       
 
             free(successors);
         }
@@ -774,86 +854,95 @@ int EF_p_HV_M(TA* ta, int location, DBM clock,State** result,
 /* ==========================================================================================EG(p)====================*/
 
 
-/*============================EGP miheap state avec pointeur===================================*/
 
-int EG_p_HV_M(TA* ta, int location, DBM clock,
-          bool (*check)(State*s),
-          int  (*heuristique_check)(State*s))
+
+
+ /*==========================================  EG(p) avec 1 tabeles de hashage   ===================*/
+
+
+int EG_p_1table(TA* ta, int location, DBM clock,
+                bool (*check)(State*s),
+         int (*heuristique_check)(State*s))
 {
+    bool   found      = false;
     State* init_state = compute_init_state(ta);
-    //State * last;
-    /* L'état initial doit satisfaire la propriété */
+   int num_visited = 0; 
+
+    /* Sécuriser le padding de Var pour que HASH_FIND soit fiable */
+    // memset(&init_state->var, 0, sizeof(Variable));
+
+    /* EG : l'état initial doit satisfaire la propriété */
     if (!check(init_state)) {
         free(init_state);
+        printf("propriete non verifier dans init state");
         return 0;
     }
 
-    MinHeapP* heap   = heap_createP(64);
-    visit*   visited = NULL;
+    StateWeightExp* states = NULL;  /* Table unique */
 
     int init_weight = heuristique_check(init_state);
-    heap_pushP(heap, init_state, init_weight);
-    visit_add(&visited, *init_state);
-     int  num_succ = 0;
-    while (heap->size > 0) {
+    swe_add(&states, *init_state, init_weight);
 
-        HeapNodeP best    = heap_popP(heap);
-        State*    current = best.state;
+    StateWeightExp *best = swe_find(&states, *init_state);
+    while (best != NULL) {
 
-        int found = 0;
-        
-        State* successors = EGNextBorder(ta, *current, location, clock,
-                                        &num_succ, &found, check);
+        State current    = best->state;
+        int   cur_weight  = best->weight;
 
-        
+       
 
-        /* Cas 2 : boucle sur soi-même → chemin infini où check est vrai */
-         bool boucle = (num_succ == 1) &&
-                      equal_var(&current->var, &successors[0].var);
+        best->explored = true;
 
-        if (boucle) { 
+        int    num_succ   = 0;
+                                    
 
-            free(current);
+        State* successors = EGNextBorder(ta, current, location, clock,
+                                        &num_succ, &num_visited, check);
+
+        /*  boucle sur soi-même → chemin infini trouvé */
+         bool boucle = (num_succ == 1) && equal_var(&current.var, &successors[0].var);
+
+
+        if (boucle) {
             free(successors);
-            heap_destroyP(heap);
-            visit_destroy(&visited);
-            //printf("\n boucle");
-            
+            swe_destroy(&states);
+            // printf("\n boucle");
+             printf("\n nombre d etats vistes: %d", num_visited);
             return 1;
         }
 
-      
+        if (!((num_succ == 1) &&
+              equal_var(&current.var, &successors[0].var))) {
+            for (int i = 0; i < num_succ; i++) {
+                State* s = &successors[i];
+
+                StateWeightExp* existing = swe_find(&states, *s);
+
+                if (existing == NULL) {
 
 
-        for (int i = 0; i < num_succ; i++) {
+                    int w = heuristique_check(s);
 
-            State* temp = &successors[i];
-
-            /* Déjà visité */
-            if (visit_find(&visited, *temp) != NULL)
-                continue;
-
-            State* new_state = malloc(sizeof(State)); //Allouer espace dans la memoire dés qu'ontrouve un nouveau état
-            if (!new_state) {
-                perror("malloc failed");
-                exit(EXIT_FAILURE);
+                    swe_add(&states, *s, w);
+                }
             }
-            *new_state = *temp;
-             //print_state(new_state,ta->locations);
-            int w = heuristique_check(new_state);
-            heap_pushP(heap, new_state, w);
-            visit_add(&visited, *new_state);
         }
 
-        free(successors);
-        free(current);
+        if (num_succ > 0)
+            free(successors);
+
+        best = NULL;
+        StateWeightExp *cur, *tmp;
+        HASH_ITER(hh, states, cur, tmp) {
+            if (!cur->explored) {
+                if (best == NULL || cur->weight < best->weight)
+                    best = cur;
+            }
+        }
     }
 
-    /* Heap vide : aucun chemin infini satisfaisant trouvé */
-    heap_destroyP(heap);
-    visit_destroy(&visited);
+    swe_destroy(&states);
     return 0;
-    
 }
 
  /*==========================================  EG(p) avec 2 tabeles de hashage   ===================*/
@@ -948,9 +1037,92 @@ int EG_p_2tables(TA* ta, int location, DBM clock,
     visit_destroy(&visited);
 
      return 0 ;
+
+
+
 }
 
+/*============================EGP miheap state avec pointeur===================================*/
 
+int EG_p_HV_M(TA* ta, int location, DBM clock,
+          bool (*check)(State*s),
+          int  (*heuristique_check)(State*s))
+{
+    State* init_state = compute_init_state(ta);
+    //State * last;
+    /* L'état initial doit satisfaire la propriété */
+    if (!check(init_state)) {
+        free(init_state);
+        return 0;
+    }
+
+    MinHeapP* heap   = heap_createP(64);
+    visit*   visited = NULL;
+
+    int init_weight = heuristique_check(init_state);
+    heap_pushP(heap, init_state, init_weight);
+    visit_add(&visited, *init_state);
+     int  num_succ = 0;
+    while (heap->size > 0) {
+
+        HeapNodeP best    = heap_popP(heap);
+        State*    current = best.state;
+
+        int found = 0;
+        
+        State* successors = EGNextBorder(ta, *current, location, clock,
+                                        &num_succ, &found, check);
+
+        
+
+        /* Cas 2 : boucle sur soi-même → chemin infini où check est vrai */
+         bool boucle = (num_succ == 1) &&
+                      equal_var(&current->var, &successors[0].var);
+
+        if (boucle) { 
+
+            free(current);
+            free(successors);
+            heap_destroyP(heap);
+            visit_destroy(&visited);
+            //printf("\n boucle");
+            
+            return 1;
+        }
+
+      
+
+
+        for (int i = 0; i < num_succ; i++) {
+
+            State* temp = &successors[i];
+
+            /* Déjà visité */
+            if (visit_find(&visited, *temp) != NULL)
+                continue;
+
+            State* new_state = malloc(sizeof(State)); //Allouer espace dans la memoire dés qu'ontrouve un nouveau état
+            if (!new_state) {
+                perror("malloc failed");
+                exit(EXIT_FAILURE);
+            }
+            *new_state = *temp;
+             //print_state(new_state,ta->locations);
+            int w = heuristique_check(new_state);
+            heap_pushP(heap, new_state, w);
+            visit_add(&visited, *new_state);
+        }
+
+        free(successors);
+        free(current);
+    }
+
+    /* Heap vide : aucun chemin infini satisfaisant trouvé */
+    heap_destroyP(heap);
+    visit_destroy(&visited);
+    return 0;
+    
+}
 
 
 /************************************************************************** Memory inside the layers ******************************************************************/
@@ -1929,6 +2101,8 @@ void print_all_exist(State_space_TA* ss_ta, TA* ta) {
     }
 
 }
+
+
 
 
 

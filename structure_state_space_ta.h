@@ -64,6 +64,14 @@ typedef struct {
     Variable            key;    /* clé = state.var */
     State          state;
     int         weight;
+    bool        explored;
+    UT_hash_handle hh;
+} StateWeightExp;
+
+typedef struct {
+    Variable            key;    /* clé = state.var */
+    State          state;
+    int         weight;
     UT_hash_handle hh;
 } StateWeight;
 
@@ -93,34 +101,6 @@ typedef struct {
 
 
 
-void  visit_add(visit** table, State s);
-visit* visit_find(visit** table, State s);
-void  visit_destroy(visit** table);
-
- void sw_add(StateWeight** table, State s, int w);
- StateWeight* sw_find(StateWeight** table, State s);
-  void sw_destroy(StateWeight** table);
-
-
-MinHeap* heap_create(int capacity);
-void heap_destroy(MinHeap* h);
-void heap_swap(MinHeap* h, int i, int j);
-void heap_sift_up(MinHeap* h, int i);
-void heap_sift_down(MinHeap* h, int i);
-void heap_push(MinHeap* h, State s, int w);
-HeapNode heap_pop(MinHeap* h);
-
-MinHeapP* heap_createP(int capacity);
-void heap_destroyP(MinHeapP* h);
-void heap_swapP(MinHeapP* h, int i, int j);
-void heap_sift_upP(MinHeapP* h, int i);
-void heap_sift_downP(MinHeapP* h, int i);
-void heap_pushP(MinHeapP* h, State* s, int w);
-HeapNodeP heap_popP(MinHeapP* h);
-
-void visitState_add(StateHash** table, State s);
-StateHash* visitState_find(StateHash** table, State s);
-void visitState_destroy(StateHash** table);
 
 
 
@@ -155,6 +135,9 @@ int EF_p_HV_M(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
          int  (*heuristique_check)(State* s));
 
+int EF_p_1table(TA* ta, int location, DBM clock, State** result,
+                bool (*check)(State*s),
+         int (*heuristique_check)(State*s));
 
 int EG_p_HV_M(TA* ta, int location, DBM clock, 
            bool (*check)(State* s),
@@ -163,7 +146,9 @@ int EG_p_2tables(TA* ta, int location, DBM clock,
                   bool (*check)(State* s),
                  int  (*heuristique_check)(State* s));
 
-
+int EG_p_1table(TA* ta, int location, DBM clock,
+                bool (*check)(State*s),
+         int (*heuristique_check)(State*s));
 
 
 /*-------------tests------------------------------------------------------*/
@@ -199,6 +184,36 @@ int EG_FullMemory(TA* ta, int location, DBM clock,
 /*---------------------------test fonction recursive-----------------------------*/
 
 
+void  visit_add(visit** table, State s);
+visit* visit_find(visit** table, State s);
+void  visit_destroy(visit** table);
 
-                   
+ void sw_add(StateWeight** table, State s, int w);
+ StateWeight* sw_find(StateWeight** table, State s);
+  void sw_destroy(StateWeight** table);
+
+
+MinHeap* heap_create(int capacity);
+void heap_destroy(MinHeap* h);
+void heap_swap(MinHeap* h, int i, int j);
+void heap_sift_up(MinHeap* h, int i);
+void heap_sift_down(MinHeap* h, int i);
+void heap_push(MinHeap* h, State s, int w);
+HeapNode heap_pop(MinHeap* h);
+
+MinHeapP* heap_createP(int capacity);
+void heap_destroyP(MinHeapP* h);
+void heap_swapP(MinHeapP* h, int i, int j);
+void heap_sift_upP(MinHeapP* h, int i);
+void heap_sift_downP(MinHeapP* h, int i);
+void heap_pushP(MinHeapP* h, State* s, int w);
+HeapNodeP heap_popP(MinHeapP* h);
+
+void visitState_add(StateHash** table, State s);
+StateHash* visitState_find(StateHash** table, State s);
+void visitState_destroy(StateHash** table);
+
+  void swe_add(StateWeightExp** table, State s, int w);
+  StateWeightExp* swe_find(StateWeightExp** table, State s);
+   void swe_destroy(StateWeightExp** table);                  
 #endif
