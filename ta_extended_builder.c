@@ -225,493 +225,21 @@ void explore_state_space_ta(TA* ta) {
 
 
 
-/*==================properties checking functions ===============================*/
 
 
+/* ================================================================================================================================= */
+/*                                                      On the fly exploration algorithms                                           */
+/* =============================================================================================================================== */
 
-bool check_p(State* s, GoalCondition* goal) {
 
-    if (goal->mask & CHECK_V) { // pour tester v il faut 001 et goal.mask !=0 
-       // printf("\n testing v");
-        if (s->var.v != goal->v)
-            return false;
-    }
 
-    if (goal->mask & CHECK_ACTIVE) { // pour tester v il faut 010 et goal.mask !=0 
-         //printf("\n checking ACTIVE");
-        if (s->var.active != goal->active)
-             { //printf("\n pas mmm active");
-                return false;}
-    }
+/*******************************************************************memory on borders*******************************************************************************/
 
-    if (goal->mask & CHECK_X) { // pour tester v il faut 001 et goal.mask !=0 
-          //printf("\n testing x");
-        if (s->var.x != goal->x)
-            return false;
-    }
-
-    if (goal->mask & CHECK_NAME) {// pour tester v il faut 100 et goal.mask !=0 
-       // printf("\n checking Name");
-        if (strcmp(s->var.name, goal->name) != 0)
-            return false;
-    }
-    // printf("\n prop %d is checked! \n ", goal->v);
-    return true;
-}
-
-bool check_p_inf(State* s, GoalCondition* goal) {
-
-    if (goal->mask & CHECK_V) { // pour tester v il faut 001 et goal.mask !=0 
-       // printf("\n checking v");
-        if (s->var.v >= goal->v)
-            return false;
-    }
-
-    if (goal->mask & CHECK_ACTIVE) { // pour tester v il faut 010 et goal.mask !=0 
-       //  printf("\n checking ACTIVE");
-        if (s->var.active != goal->active)
-             {return false;}
-    }
-
-    if (goal->mask & CHECK_NAME) {// pour tester v il faut 100 et goal.mask !=0 
-       // printf("\n checking Name");
-        if (strcmp(s->var.name, goal->name) != 0)
-            return false;
-    }
-  
-    return true;
-}
-
-bool check_p_sup(State* s, GoalCondition* goal) {
-
-    if (goal->mask & CHECK_V) { // pour tester v il faut 001 et goal.mask !=0 
-       // printf("\n checking v");
-        if (s->var.v <= goal->v)
-            { return false;}
-    }
-
-    if (goal->mask & CHECK_ACTIVE) { // pour tester v il faut 010 et goal.mask !=0 
-         //printf("\n checking ACTIVE");
-        if (s->var.active != goal->active)
-           return false;
-    }
-
-    if (goal->mask & CHECK_NAME) {// pour tester v il faut 100 et goal.mask !=0 
-       // printf("\n checking Name");
-        if (strcmp(s->var.name, goal->name) != 0)
-            return false;
-    }
-    return true;
-}
-
-// bool check_p_inf(State* s, int goal,TA* ta){
-//     //printf("\n i'm checking: \n");
-//     //print_state(s, ta->locations);
-//     if (s->var.v < goal) {
-//         printf("\n value %d found\n", goal);
-//         return true;
-//     }
-//     return false;
-// }
-
-// bool check_p_sup(State* s, int goal,TA* ta){
-//     //printf("\n i'm checking: \n");
-//     //print_state(s, ta->locations);
-//     if (s->var.v > goal) {
-//         printf("\n value %d found\n", goal);
-//         return true;
-//     }
-//     return false;
-// }
-/*========================Heuristiques=============================================*/
-
- int heuristique_checkp(State* s,GoalCondition* goal){
-    return abs(s->var.v - goal->v);
- }
-
- int heuristique_checkp_inf(State* s, GoalCondition* goal){
-   
-     return  s->var.v ;
- }
-
- int heuristique_checkp_max(State* s, GoalCondition* goal){
-    
-    printf("\n ici using heuristique_checkp_max");
-    return   - (s->var.v);
- }
-
-
-/*===============Exploration Alogorithms=============================================*/
-
-
-/*----------------------Pour les structures des données --------------------------------------*/
-
-
-/* ================================================================== */
-/*  Visited hash table (table pour enregistrer les états visités)     */
-/* ================================================================== */
-
-
-
-void visit_add(visit** table, State s) {
-    
-        visit* e = NULL;
-      
-        HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-        if (e == NULL) {
-        e = malloc(sizeof(visit));
-        e->key    = s.var;
-        //e->explored  = true;
-        HASH_ADD(hh, *table, key, sizeof(Variable), e);}
- 
-}
-
-visit* visit_find(visit** table, State s) {
-    visit* e = NULL;
-    HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-    return e;
-}
-
-void visit_destroy(visit** table) {
-    visit *cur, *tmp;
-    HASH_ITER(hh, *table, cur, tmp) {
-        HASH_DEL(*table, cur);
-        free(cur);
-    }
-}
-
-/* ------------------------------------------------------------------ */
-/*  Structure stateweight pour table visiting (état + weight)                          */
-/* ------------------------------------------------------------------ */
-
-static void sw_add(StateWeight** table, State s, int w) {
-   
-    StateWeight* e = NULL;
-   // HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-   // if (e == NULL) {
-        e = malloc(sizeof(StateWeight));
-        e->key    = s.var;
-        e->state  = s;
-        e->weight = w;
-        HASH_ADD(hh, *table, key, sizeof(Variable), e);
-   // }
-}
-
-static StateWeight* sw_find(StateWeight** table, State s) {
-    StateWeight* e = NULL;
-    HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-    return e;
-}
-
-static void sw_destroy(StateWeight** table) {
-    StateWeight *cur, *tmp;
-    HASH_ITER(hh, *table, cur, tmp) {
-        HASH_DEL(*table, cur);
-        free(cur);
-    }
-}
-
-
-/* ================================================================================= */
-/*  Min-Heap (priority queue)   pour sauvegarder les états ordonés selon le weight   */
-/* ================================================================================ */
-
-
-
- MinHeap* heap_create(int capacity) {
-    MinHeap* h = malloc(sizeof(MinHeap));
-    h->data     = malloc(sizeof(HeapNode) * capacity);
-    h->size     = 0;
-    h->capacity = capacity;
-    return h;
-}
-
- void heap_destroy(MinHeap* h) {
-    if (h) {
-        free(h->data);
-        free(h);
-    }
-}
-
- void heap_swap(MinHeap* h, int i, int j) {
-    HeapNode tmp  = h->data[i];
-    h->data[i]    = h->data[j];
-    h->data[j]    = tmp;
-}
-
- void heap_sift_up(MinHeap* h, int i) { // pour insérer nouveau élémnt dans sa place
-    while (i > 0) { // jusqu'au premier élément
-        int parent = (i - 1) / 2; // rend la partie décimal parent de 4 =>3/2=1
-        if (h->data[parent].weight <= h->data[i].weight) break; // c ordonné
-        heap_swap(h, parent, i);// swap si pas pas ordonné
-        i = parent; // passer à l'élément au dessus
-    }
-}
-
-void heap_sift_down(MinHeap* h, int i) { // pour réordonner après pop du premier élément 
-    while (1) {
-        int smallest = i;
-        int left     = 2 * i + 1;
-        int right    = 2 * i + 2;
-
-        if (left  < h->size && h->data[left].weight  < h->data[smallest].weight) // si le fils gauche existe et est plus petit que la parent 
-            smallest = left;
-        if (right < h->size && h->data[right].weight < h->data[smallest].weight)
-            smallest = right;
-
-        if (smallest == i) break; // i est donc plus petit que ses deux fils donc c cordonné
-        heap_swap(h, i, smallest);
-        i = smallest; // continuer avec l'element prochain
-    }
-}
-
-void heap_push(MinHeap* h, State s, int w) {
-    /* Grow if needed */
-    if (h->size == h->capacity) {
-        h->capacity *= 2;
-        h->data = realloc(h->data, sizeof(HeapNode) * h->capacity);
-    }
-    h->data[h->size].state  = s;
-    h->data[h->size].weight = w;
-    heap_sift_up(h, h->size); // on le place comme dernier élément et on monte
-    h->size++;
-}
-
- HeapNode heap_pop(MinHeap* h) {
-    HeapNode best  = h->data[0];// on retourne le premier élément
-
-    h->data[0] = h->data[h->size - 1];// on met le dernier element comme premier 
-    h->size--;
-    if (h->size > 0)
-        heap_sift_down(h, 0);//réordonner
-    return best;
-}
-
-/* ================================================================================= */
-/*  Min-Heap avec pointeur vers le state                                            */
-/* =============================================================================== */
-
-
-typedef struct {
-    State * state;
-    int weight;
-} HeapNodeP;
-
-typedef struct {
-    HeapNodeP* data;        
-    int        size;
-    int        capacity;
-} MinHeapP;
-
-
-MinHeapP* heap_createP(int capacity) {
-    MinHeapP* h = malloc(sizeof(MinHeapP));
-    h->data     = malloc(sizeof(HeapNodeP) * capacity);
-    h->size     = 0;
-    h->capacity = capacity;
-    return h;
-}
-
-void heap_destroyP(MinHeapP* h) {
-    for (int i = 0; i < h->size; i++) {
-        free(h->data[i].state);    // libère chaque State pointé
-    }
-    free(h->data);
-    free(h);
-}
-
-void heap_swapP(MinHeapP* h, int i, int j) {
-    HeapNodeP tmp = h->data[i];    //  FIX #2 : était HeapNode, doit être HeapNodeP
-    h->data[i]    = h->data[j];
-    h->data[j]    = tmp;
-}
-
-void heap_sift_upP(MinHeapP* h, int i) {
-    while (i > 0) {
-        int parent = (i - 1) / 2;
-        if (h->data[parent].weight <= h->data[i].weight) break;
-        heap_swapP(h, parent, i);
-        i = parent;
-    }
-}
-
-void heap_sift_downP(MinHeapP* h, int i) {
-    while (1) {
-        int smallest = i;
-        int left     = 2 * i + 1;
-        int right    = 2 * i + 2;
-
-        if (left  < h->size && h->data[left].weight  < h->data[smallest].weight)
-            smallest = left;
-        if (right < h->size && h->data[right].weight < h->data[smallest].weight)
-            smallest = right;
-
-        if (smallest == i) break;
-        heap_swapP(h, i, smallest);
-        i = smallest;
-    }
-}
-
-void heap_pushP(MinHeapP* h, State* s, int w) {
-     if (s == NULL) {
-        printf(" heap_pushP : state NULL poussé !\n");
-        return;
-    }
-    if (h->size == h->capacity) {
-        h->capacity *= 2;
-        h->data = realloc(h->data, sizeof(HeapNodeP) * h->capacity); 
-    }
-    h->data[h->size].state  = s;   
-    h->data[h->size].weight = w;
-    h->size++;
-    heap_sift_upP(h, h->size-1);
-    
-}
-
-HeapNodeP heap_popP(MinHeapP* h) { 
-    HeapNodeP best = h->data[0];    
-    h->data[0] = h->data[h->size - 1];
-    h->size--;
-    if (h->size > 0)
-        heap_sift_downP(h, 0);
-    
-    return best;
-}
-/********************************************************************  No memory *******************************************************/
-
-
-/********************************************************************  partial memory *******************************************************/
-
-// State* NextBorder(TA* ta, State state, int location, DBM clock,
-//                   GoalCondition *goal, int* num_finals, bool* found,int* num_v, bool (*check)(State* s, GoalCondition* goal))
-// {
-//     /* ---------- Queue BFS ---------- */
-//     int capacity = 32;
-//     int head = 0;
-//     int tail = 0;
-
-//     State* exploring = malloc(capacity * sizeof(State));// trouver une optimisation sans le malloc
-//     if (!exploring) return NULL;
-
-//     exploring[tail++] = state;
-
-//     /* ---------- Finals ---------- */
-//     int capacity_finals = 32;
-//     State* finals = malloc(capacity_finals * sizeof(State));// trouver une optimisation sans le malloc
-//     if (!finals) {
-//         free(exploring);
-//         return NULL;
-//     }
-
-//     *num_finals = 0;
-//     *found = false;
-
-
-//     /* ---------- BFS ---------- */
-//     while (head < tail) {
-
-//         State current = exploring[head++];
-//         (*num_v)++;
-//         int num_succ = 0;
-//         State* succs = get_successors(ta, &current, &num_succ);
-
-//              /*----check in BFS for EFP---------*/
-//         if (check(&current, goal)){
-//              //printf("\nProperty found in NextBorder!");
-//              *found = true;
-//               State* result = malloc(sizeof(State));
-//              *result = current;
-//               free(exploring);
-//               free(finals);
-//               *num_finals = 0;
-//               return result;
-
-//              }
-
-
-//         for (int j = 0; j < num_succ; j++) {
-
-//             State* s = &succs[j];
-//             bool present = false;
-
-//             /* ----- Border state ----- */
-//             if ((s->location == location) &&
-//                 clock_zones_equal(s->clock_zone, clock, DBM_DIM))
-//             {
-                
-               
-//                 /* vérifier doublon */
-//                 for (int k = 0; k < *num_finals; k++) {
-//                     if (equal_var(&(s->var),&(finals[k].var))) {  //(s->var.v == finals[k].var.v)
-//                         present = true;
-//                         break;
-//                     }
-//                 }
-//                 // Pas necessaire car on garde tout les etats borders en memoire
-//                 if (!present) {
-                   
-//                     if (*num_finals >= capacity_finals) {
-//                         capacity_finals *= 2;
-//                         // printf("\n capacite augmente:\n");
-//                         State* tmp =
-//                             realloc(finals,
-//                                     capacity_finals * sizeof(State));// finals = realloc ()
-
-//                         if (!tmp) {
-//                             free(finals);
-//                             free(exploring);
-//                             free(succs);
-//                             return NULL;
-//                         }
-
-//                         finals = tmp;
-//                     }
-                  
-//                     finals[*num_finals] = *s;
-//                     (*num_finals)++;
-
-//                 }
-
-//             }
-//             /* ----- Continue BFS ----- */
-//             else {
-
-//                 if (tail >= capacity) {
-//                     capacity *= 2;
-                    
-//                     State* tmp =
-//                         realloc(exploring,
-//                                 capacity * sizeof(State));
-
-//                     if (!tmp) {
-//                         free(finals);
-//                         free(exploring);
-//                         free(succs);
-//                         printf("\n Erreur: Memoire depasse!!");
-//                         return NULL;
-//                     }
-
-//                     exploring = tmp;
-//                     //free (tmp);
-                  
-//                 }
-//                 //print_state(s, ta->locations);
-//                 exploring[tail++] = *s;
-
-//             }
-//         }
-
-//         free(succs);
-//     }
-
-//     free(exploring);
-//     return finals;
-// }
 
 //---------------------------------Nex next border avec table de hashage----------------------------------
 
 State* NextBorder(TA* ta, State state, int location, DBM clock,
-                  GoalCondition *goal, int* num_finals, bool* found,int* num_v, bool (*check)(State* s, GoalCondition* goal))
+                 int* num_finals, bool* found,int* num_v, bool (*check)(State*s))
 {
     /* ---------- Queue BFS ---------- */
     int capacity = 32;
@@ -742,13 +270,11 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
     while (head < tail) {
 
         State current = exploring[head++];
-        (*num_v)++;
         int num_succ = 0;
         State* succs = get_successors(ta, &current, &num_succ);
 
              /*----check in BFS for EFP---------*/
-        if (check(&current, goal)){
-             //printf("\nProperty found in NextBorder!");
+        if (check(&current)){ // Retourner l etat satisfaisant la propriété dès qu'on le trouve
              *found = true;
               State* result = malloc(sizeof(State));
              *result = current;
@@ -763,9 +289,7 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
         for (int j = 0; j < num_succ; j++) {
 
             State* s = &succs[j];
-            bool present = false;
 
-            /* ----- Border state ----- */
             /* ----- Border state ----- */
             if ((s->location == location) &&
                 clock_zones_equal(s->clock_zone, clock, DBM_DIM))
@@ -815,15 +339,14 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
                     }
 
                     exploring = tmp;
-                    //free (tmp);
+                   // free (tmp);
                   
                 }
-                //print_state(s, ta->locations);
                 exploring[tail++] = *s;
 
             }
         }
-
+         (*num_v)++;
         free(succs);
     }
 
@@ -837,7 +360,7 @@ State* NextBorder(TA* ta, State state, int location, DBM clock,
 /*---------------------------Next border pour EG ---------------------------------------------------------*/
 
 State* EGNextBorder(TA* ta, State state, int location, DBM clock,
-                  GoalCondition *goal, int* num_finals, int* num_visited, bool (*check)(State* s, GoalCondition* goal))
+                 int* num_finals, int* num_visited, bool (*check)(State*s))
 {
     /* ---------- Queue BFS ---------- */
     int capacity = 32;
@@ -860,6 +383,7 @@ State* EGNextBorder(TA* ta, State state, int location, DBM clock,
 
     *num_finals = 0;
 
+    visit* finals_table = NULL;   // table de hashage pour les doublons (border states)
 
     /* ---------- BFS ---------- */
     while (head < tail) {   // tq y'a des etats a explorer
@@ -872,24 +396,15 @@ State* EGNextBorder(TA* ta, State state, int location, DBM clock,
         for (int j = 0; j < num_succ; j++) { // pour chaque successeur
 
             State* s = &succs[j];
-            bool present = false;
-            if (check(s,goal)){ // si il satsfat la propriete
+
+            if (check(s)){ // si il satsfaIt la propriete 
 
                  /* ----- Border state ----- */
             if ((s->location == location) &&
                 clock_zones_equal(s->clock_zone, clock, DBM_DIM))  //si il est un etat border
             {
-                
-               
-                /* vérifier doublon */
-                for (int k = 0; k < *num_finals; k++) {
-                    if (equal_var(&(s->var),&(finals[k].var))) {  //(s->var.v == finals[k].var.v)
-                        present = true;
-                        break;
-                    }
-                }
-
-                if (!present) { // si il n'exite pas déja on l'ajoute à finals
+     
+                 if (visit_find(&finals_table, *s) == NULL) { // si il n'exite pas déja on l'ajoute à finals
                    
                     if (*num_finals >= capacity_finals) {
                         capacity_finals *= 2;
@@ -910,6 +425,7 @@ State* EGNextBorder(TA* ta, State state, int location, DBM clock,
                   
                     finals[*num_finals] = *s;
                     (*num_finals)++;
+                    visit_add(&finals_table, *s);  // marquer comme vu
                 }
 
             }
@@ -932,7 +448,7 @@ State* EGNextBorder(TA* ta, State state, int location, DBM clock,
                     }
 
                     exploring = tmp;
-                    //free (tmp);
+                    free (tmp);
                   
                 }
                 //print_state(s, ta->locations);
@@ -956,146 +472,18 @@ State* EGNextBorder(TA* ta, State state, int location, DBM clock,
 
 
 
-State* EFEGNextBorder(TA* ta, State state, int location, DBM clock,
-                  GoalCondition *goal, int* num_finals, bool* found, bool (*check)(State* s, GoalCondition* goal))
-{
-    /* ---------- Queue BFS ---------- */
-    int capacity = 32;
-    int head = 0;
-    int tail = 0;
-
-    State* exploring = malloc(capacity * sizeof(State));// trouver une optimisation sans le malloc
-    if (!exploring) return NULL;
-
-    exploring[tail++] = state;
-
-    /* ---------- Finals ---------- */
-    int capacity_finals = 32;
-    State* finals = malloc(capacity_finals * sizeof(State));// trouver une optimisation sans le malloc
-    if (!finals) {
-        free(exploring);
-        return NULL;
-    }
-
-    *num_finals = 0;
-    *found = false;
-
-
-    /* ---------- BFS ---------- */
-    while (head < tail) {
-
-        State current = exploring[head++];
-
-        int num_succ = 0;
-        State* succs = get_successors(ta, &current, &num_succ);
-
-             /*----check in BFS for EFP---------*/
-        // if (check(&current, goal)){
-        //     // printf("\nProperty found in NextBorder!");
-        //      *found = true;
-        //       State* result = malloc(sizeof(State));
-        //      *result = current;
-        //       free(exploring);
-        //       free(finals);
-        //       *num_finals = 0;
-        //       return result;
-
-        //      }
-
-
-        for (int j = 0; j < num_succ; j++) {
-
-            State* s = &succs[j];
-            bool present = false;
-
-            /* ----- Border state ----- */
-            if ((s->location == location) &&
-                clock_zones_equal(s->clock_zone, clock, DBM_DIM))
-            {
-                
-               
-                /* vérifier doublon */
-                for (int k = 0; k < *num_finals; k++) {
-                    if (equal_var(&(s->var),&(finals[k].var))) {  //(s->var.v == finals[k].var.v)
-                        present = true;
-                        break;
-                    }
-                }
-                // vu que j'ai visited esq cette verification est necessaire
-                if (!present) {
-                   
-                    if (*num_finals >= capacity_finals) {
-                        capacity_finals *= 2;
-                        // printf("\n capacite augmente:\n");
-                        State* tmp =
-                            realloc(finals,
-                                    capacity_finals * sizeof(State));// finals = realloc ()
-
-                        if (!tmp) {
-                            free(finals);
-                            free(exploring);
-                            free(succs);
-                            return NULL;
-                        }
-
-                        finals = tmp;
-                    }
-                  
-                    finals[*num_finals] = *s;
-                    (*num_finals)++;
-                }
-
-            }
-            /* ----- Continue BFS ----- */
-            else {
-
-                if (tail >= capacity) {
-                    capacity *= 2;
-                    
-                    State* tmp =
-                        realloc(exploring,
-                                capacity * sizeof(State));
-
-                    if (!tmp) {
-                        free(finals);
-                        free(exploring);
-                        free(succs);
-                        printf("\n Erreur: Memoire depasse!!");
-                        return NULL;
-                    }
-
-                    exploring = tmp;
-                    //free (tmp);
-                  
-                }
-                //print_state(s, ta->locations);
-                exploring[tail++] = *s;
-
-            }
-        }
-
-        free(succs);
-    }
-
-    free(exploring);
-    return finals;
-}
 
 
 
-
-
-
-/********************************************************************  partial memory *******************************************************/
 
 /* ==========================================================================================EF(p)====================*/
 
 
  /*==========================================   2 tabeles de hashage   ===================*/
 
-int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int (*heuristique_check)(State* s, GoalCondition* goal)) {
+int EF_p(TA* ta, int location, DBM clock,State** result,
+         bool (*check)(State*s),
+         int (*heuristique_check)(State*s)) {
 
     //if (!ta) return 0;
     int nbr_border_state =0;
@@ -1105,17 +493,17 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
     //if (!init_state) return 0;
     *result= NULL;
    
-   if (check(init_state, goal)) {  
+   if (check(init_state)) {  
     
                         *result = init_state; 
-                         printf("\n nombre d etats vistes: %d", 1);
+                         printf("\n nombre d etats vistes: %d", nbr_border_state ++);
 
                         return 1;
                     }
     StateWeight* visiting = NULL;  /* frontier  */
     visit* visited  = NULL;  /* seen set  */
 
-    int init_weight = heuristique_check(init_state, goal);
+    int init_weight = heuristique_check(init_state);
     sw_add(&visiting, *init_state, init_weight);
     visit_add(&visited,  *init_state);
    nbr_border_state ++;
@@ -1138,7 +526,7 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
         /* --- Compute successors --- */
         int    num_succ  = 0;
         State* successors = NextBorder(ta, current, location, clock,
-                                       goal, &num_succ, &found,&num_visited, check);
+                                        &num_succ, &found,&num_visited, check);
         if (found) {
               *result = malloc(sizeof(State));
               **result = *successors;
@@ -1151,9 +539,8 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
 
         if (!successors) continue;
 
-        bool boucle = (num_succ == 1) &&
-                       equal_var(&current.var, &successors[0].var);
-        if (!boucle) {
+       // bool boucle = (num_succ == 1) && equal_var(&current.var, &successors[0].var);
+       // if (!boucle) {
             for (int i = 0; i < num_succ; i++) {
                 State* s = &successors[i];
                
@@ -1162,7 +549,7 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
                     { 
                         continue;}
 
-                if (check(s, goal)) {
+                if (check(s)) {
                     *result = malloc(sizeof(State));
                     **result = *s;
                     free(successors);
@@ -1174,14 +561,14 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
 
 
 
-                int w = heuristique_check(s, goal);
+                int w = heuristique_check(s);
                 sw_add(&visiting, *s, w);
                 visit_add(&visited,  *s);  /* mark as seen immediately */
                  nbr_border_state ++;
 
                
             }
-        }
+       // }
 
         free(successors);
     }
@@ -1197,11 +584,12 @@ int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
 
 
                                                
-/* ============================ EF_p avec min-heap ====================================== */
+/* ============================ EF_p avec min-heap et visited ====================================== */
 
-int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int  (*heuristique_check)(State* s, GoalCondition* goal)) 
+
+int EF_p_HV(TA* ta, int location, DBM clock,State** result,
+         bool (*check)(State*s),
+         int  (*heuristique_check)(State*s)) 
 {
 
     //if (!ta) return 0;
@@ -1211,14 +599,14 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
     State* init_state = compute_init_state(ta);
    // if (!init_state) return 0;//Vérifiecation
    *result= NULL;
-   if (check(init_state, goal)) { 
+   if (check(init_state)) { 
                        *result= init_state; 
                         return 1;
                     }
     MinHeap*     heap    = heap_create(64);
     visit* visited = NULL;
 
-    int init_weight = heuristique_check(init_state, goal);
+    int init_weight = heuristique_check(init_state);
     heap_push(heap, *init_state, init_weight);
     visit_add(&visited, *init_state);                
     nbr_border_state ++;
@@ -1236,7 +624,7 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
         /* Compute successors */
        
         State* successors = NextBorder(ta, current, location, clock,
-                                       goal, &num_succ, &found,&n, check);
+                                        &num_succ, &found,&n, check);
 
         if (found) {
             *result = malloc(sizeof(State));
@@ -1249,17 +637,17 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
 
         if (!successors) continue;
 
-        bool boucle = (num_succ == 1) &&
-                       equal_var(&current.var, &successors[0].var);
+        // bool boucle = (num_succ == 1) &&
+        //                equal_var(&current.var, &successors[0].var);
 
-        if (!boucle) {
+        // if (!boucle) {
             for (int i = 0; i < num_succ; i++) {
                 State* s = &successors[i];
 
                 if (visit_find(&visited, *s) != NULL)
                     continue;
 
-                if (check(s, goal)) {
+                if (check(s)) {
                     *result = malloc(sizeof(State));
                     **result = *s;
                     free(successors);
@@ -1268,12 +656,12 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
                     return 1;
                 }
 
-                int w = heuristique_check(s, goal);
+                int w = heuristique_check(s);
                 heap_push(heap, *s, w);
                 visit_add(&visited, *s);
                 nbr_border_state++;
             }
-        }
+       // }
 
         free(successors);
     }
@@ -1288,18 +676,15 @@ int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
 
 /*============================EFP miheap state avec pointeur===================================*/
 
-
-
-
-int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int  (*heuristique_check)(State* s, GoalCondition* goal))
+int EF_p_HV_M(TA* ta, int location, DBM clock,State** result,
+         bool (*check)(State*s),
+         int  (*heuristique_check)(State*s))
 {
     bool found = false;
     int n = 0;
     *result= NULL;
     State* init_state = compute_init_state(ta);
-      if (check(init_state, goal)) { 
+      if (check(init_state)) { 
                         *result = init_state;  
                         return 1;
                     }
@@ -1307,7 +692,7 @@ int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** resul
     MinHeapP* heap = heap_createP(64);  
     visit* visited = NULL;
 
-    int init_weight = heuristique_check(init_state, goal);
+    int init_weight = heuristique_check(init_state);
 
     heap_pushP(heap, init_state, init_weight);
     visit_add(&visited, *init_state);
@@ -1320,7 +705,7 @@ int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** resul
 
      
         State* successors = NextBorder(ta, *current, location, clock,
-                                       goal, &num_succ, &found,&n, check);
+                                        &num_succ, &found,&n, check);
 
         if (found) {
             *result = malloc(sizeof(State));
@@ -1334,10 +719,10 @@ int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** resul
 
         if (successors) {
 
-            bool boucle = (num_succ == 1) &&
-                          equal_var(&current->var, &successors[0].var);
+            // bool boucle = (num_succ == 1) &&
+            //               equal_var(&current->var, &successors[0].var);
 
-            if (!boucle) {
+          //  if (!boucle) {
 
                 for (int i = 0; i < num_succ; i++) {
 
@@ -1346,7 +731,7 @@ int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** resul
                     if (visit_find(&visited, *temp) != NULL)
                         continue;
 
-                    if (check(temp, goal)) {
+                    if (check(temp)) {
                          *result = malloc(sizeof(State));
                         **result = *temp;
                         free(current);
@@ -1364,12 +749,12 @@ int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** resul
 
                     *new_state = *temp;
 
-                    int w = heuristique_check(new_state, goal);
+                    int w = heuristique_check(new_state);
 
                     heap_pushP(heap, new_state, w);
                     visit_add(&visited, *new_state);
                 }
-            }
+          //  }
 
             free(successors);
         }
@@ -1388,16 +773,17 @@ int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** resul
 
 /* ==========================================================================================EG(p)====================*/
 
+
 /*============================EGP miheap state avec pointeur===================================*/
 
-int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
-          bool (*check)(State* s, GoalCondition* goal),
-          int  (*heuristique_check)(State* s, GoalCondition* goal))
+int EG_p_HV_M(TA* ta, int location, DBM clock,
+          bool (*check)(State*s),
+          int  (*heuristique_check)(State*s))
 {
     State* init_state = compute_init_state(ta);
     //State * last;
     /* L'état initial doit satisfaire la propriété */
-    if (!check(init_state, goal)) {
+    if (!check(init_state)) {
         free(init_state);
         return 0;
     }
@@ -1405,7 +791,7 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
     MinHeapP* heap   = heap_createP(64);
     visit*   visited = NULL;
 
-    int init_weight = heuristique_check(init_state, goal);
+    int init_weight = heuristique_check(init_state);
     heap_pushP(heap, init_state, init_weight);
     visit_add(&visited, *init_state);
      int  num_succ = 0;
@@ -1417,8 +803,7 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
         int found = 0;
         
         State* successors = EGNextBorder(ta, *current, location, clock,
-                                       goal, &num_succ, &found, check);
-        //printf("\n Num successors : %d", num_succ);
+                                        &num_succ, &found, check);
 
         
 
@@ -1444,11 +829,6 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
 
             State* temp = &successors[i];
 
-            /* EG : inutile d'explorer un état qui viole la propriété */
-            // if (!check(temp, goal))
-            //     continue;
-             
-         
             /* Déjà visité */
             if (visit_find(&visited, *temp) != NULL)
                 continue;
@@ -1460,7 +840,7 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
             }
             *new_state = *temp;
              //print_state(new_state,ta->locations);
-            int w = heuristique_check(new_state, goal);
+            int w = heuristique_check(new_state);
             heap_pushP(heap, new_state, w);
             visit_add(&visited, *new_state);
         }
@@ -1478,9 +858,9 @@ int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
 
  /*==========================================  EG(p) avec 2 tabeles de hashage   ===================*/
 
-int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
-                 bool (*check)(State* s, GoalCondition* goal),
-                 int  (*heuristique_check)(State* s, GoalCondition* goal))
+int EG_p_2tables(TA* ta, int location, DBM clock,
+                 bool (*check)(State*s),
+                 int  (*heuristique_check)(State*s))
 {
 
     State* init_state = compute_init_state(ta);
@@ -1488,13 +868,13 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
     int num_visited = 0; 
 
     /* EG : l'état initial doit satisfaire la propriété */
-    if (!check(init_state, goal)) {
+    if (!check(init_state)) {
         free(init_state);
         printf("propriete non verifier dans init state");
         return 0;
     }
 
-    int    init_weight = heuristique_check(init_state, goal);
+    int    init_weight = heuristique_check(init_state);
 
     StateWeight* visiting   = NULL;   /* à explorer  (frontier) */
     visit*       visited = NULL;   /* déjà expansés           */
@@ -1523,7 +903,7 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
         bool   found    = false;
       
         State* successors = EGNextBorder(ta, current, location, clock,
-                                       goal, &num_succ, &num_visited, check);
+                                        &num_succ, &num_visited, check);
        
         
 
@@ -1540,24 +920,15 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
             return 1;
         }
       
-        /* Cas général : on n'ajoute que les successeurs qui satisfont check */
+        /* Cas général : on n'ajoute que les successeurs pas encore visités */
         for (int i = 0; i < num_succ; i++) {
             State* s = &successors[i];
-           
-
-            /* EG : inutile d'explorer un état qui viole la propriété */
-            // if (!check(s, goal))
-            //     continue;
-
-           
-           
+  
             /* un successor déja visité */
             if (visit_find(&visited, *s) != NULL)
                   continue;
           
-           
-
-            int w = heuristique_check(s, goal);
+            int w = heuristique_check(s);
            
             sw_add(&visiting, *s, w);
             visit_add(&visited, *s);
@@ -1580,726 +951,15 @@ int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
 }
 
 
- /*==========================================  Fonction pour test   ===================*/
 
-void print_all_exist(State_space_TA* ss_ta, TA* ta, GoalCondition* goal) {
-    printf("\n les etats satisfaisants g:\n");
-    for (int i = 0; i < ss_ta->nb_etats; i++) {
-        if(check_p(&(ss_ta->etats[i]), goal)){
-               print_state(&(ss_ta->etats[i]),ta->locations);
-                printf("Etat etendu ID #%d\n", i);
-        }
-       // printf("\n");
-    }
 
-}
+/************************************************************************** Memory inside the layers ******************************************************************/
 
-/*========================= Requetes imbriquees========================================================================================================*/
 
- /*==========================================  EFEG(p) avec 2 tabeles de hashage   ===================*/
 
-int EGEF_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
-                 bool (*check)(State* s, GoalCondition* goal),
-                 int  (*heuristique_check)(State* s, GoalCondition* goal))
-{
-
-    State* init_state = compute_init_state(ta);
-
-
-    int    init_weight = heuristique_check(init_state, goal);
-
-    StateWeight* visiting   = NULL;   /* à explorer  (frontier) */
-    visit*       visited = NULL;   /* déjà explorés          */
-
-    sw_add(&visiting, *init_state, init_weight);
-    visit_add(&visited,  *init_state);
-
-    free(init_state);
-     int    num_succ = 0;
-    while (HASH_COUNT(visiting) > 0) {
-
-        /* --- Extraire le meilleur état de visiting --- */
-        StateWeight *best = NULL, *cur, *tmp;
-        HASH_ITER(hh, visiting, cur, tmp) {
-            if (best == NULL || cur->weight < best->weight)
-                best = cur;
-        }
-
-        State current = best->state;
-        HASH_DEL(visiting, best);
-        free(best);
-
-       
-
-        /* --- Calculer les successeurs --- */
-        bool   found    = false;
-       // Next border de EF sans le check dedans
-        State* successors = EFEGNextBorder(ta, current, location, clock,
-                                       goal, &num_succ, &found, check);
-       
-        
-        /*  boucle sur soi-même → chemin infini trouvé */
-         bool boucle = (num_succ == 1) && equal_var(&current.var, &successors[0].var);
-
-
-        if (boucle) {  
-
-            if  (check(&current, goal)){ // si la propriete est verifié
-
-                free(successors);
-                sw_destroy(&visiting);
-                visit_destroy(&visited);
-              //  printf("\n boucle");
-                return 1;
-
-            }
-            
-        }
-      
-        /* Cas général : on n'ajoute que les successeurs qui satisfont check */
-        for (int i = 0; i < num_succ; i++) {
-            State* s = &successors[i];
-           
-
-            /* EG : inutile d'explorer un état qui viole la propriété */
-            // if (!check(s, goal))
-            //     continue;
-
-           
-           
-            /* un successor déja visité */
-            if (visit_find(&visited, *s) != NULL)
-            continue;
-           
-
-            int w = heuristique_check(s, goal);
-            visit_add(&visited, *s);
-            sw_add(&visiting, *s, w);
-            
-        }
-
-        free(successors);
-    }
-
-
-    sw_destroy(&visiting);
-    visit_destroy(&visited);
-
-     return 0 ;
-}
-
-
-/* ================Test de EF(P1 && EF (......&&EF(Pn)))======================================*/
-
-State* EFPnNextBorder(TA* ta, State state, int location, DBM clock,
-                      GoalCondition* goal, int nbr_prop,
-                      int* num_finals, int current_prop,
-                      int** border_props_out,
-                      bool (*check)(State* s, GoalCondition* goal))
-{
-    int capacity = 32, head = 0, tail = 0;
-    State* exploring       = malloc(capacity * sizeof(State));
-    int*   exploring_props = malloc(capacity * sizeof(int));   /* parallèle à exploring */
-    State* finals          = malloc(capacity * sizeof(State));
-    int*   finals_props    = malloc(capacity * sizeof(int));   /* parallèle à finals */
-    *num_finals = 0;
-
-    if (!exploring || !exploring_props || !finals || !finals_props) {
-        free(exploring); free(exploring_props);
-        free(finals);    free(finals_props);
-        printf("\n Erreur malloc!!!");
-        return NULL;
-    }
-    
-    /* Prop de l'état de départ */
-    int start_prop = current_prop;
-   
-    while (start_prop < nbr_prop && check(&state, &goal[start_prop]))
-        start_prop++;
-
-    exploring[tail]       = state;
-    exploring_props[tail] = start_prop;
-    tail++;
-
-    while (head < tail) {
-        State current  = exploring[head];
-        int   cur_prop = exploring_props[head];
-        head++;
-
-        int num_succ = 0;
-        State* succs = get_successors(ta, &current, &num_succ);
-
-        for (int j = 0; j < num_succ; j++) {
-            State* s = &succs[j];
-            /* Avancer le prop avec ce successeur */
-            int s_prop = cur_prop;
-            while (s_prop < nbr_prop && check(s, &goal[s_prop]))
-                s_prop++;
-            
-            /* ----- Border state ----- */
-            if (s->location == location &&
-                clock_zones_equal(s->clock_zone, clock, DBM_DIM))
-            {
-                /* Doublon : garder le meilleur prop */
-                bool present = false;
-                for (int k = 0; k < *num_finals; k++) {
-                    if (equal_var(&s->var, &finals[k].var)) {
-                        if (s_prop > finals_props[k])
-                            finals_props[k] = s_prop;
-                        present = true;
-                        break;
-                    }
-                }
-                if (present) continue;
-
-                if (*num_finals >= capacity) {
-                    capacity *= 2;
-                    State* tmp_f = realloc(finals,       capacity * sizeof(State));
-                    int*   tmp_p = realloc(finals_props, capacity * sizeof(int));
-                    if (!tmp_f || !tmp_p) {
-                        free(finals); free(finals_props);
-                        free(exploring); free(exploring_props);
-                        free(succs);
-                        return NULL;
-                    }
-                    finals       = tmp_f;
-                    finals_props = tmp_p;
-                }
-
-                finals[*num_finals]       = *s;
-                finals_props[*num_finals] = s_prop;
-                (*num_finals)++;
-            }
-            /* ----- Continue BFS ----- */
-            else {
-                if (tail >= capacity) {
-                    capacity *= 2;
-                    State* tmp_e = realloc(exploring,       capacity * sizeof(State));
-                    int*   tmp_p = realloc(exploring_props, capacity * sizeof(int));
-                    if (!tmp_e || !tmp_p) {
-                        free(finals); free(finals_props);
-                        free(exploring); free(exploring_props);
-                        free(succs);
-                        printf("\nErreur: Memoire depasse!!");
-                        return NULL;
-                    }
-                    exploring       = tmp_e;
-                    exploring_props = tmp_p;
-                }
-                exploring[tail]       = *s;
-                exploring_props[tail] = s_prop;
-                tail++;
-            }
-        }
-        free(succs);
-    }
-
-    free(exploring);
-    free(exploring_props);
-    *border_props_out = finals_props;
-    
-    return finals;
-}
-
-typedef struct {
-    Variable       key;
-   // State          state;
-    int            mark;
-    UT_hash_handle hh;
-} mark;
-
-static void mark_add(mark** table, State s, int w) {
-    mark* e = NULL;
-    HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-    if (e == NULL) {
-        e = malloc(sizeof(mark));
-        e->key   = s.var;
-       // e->state = s;
-        e->mark  = w;
-        HASH_ADD(hh, *table, key, sizeof(Variable), e);
-    }
-}
-
-static mark* mark_find(mark** table, State s) {
-    mark* e = NULL;
-    HASH_FIND(hh, *table, &s.var, sizeof(Variable), e);
-    return e;
-}
-
-static void mark_destroy(mark** table) {
-    mark *cur, *tmp;
-    HASH_ITER(hh, *table, cur, tmp) {
-        HASH_DEL(*table, cur);
-        free(cur);
-    }
-}
-
-
-int EFEF_pn_2tables(TA* ta, int location, DBM clock, GoalCondition* goal, int nbr_prop,
-                    bool (*check)(State* s, GoalCondition* goal),
-                    int  (*heuristique_check)(State* s, GoalCondition* goal))
-{
-    State* init_state = compute_init_state(ta);
-
-    /* Calculer jusqu'à quelle propriété l'état initial satisfait goal[0..nbr_prop-1] */
-    int init_prop = 0;
-    while (init_prop < nbr_prop && check(init_state, &goal[init_prop]))
-        init_prop++;
-// si init satisfais pO et pas p1 :  init_prop = 1, si elle ne satisfait pas p0 : init prop = 0
-    if (init_prop == nbr_prop) {
-        printf("\n Toutes les proprietes sont verifiees ! \n");
-        free(init_state);
-        return 1;
-    }
-
-    StateWeight* visiting = NULL;
-    mark*        marked   = NULL;
-
-    int init_weight = heuristique_check(init_state, &goal[init_prop]);
-    sw_add(&visiting, *init_state, init_weight);
-    mark_add(&marked, *init_state, init_prop); // la prochaine propriete a tester pour les successor
-    free(init_state);
-
-    int num_succ = 0;
-
-    while (HASH_COUNT(visiting) > 0) {
-       //  printf ("\n element de visiting : %d",HASH_COUNT(visiting));
-        /* --- 1. Trouver le mark maximal parmi les états dans visiting --- */
-        StateWeight *best = NULL, *cur, *tmp;
-        int best_mark = -1;
-
-        HASH_ITER(hh, visiting, cur, tmp) {
-            mark* m = mark_find(&marked, cur->state);
-            if (m && m->mark > best_mark)
-                best_mark = m->mark;
-        }
-
-        /* --- 2. Parmi les états avec ce mark max, prendre le plus petit weight --- */
-        HASH_ITER(hh, visiting, cur, tmp) {
-            mark* m = mark_find(&marked, cur->state);
-            if (m && m->mark == best_mark) {
-                if (best == NULL || cur->weight < best->weight)
-                    best = cur;
-            }
-        }
-
-        State current     = best->state;
-        int   current_prop = best_mark;
-        HASH_DEL(visiting, best);
-        free(best);
-
-        /* --- Appel NextBorder --- */
-        int*   border_props = NULL;
-        State* successors   = EFPnNextBorder(ta, current, location, clock,
-                                             goal, nbr_prop, &num_succ,
-                                             current_prop, &border_props, check);
-
-
-        /* --- Cas self-loop --- */
-        bool boucle = (num_succ == 1) &&
-                      equal_var(&current.var, &successors[0].var);
-
-        // if (boucle) {
-        //     int prop = border_props[0];
-        //     if (prop == nbr_prop) {
-        //         printf("\n Toutes les proprietes sont verifiees! \n");
-        //         free(successors); free(border_props);
-        //         sw_destroy(&visiting);
-        //         mark_destroy(&marked);
-        //         return 1;
-        //     }
-        //     free(successors); free(border_props);
-        //     continue;
-        // }
-
-        /* --- Cas général --- */
-        for (int i = 0; i < num_succ; i++) {
-            State* s    = &successors[i];
-            int    prop = border_props[i];
-
-            if (prop == nbr_prop) {
-                printf("\nToutes les proprietes sont verifiees!\n");
-                free(successors); free(border_props);
-                sw_destroy(&visiting);
-                mark_destroy(&marked);
-                return 1;
-            }
-
-            /* Ne pas re-ajouter un état déjà marqué avec un prop >= */
-            mark* existing = mark_find(&marked, *s);
-            if (existing != NULL && existing->mark >= prop)
-                continue;
-
-            mark_add(&marked, *s, prop);
-            int w = heuristique_check(s, &goal[prop]);
-            sw_add(&visiting, *s, w);
-        }
-
-        free(successors);
-        free(border_props);
-    }
-
-    sw_destroy(&visiting);
-    mark_destroy(&marked);
-    return 0;
-}
-
-/*=====================EF(p1 && EG (p2 && EG (p3 &&  EG (..... && pn)) )==================================*/
-State* EFEG_pnNextBorder(TA* ta, State state, int location, DBM clock,
-                         GoalCondition* goal, int nbr_prop,
-                         int* num_finals, int current_prop,
-                         int** border_props_out,
-                         bool (*check)(State* s, GoalCondition* goal))
-{
-    int capacity = 32, head = 0, tail = 0;
-
-    State* exploring      = malloc(capacity * sizeof(State));
-    int*   exploring_props = malloc(capacity * sizeof(int));
-    State* finals         = malloc(capacity * sizeof(State));
-    int*   finals_props   = malloc(capacity * sizeof(int));
-    *num_finals = 0;
-
-    if (!exploring || !exploring_props || !finals || !finals_props) {
-        free(exploring); free(exploring_props);
-        free(finals);    free(finals_props);
-        printf("\n Erreur malloc!!!");
-        return NULL;
-    }
-
-    /* --- Push initial (un seul tail++) --- */
-    int s_prop = current_prop;
-
-    if (check(&state, &goal[0]))
-        s_prop = 0;
-    else if ((current_prop == 0 || current_prop == 1) && check(&state, &goal[1]))
-        s_prop = 1;
-
-    exploring[tail]       = state;
-    exploring_props[tail] = s_prop;
-    tail++;
-
-    while (head < tail) {
-
-        /* --- Dépiler : lire état ET prop au même index, puis head++ une seule fois --- */
-        State current  = exploring[head];
-        int   cur_prop = exploring_props[head];
-        head++;
-
-        /* Debug : utiliser cur_prop, PAS exploring_props[head] --- */
-        // if (cur_prop == 0) printf("\n here prop 0");
-        // if (cur_prop == 1) printf("\n here prop 1");
-
-        int    num_succ = 0;
-        State* succs    = get_successors(ta, &current, &num_succ);
-
-        for (int j = 0; j < num_succ; j++) {
-            State* s = &succs[j];
-
-            /* Calculer s_prop depuis cur_prop, jamais depuis exploring_props[head] */
-            if (check(s, &goal[0]))
-                s_prop = 0;
-            else if ((cur_prop == 0 || cur_prop == 1) && check(s, &goal[1]))
-                s_prop = 1;
-            else
-                s_prop = 2;
-
-            /* ----- Border state ----- */
-            if (s->location == location &&
-                clock_zones_equal(s->clock_zone, clock, DBM_DIM))
-            {
-                bool present = false;
-                for (int k = 0; k < *num_finals; k++) {
-                    if (equal_var(&s->var, &finals[k].var)
-                     && s->location == finals[k].location)
-                    {
-                        if (s_prop < finals_props[k])
-                            finals_props[k] = s_prop;
-                        present = true;
-                        break;
-                    }
-                }
-                if (present) continue;
-
-                if (*num_finals >= capacity) {
-                    capacity *= 2;
-                    State* tmp_f = realloc(finals,       capacity * sizeof(State));
-                    int*   tmp_p = realloc(finals_props, capacity * sizeof(int));
-                    if (!tmp_f || !tmp_p) {
-                        free(finals); free(finals_props);
-                        free(exploring); free(exploring_props);
-                        free(succs);
-                        return NULL;
-                    }
-                    finals       = tmp_f;
-                    finals_props = tmp_p;
-                }
-
-                finals[*num_finals]       = *s;
-                finals_props[*num_finals] = s_prop;
-                (*num_finals)++;
-            }
-            /* ----- Continue BFS (un seul tail++) ----- */
-            else {
-                if (tail >= capacity) {
-                    capacity *= 2;
-                    State* tmp_e  = realloc(exploring,       capacity * sizeof(State));
-                    int*   tmp_ep = realloc(exploring_props, capacity * sizeof(int));
-                    if (!tmp_e || !tmp_ep) {
-                        free(finals); free(finals_props);
-                        free(exploring); free(exploring_props);
-                        free(succs);
-                        return NULL;
-                    }
-                    exploring       = tmp_e;
-                    exploring_props = tmp_ep;
-                }
-
-                exploring[tail]       = *s;
-                exploring_props[tail] = s_prop;
-                tail++;                          /* un seul incrément */
-            }
-        }
-        free(succs);
-    }
-
-    free(exploring);
-    free(exploring_props);
-    *border_props_out = finals_props;
-    return finals;
-}
-
-int EFEG_pn(TA* ta, int location, DBM clock, GoalCondition* goal, 
-            bool (*check)(State* s, GoalCondition* goal),
-            int  (*heuristique_check)(State* s, GoalCondition* goal))
-{
-    int  nbr_border_state = 0;
- 
-
-    State* init_state = compute_init_state(ta);
-    int current_prop = 2;
-    if (check(init_state, &goal[0])) {
-
-    current_prop = 0;
-    }
-
-    StateWeight* visiting = NULL;
-    mark*        marked   = NULL;
-    
-
-    int init_weight = heuristique_check(init_state, &goal[0]);
-    sw_add(&visiting, *init_state, init_weight);
-    mark_add(&marked, *init_state, current_prop);   // &marked ici aussi
-    nbr_border_state++;
-    free(init_state);
-
-    while (HASH_COUNT(visiting) > 0) {
-
-        /* Extraire le meilleur état */
-        StateWeight *best = NULL, *cur, *tmp;
-        HASH_ITER(hh, visiting, cur, tmp) {
-            if (best == NULL || cur->weight < best->weight)
-                best = cur;
-        }
-
-        State current = best->state;
-        /* Extraire la propriete qu'il satisfait*/
-        mark* m = mark_find(&marked, best->state);
-        current_prop =  m->mark;
-
-        HASH_DEL(visiting, best);
-        free(best);
-
-        int*   border_props = NULL;
-        int    num_succ     = 0;
-        State* successors   = EFEG_pnNextBorder(ta, current, location, clock,
-                                                goal, 2, &num_succ,
-                                                current_prop, &border_props, check);
-        if (!successors) continue;
-
-        bool boucle = (num_succ == 1)
-                   && equal_var(&current.var, &successors[0].var);
-                  
-
-        if (boucle) {
-            if ( current_prop == 0 ||  current_prop == 1) {
-               // printf("\n boucle");
-                //printf("\n current_prop: %d", current_prop);
-                free(border_props);
-                free(successors);
-                sw_destroy(&visiting);
-                mark_destroy(&marked);
-                return 1;
-            }
-            free(border_props);   
-            free(successors);
-            continue;
-        }
-
-        for (int i = 0; i < num_succ; i++) {
-            State* s = &successors[i];
-
-           mark* existing = mark_find(&marked, *s);
-            if (existing != NULL) {
-                if (existing->mark == 0) continue;          // déjà au mieux
-                if (border_props[i] < existing->mark)
-                    existing->mark = border_props[i];        // mise à jour
-                // re-ajouter dans visiting avec nouveau poids
-                int w = heuristique_check(s, &goal[border_props[i]]);
-                sw_add(&visiting, *s, w);
-                continue;
-            }
-
-            // Nouvel état
-            mark_add(&marked, *s, border_props[i]);
-            int w = heuristique_check(s, &goal[border_props[i] < 2 ? border_props[i] : 0]);
-            sw_add(&visiting, *s, w);
-            nbr_border_state++;
-                    }
-
-        free(border_props);   
-        free(successors);
-    }
-
-    sw_destroy(&visiting);
-    mark_destroy(&marked);
-    printf("\n nombre d'états dans les borders: %d", nbr_border_state);
-    return 0;
-}
-
-
-
-
-/* Retourne un tableau [2] de GoalCondition :
- *   result[0] = props[0] AND props[1] AND ... AND props[nbr_prop-1]
- *   result[1] = props[1] AND props[2] AND ... AND props[nbr_prop-1]
- * Retourne NULL si contradiction détectée sur une même variable.
- */
-GoalCondition* build_EFEG_goals(GoalCondition* props, int nbr_prop) {
-    if (nbr_prop < 1) return NULL;
-
-    GoalCondition* result = calloc(2, sizeof(GoalCondition));
-    if (!result) return NULL;
-
-    for (int g = 0; g < 2; g++) {
-        int start = g ;
-        result[g].mask = 0;
-
-        for (int i = start; i < nbr_prop; i++) {
-            GoalCondition* p = &props[i];
-
-            /* --- CHECK_V --- */
-            if (p->mask & CHECK_V) {
-                if (result[g].mask & CHECK_V) {
-                    if (result[g].v != p->v) {
-                        printf("[CONTRADICTION] v=%d vs v=%d entre prop 0..%d et prop %d\n",
-                               result[g].v, p->v, i-1, i);
-                        free(result);
-                        return NULL;
-                    }
-                } else {
-                    result[g].mask |= CHECK_V;
-                    result[g].v = p->v;
-                }
-            }
-
-            /* --- CHECK_ACTIVE --- */
-            if (p->mask & CHECK_ACTIVE) {
-                if (result[g].mask & CHECK_ACTIVE) {
-                    if (result[g].active != p->active) {
-                        printf("[CONTRADICTION] active=%d vs active=%d entre prop 0..%d et prop %d\n",
-                               result[g].active, p->active, i-1, i);
-                        free(result);
-                        return NULL;
-                    }
-                } else {
-                    result[g].mask |= CHECK_ACTIVE;
-                    result[g].active = p->active;
-                }
-            }
-
-            /* --- CHECK_X --- */
-            if (p->mask & CHECK_X) {
-                if (result[g].mask & CHECK_X) {
-                    if (result[g].x != p->x) {
-                        printf("[CONTRADICTION] x=%d vs x=%d entre prop 0..%d et prop %d\n",
-                               result[g].x, p->x, i-1, i);
-                        free(result);
-                        return NULL;
-                    }
-                } else {
-                    result[g].mask |= CHECK_X;
-                    result[g].x = p->x;
-                }
-            }
-
-            /* --- CHECK_NAME --- */
-            if (p->mask & CHECK_NAME) {
-                if (result[g].mask & CHECK_NAME) {
-                    if (strcmp(result[g].name, p->name) != 0) {
-                        printf("[CONTRADICTION] name='%s' vs name='%s' entre prop 0..%d et prop %d\n",
-                               result[g].name, p->name, i-1, i);
-                        free(result);
-                        return NULL;
-                    }
-                } else {
-                    result[g].mask |= CHECK_NAME;
-                    strcpy(result[g].name, p->name);
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
-/************************************Memory inside next border ************************************************************************* */
-
-// void visitState_add(visitState** table, State s) {
-//     visitState* entry = malloc(sizeof(visitState));
-//     entry->key = s;
-//     HASH_ADD_KEYPTR(hh, *table, &entry->key, sizeof(State), entry);
-// }
-
-// visitState* visitState_find(visitState** table, State s) {
-//     visitState* entry = NULL;
-//     HASH_FIND(hh, *table, &s, sizeof(State), entry);
-//     return entry;
-// }
-
-// void visitState_destroy(visitState** table) {
-//     visitState *cur, *tmp;
-//     HASH_ITER(hh, *table, cur, tmp) {
-//         HASH_DEL(*table, cur);
-//         free(cur);
-//     }
-// }
-
-
-void visitState_add(StateHash** table, State s) {
-    StateHash* entry = malloc(sizeof(StateHash));
-     StateKey key = {s};
-    entry->key = key;
-    entry ->index = HASH_COUNT(*table) + 1; // soit ça soit idex ++ dans les parametres de la fonction
-
-    HASH_ADD_KEYPTR(hh, *table, &entry->key, sizeof(State), entry);
-}
-
-StateHash* visitState_find(StateHash** table, State s) {
-    StateHash* entry = NULL;
-    HASH_FIND(hh, *table, &s, sizeof(State), entry);
-    return entry;
-}
-
-void visitState_destroy(StateHash** table) {
-    StateHash *cur, *tmp;
-    HASH_ITER(hh, *table, cur, tmp) {
-        HASH_DEL(*table, cur);
-        free(cur);
-    }
-}
 
 State* NextBorderMemory(TA* ta, State state, int location, DBM clock,
-                  GoalCondition *goal, int* num_finals, bool* found,int * num_visited, bool (*check)(State* s, GoalCondition* goal))
+                 int* num_finals, bool* found,int * num_visited, bool (*check)(State*s))
 {
     /* ---------- Queue BFS ---------- */
     int capacity = 32;
@@ -2308,18 +968,13 @@ State* NextBorderMemory(TA* ta, State state, int location, DBM clock,
     int idx = 0;
     State* exploring = malloc(capacity * sizeof(State));// trouver une optimisation sans le malloc
     if (!exploring) return NULL;
-   // visitState* visited  = NULL;  /* une table de hashage pour suavegarder les etats visités avec clé de hashage tout le state */
    StateHash* visited  = NULL;  /* une table de hashage pour suavegarder les etats visités avec clé de hashage tout le state */
     exploring[tail++] = state;
     visitState_add(&visited, state);
     /* ---------- Finals ---------- */
     int capacity_finals = 32;
     State* finals = malloc(capacity_finals * sizeof(State));// trouver une optimisation sans le malloc
-    if (!finals) {
-        free(exploring);
-        return NULL;
-    }
-
+   
     *num_finals = 0;
     *found = false;
 
@@ -2333,7 +988,7 @@ State* NextBorderMemory(TA* ta, State state, int location, DBM clock,
         State* succs = get_successors(ta, &current, &num_succ);
 
              /*----check in BFS for EFP---------*/
-        if (check(&current, goal)){
+        if (check(&current)){
              printf("\nProperty found in NextBorder!");
              *found = true;
               State* result = malloc(sizeof(State));
@@ -2357,18 +1012,7 @@ State* NextBorderMemory(TA* ta, State state, int location, DBM clock,
                 if ((s->location == location) &&
                     clock_zones_equal(s->clock_zone, clock, DBM_DIM))
                 {
-                    
-                
-                    /* vérifier doublon */
-                    // for (int k = 0; k < *num_finals; k++) {
-                    //     if (equal_var(&(s->var),&(finals[k].var))) {  //(s->var.v == finals[k].var.v)
-                    //         present = true;
-                    //         break;
-                    //     }
-                    // }
-                    // Pas necessaire car on garde tout les etats borders en memoire
-                    
-                    
+
                         if (*num_finals >= capacity_finals) {
                             capacity_finals *= 2;
                             // printf("\n capacite augmente:\n");
@@ -2420,8 +1064,10 @@ State* NextBorderMemory(TA* ta, State state, int location, DBM clock,
                 }
                 visitState_add(&visited, *s); // Successeur est ajouté soit a border soit à exloring => ajouter à visited
                 
+            }
+
         }
-        }
+       // print_state(&current, ta->locations);
          (*num_visited)++;
 
         free(succs);
@@ -2432,18 +1078,17 @@ State* NextBorderMemory(TA* ta, State state, int location, DBM clock,
     return finals;
 }
 
-int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int (*heuristique_check)(State* s, GoalCondition* goal)) {
+int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock,State** result,
+         bool (*check)(State*s),
+         int (*heuristique_check)(State*s)) {
 
     //if (!ta) return 0;
     int nbr_border_state =0;
     int num_visited = 0;
     bool   found      = false;
     State* init_state = compute_init_state(ta);
-    //if (!init_state) return 0;
     *result= NULL;
-   if (check(init_state, goal)) {  
+   if (check(init_state)) {  
                         *result = init_state;
                          printf("\n nombre d etats vistes: %d", 1); 
                         return 1;
@@ -2451,12 +1096,11 @@ int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,St
     StateWeight* visiting = NULL;  /* frontier  */
     visit* visited  = NULL;  /* seen set  */
 
-    int init_weight = heuristique_check(init_state, goal);
+    int init_weight = heuristique_check(init_state);
     sw_add(&visiting, *init_state, init_weight);
     visit_add(&visited,  *init_state);
-  // nbr_border_state ++;
-   //num_found++;
-    //free(init_state);
+    nbr_border_state++;
+
 
     while (HASH_COUNT(visiting) > 0) {
 
@@ -2474,7 +1118,7 @@ int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,St
         /* --- Compute successors --- */
         int    num_succ  = 0;
         State* successors = NextBorderMemory(ta, current, location, clock,
-                                       goal, &num_succ, &found,&num_visited, check);   // Appel à nextborder memory
+                                        &num_succ, &found,&num_visited, check);   // Appel à nextborder memory
         if (found) {
               *result = malloc(sizeof(State));
               **result = *successors;
@@ -2487,9 +1131,7 @@ int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,St
 
         if (!successors) continue;
 
-        bool boucle = (num_succ == 1) &&
-                       equal_var(&current.var, &successors[0].var);
-        if (!boucle) {
+       
             for (int i = 0; i < num_succ; i++) {
                 State* s = &successors[i];
                
@@ -2498,7 +1140,7 @@ int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,St
                     { 
                         continue;}
 
-                if (check(s, goal)) {
+                if (check(s)) {
                     *result = malloc(sizeof(State));
                     **result = *s;
                     free(successors);
@@ -2510,15 +1152,14 @@ int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,St
 
 
 
-                int w = heuristique_check(s, goal);
+                int w = heuristique_check(s);
                 sw_add(&visiting, *s, w);
                 visit_add(&visited,  *s);  /* mark as seen immediately */
-                 nbr_border_state ++;
+                nbr_border_state ++;
 
                
             }
-        }
-      //  num_visited++;
+     
         free(successors);
     }
 
@@ -2532,7 +1173,7 @@ int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,St
 }
 /*--------------------EG(p)------------------------------------------------*/
 State* NextBorderMemoryEG(TA* ta, State state, int location, DBM clock,
-                  GoalCondition *goal, int* num_finals, int* num_visited, bool (*check)(State* s, GoalCondition* goal))
+                 int* num_finals, int* num_visited, bool (*check)(State*s))
 {
     /* ---------- Queue BFS ---------- */
     int capacity = 32;
@@ -2541,7 +1182,6 @@ State* NextBorderMemoryEG(TA* ta, State state, int location, DBM clock,
 
     State* exploring = malloc(capacity * sizeof(State));// trouver une optimisation sans le malloc
     if (!exploring) return NULL;
-   // visitState* visited  = NULL;   /* une table de hashage pour suavegarder les etats visités avec clé de hashage tout le state */
     StateHash* visited  = NULL;  /* une table de hashage pour suavegarder les etats visités avec clé de hashage tout le state */
     exploring[tail++] = state;
 
@@ -2568,7 +1208,7 @@ State* NextBorderMemoryEG(TA* ta, State state, int location, DBM clock,
            
 
             State* s = &succs[j];
-             if (check(s, goal))
+             if (check(s))
         {
             if (visitState_find (&visited, *s)) continue; // skip si le successeur exite déja 
          
@@ -2581,17 +1221,7 @@ State* NextBorderMemoryEG(TA* ta, State state, int location, DBM clock,
                 {
                     
                 
-                    /* vérifier doublon */
-                    // for (int k = 0; k < *num_finals; k++) {
-                    //     if (equal_var(&(s->var),&(finals[k].var))) {  //(s->var.v == finals[k].var.v)
-                    //         present = true;
-                    //         break;
-                    //     }
-                    // }
-                   // Pas necessaire car on garde tout les etats borders en memoire
                     
-                   // if (!present) 
-                    {
                         if (*num_finals >= capacity_finals) {
                             capacity_finals *= 2;
                             // printf("\n capacite augmente:\n");
@@ -2615,7 +1245,7 @@ State* NextBorderMemoryEG(TA* ta, State state, int location, DBM clock,
                      (*num_finals)++;
 
                         //printf("\n num finals = %d", *num_finals);
-                    } 
+                    
                    //  printf("\n num finals apres present = %d", *num_finals);
 
                 }
@@ -2665,9 +1295,9 @@ State* NextBorderMemoryEG(TA* ta, State state, int location, DBM clock,
     return finals;
 }
 
-int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,
-                 bool (*check)(State* s, GoalCondition* goal),
-                 int  (*heuristique_check)(State* s, GoalCondition* goal))
+int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock,
+                 bool (*check)(State*s),
+                 int  (*heuristique_check)(State*s))
 {
 
     State* init_state = compute_init_state(ta);
@@ -2676,13 +1306,13 @@ int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock, GoalCondition* go
 
 
     /* EG : l'état initial doit satisfaire la propriété */
-    if (!check(init_state, goal)) {
+    if (!check(init_state)) {
         free(init_state);
         printf("propriete non verifier dans init state");
         return 0;
     }
 
-    int    init_weight = heuristique_check(init_state, goal);
+    int    init_weight = heuristique_check(init_state);
 
     StateWeight* visiting   = NULL;   /* à explorer  (frontier) */
     visit*       visited = NULL;   /* déjà expansés           */
@@ -2712,11 +1342,10 @@ int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock, GoalCondition* go
         bool   found    = false;
       
         State* successors = NextBorderMemoryEG(ta, current, location, clock,
-                                       goal, &num_succ, &num_visited, check); // Appel a nexborcer memory
+                                        &num_succ, &num_visited, check); // Appel a nexborcer memory
        
         
-        // State* successors = EGNextBorder(ta, current, location, clock,
-        //                                goal, &num_succ, &found, check);
+      
         /*  boucle sur soi-même → chemin infini trouvé */
          bool boucle = (num_succ == 1) && equal_var(&current.var, &successors[0].var);
 
@@ -2733,21 +1362,14 @@ int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock, GoalCondition* go
         /* Cas général : on n'ajoute que les successeurs qui satisfont check */
         for (int i = 0; i < num_succ; i++) {
             State* s = &successors[i];
-           
-
-            /* EG : inutile d'explorer un état qui viole la propriété */
-            // if (!check(s, goal))
-            //     continue;
-
-           
-           
+    
             /* un successor déja visité */
             if (visit_find(&visited, *s) != NULL)
                   continue;
           
            
 
-            int w = heuristique_check(s, goal);
+            int w = heuristique_check(s);
            
             sw_add(&visiting, *s, w);
             visit_add(&visited, *s);
@@ -2771,10 +1393,10 @@ int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock, GoalCondition* go
 }
 
 
-/********************************************************************  No memory *******************************************************/
-int EF_pNO_memory(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int (*heuristique_check)(State* s, GoalCondition* goal)) {
+/***********************************************************************************  No memory *************************************************************************************/
+int EF_pNO_memory(TA* ta, int location, DBM clock,State** result,
+         bool (*check)(State*s),
+         int (*heuristique_check)(State*s)) {
 
     //if (!ta) return 0;
     int nbr_border_state =0;
@@ -2783,7 +1405,7 @@ int EF_pNO_memory(TA* ta, int location, DBM clock, GoalCondition* goal,State** r
     State* init_state = compute_init_state(ta);
     //if (!init_state) return 0;
     *result= NULL;
-   if (check(init_state, goal)) {  
+   if (check(init_state)) {  
                         *result = init_state; 
                          printf("\n nombre d etats vistes: %d", 1);
                         return 1;
@@ -2791,7 +1413,7 @@ int EF_pNO_memory(TA* ta, int location, DBM clock, GoalCondition* goal,State** r
     StateWeight* visiting = NULL;  /* frontier  */
    // visit* visited  = NULL;  /* seen set  */
 
-    int init_weight = heuristique_check(init_state, goal);
+    int init_weight = heuristique_check(init_state);
     sw_add(&visiting, *init_state, init_weight);
  
 
@@ -2813,7 +1435,7 @@ int EF_pNO_memory(TA* ta, int location, DBM clock, GoalCondition* goal,State** r
         /* --- Compute successors --- */
         int    num_succ  = 0;
         State* successors = NextBorder(ta, current, location, clock,
-                                       goal, &num_succ, &found,&num_found, check);
+                                        &num_succ, &found,&num_found, check);
         if (found) {
               *result = malloc(sizeof(State));
               **result = *successors;
@@ -2828,11 +1450,12 @@ int EF_pNO_memory(TA* ta, int location, DBM clock, GoalCondition* goal,State** r
         bool boucle = (num_succ == 1) &&
                        equal_var(&current.var, &successors[0].var);
         if (boucle){
-            if (check(&successors[0], goal)) {
+            if (check(&successors[0])) {
                     *result = malloc(sizeof(State));
                     **result = successors[0];
                 
                     free(successors);
+
                     sw_destroy(&visiting);
                      printf("\n nombre d etats vistes: %d", num_found);
                     return 1;
@@ -2847,7 +1470,7 @@ int EF_pNO_memory(TA* ta, int location, DBM clock, GoalCondition* goal,State** r
                 /* Skip if already seen */
                
 
-                if (check(s, goal)) {
+                if (check(s)) {
                     *result = malloc(sizeof(State));
                     **result = *s;
                     free(successors);
@@ -2858,9 +1481,9 @@ int EF_pNO_memory(TA* ta, int location, DBM clock, GoalCondition* goal,State** r
 
 
 
-                int w = heuristique_check(s, goal);
+                int w = heuristique_check(s);
                 sw_add(&visiting, *s, w);
-                num_found++;
+              
                
 
                
@@ -2876,29 +1499,29 @@ int EF_pNO_memory(TA* ta, int location, DBM clock, GoalCondition* goal,State** r
     return 0;
 }
 
-int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, GoalCondition* goal,
-                 bool (*check)(State* s, GoalCondition* goal),
-                 int  (*heuristique_check)(State* s, GoalCondition* goal))
+int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock,
+                 bool (*check)(State*s),
+                 int  (*heuristique_check)(State*s))
 {
 
     State* init_state = compute_init_state(ta);
     int num_visited = 0; 
 
     /* EG : l'état initial doit satisfaire la propriété */
-    if (!check(init_state, goal)) {
+    if (!check(init_state)) {
         free(init_state);
         printf("propriete non verifier dans init state");
         return 0;
     }
 
-    int    init_weight = heuristique_check(init_state, goal);
+    int    init_weight = heuristique_check(init_state);
 
     StateWeight* visiting   = NULL;   /* à explorer  (frontier) */
     //visit*       visited = NULL;   /* déjà expansés           */
 
     sw_add(&visiting, *init_state, init_weight);
     //visit_add(&visited,  *init_state);
-    num_visited++;
+   
     free(init_state);
      int    num_succ = 0;
     while (HASH_COUNT(visiting) > 0) {
@@ -2920,7 +1543,7 @@ int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, GoalCondition* goal,
        
       
         State* successors = EGNextBorder(ta, current, location, clock,
-                                       goal, &num_succ, &num_visited, check);
+                                        &num_succ, &num_visited, check);
        
         
 
@@ -2941,9 +1564,9 @@ int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, GoalCondition* goal,
         for (int i = 0; i < num_succ; i++) {
             State* s = &successors[i];
             /* EG : inutile d'explorer un état qui viole la propriété */
-            //  if (!check(s, goal))
+            //  if (!check(s))
             //      continue;
-            int w = heuristique_check(s, goal);
+            int w = heuristique_check(s);
             sw_add(&visiting, *s, w);    
         }
        
@@ -2957,12 +1580,12 @@ int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, GoalCondition* goal,
      return 0 ;
 }
 
-/********************************************************************  full memory *******************************************************/
+/***********************************************************************************  full memory *****************************************************************************/
 
 
-int EF_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal, State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int (*heuristique_check)(State* s, GoalCondition* goal))
+int EF_FullMemory(TA* ta, int location, DBM clock, State** result,
+         bool (*check)(State*s),
+         int (*heuristique_check)(State*s))
 {
     *result = NULL;
     int nbr_border =0;
@@ -2970,7 +1593,7 @@ int EF_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal, State** 
     State *init = compute_init_state(ta);
     if (!init) return 0;
 
-    if (check(init, goal)) {
+    if (check(init)) {
         *result = init;
          printf("\n nombre d etats vistes: %d", 1);
         return 1;
@@ -3007,7 +1630,7 @@ int EF_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal, State** 
 
             State current = exploring[head++]; 
 
-            if (check(&current, goal)) {
+            if (check(&current)) {
                 *result = malloc(sizeof(State));
                 **result = current;
                 free(exploring);
@@ -3042,7 +1665,7 @@ int EF_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal, State** 
                         finals = tmp;
                     }
                     finals[num_finals].state  = *s;
-                    finals[num_finals].weight = heuristique_check(s, goal);
+                    finals[num_finals].weight = heuristique_check(s);
                     num_finals++;
                 }
                 else {
@@ -3104,9 +1727,9 @@ int EF_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal, State** 
     return 0;
 }
 
-int EG_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal,
-         bool (*check)(State* s, GoalCondition* goal),
-         int (*heuristique_check)(State* s, GoalCondition* goal))
+int EG_FullMemory(TA* ta, int location, DBM clock,
+         bool (*check)(State*s),
+         int (*heuristique_check)(State*s))
 {
 
   
@@ -3115,7 +1738,7 @@ int EG_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal,
     int num_visited = 0;
     if (!init) return 0;
 
-    if (!check(init, goal)) {
+    if (!check(init)) {
         printf( "actif de init state : %d",init->var.active);
         free(init);
         printf("\n propriete non verifiee dans init state");
@@ -3162,7 +1785,7 @@ int EG_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal,
         while (head < tail) {
 
             State current = exploring[head++];
-            if (!check(&current, goal)) continue;
+            if (!check(&current)) continue;
 
             int num_succ = 0;
             State* succs = get_successors(ta, &current, &num_succ);
@@ -3176,7 +1799,7 @@ int EG_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal,
              
                
                
-                if ((!check(s, goal))) continue;
+                if ((!check(s))) continue;
                 
 
                 if ((s->location == location) &&
@@ -3188,7 +1811,7 @@ int EG_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal,
                     printf("\n boucle");
                     printf("\n variable v= %d, active = %d, x= %d ", s->var.v, s->var.active, s->var.x);
 
-                    if (check(s, goal))
+                    if (check(s))
                     {
                         free(finals); free(exploring); free(succs);
                           
@@ -3222,7 +1845,7 @@ int EG_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal,
                         finals = tmp;
                     }
                     finals[num_finals].state  = *s;
-                    finals[num_finals].weight = heuristique_check(s, goal);
+                    finals[num_finals].weight = heuristique_check(s);
                     num_finals++;
                 }
                 else {
@@ -3292,4 +1915,21 @@ int EG_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal,
     visitState_destroy(&border_visited);
     return 0;
 }
+
+ /*==========================================  Fonction pour test   ===================*/
+
+void print_all_exist(State_space_TA* ss_ta, TA* ta) {
+    printf("\n les etats satisfaisants g:\n");
+    for (int i = 0; i < ss_ta->nb_etats; i++) {
+        if(check_p(&(ss_ta->etats[i]))){
+               print_state(&(ss_ta->etats[i]),ta->locations);
+                printf("Etat etendu ID #%d\n", i);
+        }
+       // printf("\n");
+    }
+
+}
+
+
+
 

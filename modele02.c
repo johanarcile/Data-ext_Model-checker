@@ -29,7 +29,7 @@ Variable variable;               // Variable de données
 UpdateFunction* update_functions; // Fonctions d'update
 Constraint* constraints;         // Contraintes
 //int vmax = 3000 ;
-int vmax = 1;
+int vmax = 3000;
 
 // ---------------------Instantiation TA ---------------------
 
@@ -108,7 +108,7 @@ Variable update_a(Variable var) {
         
         var.v += 2;
         var.active = false;
-        if (var.v >= vmax) var.active = true;
+       // if (var.v >= vmax) var.active = true;
         var.x += 1;
         // var.table[0]++;
         // var.table[1] = var.v;
@@ -124,8 +124,8 @@ Variable update_b(Variable var) {
     if (var.v * 2 <= vmax && var.v * 2 >= -10) {
 
       var.v *= 2;
-    if (var.v >= vmax) var.active = true;
-    else 
+    // if (var.v >= vmax) var.active = true;
+    // else 
      var.active = false;
       var.x += 1;
      
@@ -145,8 +145,8 @@ Variable update_c(Variable var) {
     if (var.v + 1 <= vmax && var.v + 1 >= -10){
         
         var.v += 1;
-    if (var.v >= vmax) var.active = true;
-    else
+    // if (var.v >= vmax) var.active = true;
+    // else
       var.active = false;
         var.x += 1;
         //  var.table[c

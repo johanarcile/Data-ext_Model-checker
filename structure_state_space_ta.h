@@ -80,97 +80,125 @@ typedef struct {
 } MinHeap;
 
 
+typedef struct {
+    State * state;
+    int weight;
+} HeapNodeP;
+
+typedef struct {
+    HeapNodeP* data;        
+    int        size;
+    int        capacity;
+} MinHeapP;
+
+
+
+void  visit_add(visit** table, State s);
+visit* visit_find(visit** table, State s);
+void  visit_destroy(visit** table);
+
+ void sw_add(StateWeight** table, State s, int w);
+ StateWeight* sw_find(StateWeight** table, State s);
+  void sw_destroy(StateWeight** table);
+
+
+MinHeap* heap_create(int capacity);
+void heap_destroy(MinHeap* h);
+void heap_swap(MinHeap* h, int i, int j);
+void heap_sift_up(MinHeap* h, int i);
+void heap_sift_down(MinHeap* h, int i);
+void heap_push(MinHeap* h, State s, int w);
+HeapNode heap_pop(MinHeap* h);
+
+MinHeapP* heap_createP(int capacity);
+void heap_destroyP(MinHeapP* h);
+void heap_swapP(MinHeapP* h, int i, int j);
+void heap_sift_upP(MinHeapP* h, int i);
+void heap_sift_downP(MinHeapP* h, int i);
+void heap_pushP(MinHeapP* h, State* s, int w);
+HeapNodeP heap_popP(MinHeapP* h);
+
+void visitState_add(StateHash** table, State s);
+StateHash* visitState_find(StateHash** table, State s);
+void visitState_destroy(StateHash** table);
+
+
+
+
 
 void explore_state_space_ta(TA* ta);
 void build_state_space_ta(TA* ta, State_space_TA* state_space_ta);
 void print_state_space_ta(State_space_TA* state_space_ta, char** locations, char** actions);
 void print_state(State* etat, char** locations);
 State* compute_init_state(TA* ta);
+State* get_successors(TA* ta, State* source, int* num_successors);
 
 
 
-bool check_p(State* s, GoalCondition* goal);
-bool check_p_sup(State* s, GoalCondition* goal);
-bool check_p_inf(State* s, GoalCondition* goal);
-
-int heuristique_checkp(State* s,GoalCondition* goal);
-int heuristique_checkp_inf(State* s, GoalCondition* goal);
-int heuristique_checkp_max(State* s, GoalCondition* goal);
 
 /*==============================Fonction d'exploration====================================================*/
+
+//heurstique
+ int heuristique_checkp(State* s);
+//check
+bool check_p(State* s);
 
 
 /*----------------- Partial memory (memoire que dans les borders) -----------------------------------------------------------------*/
 
-int EF_p(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal), int (*heuristique_check)(State* s,GoalCondition* goal));
+int EF_p(TA* ta, int location, DBM clock, State** result,
+          bool (*check)(State* s), int (*heuristique_check)(State* s));
 
-int EF_p_HV(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal), int  (*heuristique_check)(State* s, GoalCondition* goal));
-int EF_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int  (*heuristique_check)(State* s, GoalCondition* goal));
+int EF_p_HV(TA* ta, int location, DBM clock, State** result,
+          bool (*check)(State* s),  int  (*heuristique_check)(State* s));
+int EF_p_HV_M(TA* ta, int location, DBM clock, State** result,
+          bool (*check)(State* s),
+         int  (*heuristique_check)(State* s));
 
 
-int EG_p_HV_M(TA* ta, int location, DBM clock, GoalCondition* goal,
-          bool (*check)(State* s, GoalCondition* goal),
-          int  (*heuristique_check)(State* s, GoalCondition* goal));
-int EG_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
-                 bool (*check)(State* s, GoalCondition* goal),
-                 int  (*heuristique_check)(State* s, GoalCondition* goal));
+int EG_p_HV_M(TA* ta, int location, DBM clock, 
+           bool (*check)(State* s),
+          int  (*heuristique_check)(State* s));
+int EG_p_2tables(TA* ta, int location, DBM clock, 
+                  bool (*check)(State* s),
+                 int  (*heuristique_check)(State* s));
 
 
 
 
 /*-------------tests------------------------------------------------------*/
 
-void print_all_exist(State_space_TA* ss_ta, TA* ta, GoalCondition* goal);
+void print_all_exist(State_space_TA* ss_ta, TA* ta);
 
-/*------------- fonctions imbriquees ------------------------------------------------------*/
-int EGEF_p_2tables(TA* ta, int location, DBM clock, GoalCondition* goal,
-                 bool (*check)(State* s, GoalCondition* goal),
-                 int  (*heuristique_check)(State* s, GoalCondition* goal));
-
-int EFEF_pn_2tables(TA* ta, int location, DBM clock, GoalCondition* goal, int nbr_prop,
-                    bool (*check)(State* s, GoalCondition* goal),
-                    int  (*heuristique_check)(State* s, GoalCondition* goal));
-
-int EFEG_pn(TA* ta, int location, DBM clock, GoalCondition* goal,
-            bool (*check)(State* s, GoalCondition* goal),
-            int  (*heuristique_check)(State* s, GoalCondition* goal));
-
-            
-GoalCondition* build_EFEG_goals(GoalCondition* props, int nbr_prop);
 
 /*-------------- No memory ---------------------------------------------*/
-int EF_pNO_memory(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int (*heuristique_check)(State* s, GoalCondition* goal));
+int EF_pNO_memory(TA* ta, int location, DBM clock, State** result,
+          bool (*check)(State* s),
+          int  (*heuristique_check)(State* s));
 
-int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, GoalCondition* goal,
-                 bool (*check)(State* s, GoalCondition* goal),
-                 int  (*heuristique_check)(State* s, GoalCondition* goal));
+int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, 
+                  bool (*check)(State* s),
+                 int  (*heuristique_check)(State* s));
 /*--------------------Memory in layers---------------------------*/
-int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int (*heuristique_check)(State* s, GoalCondition* goal));
+int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, State** result,
+          bool (*check)(State* s),
+         int  (*heuristique_check)(State* s));
 
-int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock, GoalCondition* goal,
-                 bool (*check)(State* s, GoalCondition* goal),
-                 int  (*heuristique_check)(State* s, GoalCondition* goal));
+int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock, 
+                  bool (*check)(State* s),
+                 int  (*heuristique_check)(State* s));
 
 /*-------------------- Full memory ---------------------------*/
-int EF_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal,State** result,
-         bool (*check)(State* s, GoalCondition* goal),
-         int (*heuristique_check)(State* s, GoalCondition* goal));
+int EF_FullMemory(TA* ta, int location, DBM clock, State** result,
+          bool (*check)(State* s),
+         int  (*heuristique_check)(State* s));
 
-int EG_FullMemory(TA* ta, int location, DBM clock, GoalCondition* goal,
-         bool (*check)(State* s, GoalCondition* goal),
-         int (*heuristique_check)(State* s, GoalCondition* goal));
+int EG_FullMemory(TA* ta, int location, DBM clock,
+         bool (*check)(State* s),
+                 int  (*heuristique_check)(State* s));
 /*---------------------------test fonction recursive-----------------------------*/
-int EFPn_recursive(TA* ta, int location, DBM clock,
-                   GoalCondition* goal, int nbr_prop,
-                   bool (*check)(State* s, GoalCondition* goal),
-                   int (*heuristique_check)(State* s, GoalCondition* goal));
+
+
+
                    
 #endif

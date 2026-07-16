@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stddef.h>
 #include "structure_variable.h"
+#include "structure_ta.h"
+#include "structure_state_space_ta.h"
 
 
 // ----------------------Comparaison des variable----------------------------------
@@ -77,12 +79,12 @@ int compare_var(const Variable *v1, const Variable *v2) {
     return 0;
 }
 
-bool v1_inf_v2(Variable* v1, Variable* v2){
-     return (compare_var(v1, v2) < 0);
-}
-bool v1_sup_v2(Variable* v1, Variable* v2){
-    return compare_var(v1, v2)>0;
-}
+// bool v1_inf_v2(Variable* v1, Variable* v2){
+//      return (compare_var(v1, v2) < 0);
+// }
+// bool v1_sup_v2(Variable* v1, Variable* v2){
+//     return compare_var(v1, v2)>0;
+// }
 
 
 void print_variable(Variable * v){
@@ -98,6 +100,30 @@ void print_variable(Variable * v){
 // printf("sizeof Variable = %zu\n", sizeof(Variable));
        
 }
+
+
+/*==================properties checking functions ===============================*/
+
+
+
+bool check_p_var(Variable* V) {
+
+   //9900000
+      if ((V->v == 10000 )&&(V->active == false)) return true;
+    
+      else return false;
+}
+
+
+
+/*========================Heuristiques=============================================*/
+
+ int heuristique_checkp_var(Variable* V){
+    return abs(V->v - 10000);
+ }
+
+
+
 
 
 

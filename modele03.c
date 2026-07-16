@@ -107,7 +107,7 @@ Variable update_a(Variable var) {
         var.v += 2;
          //var.x *= 2;
          var.active = false;
-         if(var.v == vmax){var.active = true;}
+        // if(var.v == vmax){var.active = true;}
         // var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -126,7 +126,7 @@ Variable update_b(Variable var) {
         var.v *= 2;
        // var.x += 2;
         var.active = false;
-       if(var.v == vmax){var.active = true;}
+      // if(var.v == vmax){var.active = true;}
         //  var.table[0]++;
         // var.table[1] = var.v;
         // var.table[2] = var.v;
@@ -146,7 +146,7 @@ Variable update_c(Variable var) {
 
       var.active = false;
 
-     if(var.v == vmax){var.active = true;}
+    // if(var.v == vmax){var.active = true;}
     //   var.table[0]++;
     //   var.table[1] = var.v;
     //   var.table[2] = var.v;
