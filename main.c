@@ -17,8 +17,8 @@ bool check_prop0(State* s) {
 }
 
 bool check_prop1(State* s) {
-    // if(s->var.v == 9900000) printf("\n prop1 verifie");
-    return s->var.v <= 9900000;
+     //if(s->var.v == 500) printf("\n prop1 verifie");
+    return s->var.v <= 500;
      
 }
 
@@ -126,33 +126,33 @@ printf("\n ======================================== Les tests ==================
 
 //      tmbhpef = tmbhpef+ temps_ecoule;
 
-    debut = clock(); 
-    c = EF_p_HV_M(& ta,init_state->location,init_state->clock_zone, &result, check_p,heuristique_checkp);
-    fin = clock();            // Fin du chronomètre
-    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EFP heap pool juse maloc au besoins: %f secondes", temps_ecoule);
-    printf("\n trouver Avec  HEAP ET TABLE? : %s ", c? "true" : "false  \n");
+//     debut = clock(); 
+//     c = EF_p_HV_M(& ta,init_state->location,init_state->clock_zone, &result, check_p,heuristique_checkp);
+//     fin = clock();            // Fin du chronomètre
+//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+//     printf("\n Temps d execution EFP heap pool juse maloc au besoins: %f secondes", temps_ecoule);
+//     printf("\n trouver Avec  HEAP ET TABLE? : %s ", c? "true" : "false  \n");
     
-    if (result != NULL){
-         printf("\n Le state qui verifie\n");
-         print_state(result, ta.locations);
-         free (result);
-    }
-   tmbhmef = tmbhmef+ temps_ecoule;
+//     if (result != NULL){
+//          printf("\n Le state qui verifie\n");
+//          print_state(result, ta.locations);
+//          free (result);
+//     }
+//    tmbhmef = tmbhmef+ temps_ecoule;
 
-    debut = clock(); 
-    c = EF_p_1table(& ta,init_state->location,init_state->clock_zone, &result, check_p,heuristique_checkp);
-    fin = clock();            // Fin du chronomètre
-    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EFP 1 table de hashage: %f secondes", temps_ecoule);
-    printf("\n trouver Avec  1 table de hashage? : %s ", c? "true" : "false  \n");
+//     debut = clock(); 
+//     c = EF_p_1table(& ta,init_state->location,init_state->clock_zone, &result, check_p,heuristique_checkp);
+//     fin = clock();            // Fin du chronomètre
+//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+//     printf("\n Temps d execution EFP 1 table de hashage: %f secondes", temps_ecoule);
+//     printf("\n trouver Avec  1 table de hashage? : %s ", c? "true" : "false  \n");
     
-    if (result != NULL){
-         printf("\n Le state qui verifie\n");
-         print_state(result, ta.locations);
-         free (result);
-    }
-   tmbhmef = tmbhmef+ temps_ecoule;
+//     if (result != NULL){
+//          printf("\n Le state qui verifie\n");
+//          print_state(result, ta.locations);
+//          free (result);
+//     }
+//    tmbhmef = tmbhmef+ temps_ecoule;
 
     
 //  printf("\n \n **************EF memory in layers:******************* \n ");
@@ -212,34 +212,34 @@ printf("\n ======================================== Les tests ==================
 
 
    //   printf("\n \n ------------------EG:-------------------------- \n ");
-     printf("\n EG *********Memory on the borders only*************: \n ");
-    debut = clock(); 
-    c = EG_p_2tables(& ta,init_state->location,init_state->clock_zone,check_p,heuristique_checkp);
-    fin = clock();            // Fin du chronomètre
-    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EGP Avec 2 tables: %f secondes", temps_ecoule);
-    printf("\n trouver Avec  2 TABLES ? : %s ", c? "true" : "false  \n");
-    tmbeg = tmbeg + temps_ecoule;
+//      printf("\n EG *********Memory on the borders only*************: \n ");
+//     debut = clock(); 
+//     c = EG_p_2tables(& ta,init_state->location,init_state->clock_zone,check_p,heuristique_checkp);
+//     fin = clock();            // Fin du chronomètre
+//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+//     printf("\n Temps d execution EGP Avec 2 tables: %f secondes", temps_ecoule);
+//     printf("\n trouver Avec  2 TABLES ? : %s ", c? "true" : "false  \n");
+//     tmbeg = tmbeg + temps_ecoule;
 
 
 
  
 
-     debut = clock(); 
-    c = EG_p_HV_M(& ta,init_state->location,init_state->clock_zone,check_p,heuristique_checkp);
-    fin = clock();            // Fin du chronomètre
-    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EGP heap pool juse maloc au besoins: %f secondes", temps_ecoule);
-    printf("\n trouver Avec  HEAP ET TABLE? : %s ", c? "true" : "false  \n");
-    tmbhmeg = tmbhmeg + temps_ecoule;
+//      debut = clock(); 
+//     c = EG_p_HV_M(& ta,init_state->location,init_state->clock_zone,check_p,heuristique_checkp);
+//     fin = clock();            // Fin du chronomètre
+//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+//     printf("\n Temps d execution EGP heap pool juse maloc au besoins: %f secondes", temps_ecoule);
+//     printf("\n trouver Avec  HEAP ET TABLE? : %s ", c? "true" : "false  \n");
+//     tmbhmeg = tmbhmeg + temps_ecoule;
 
-         debut = clock(); 
-    c = EG_p_1table(& ta,init_state->location,init_state->clock_zone,check_p,heuristique_checkp);
-    fin = clock();            // Fin du chronomètre
-    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EGP 1table de hashage: %f secondes", temps_ecoule);
-    printf("\n trouver Avec 1table de hashage: %s ", c? "true" : "false  \n");
-    tmbhmeg = tmbhmeg + temps_ecoule;
+//          debut = clock(); 
+//     c = EG_p_1table(& ta,init_state->location,init_state->clock_zone,check_p,heuristique_checkp);
+//     fin = clock();            // Fin du chronomètre
+//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+//     printf("\n Temps d execution EGP 1table de hashage: %f secondes", temps_ecoule);
+//     printf("\n trouver Avec 1table de hashage: %s ", c? "true" : "false  \n");
+//     tmbhmeg = tmbhmeg + temps_ecoule;
 
 //   printf("\n \n **************EG memory in layers:******************* \n ");
 
@@ -306,13 +306,13 @@ printf("\n ======================================== Les tests ==================
 
 
  /*--------------------------- Requete imbriques EF(EG(p)) ----------------------------*/
-//    printf(" \n EFEG:\n");
-//    debut = clock(); 
-//     c =  EGEF_p_2tables(& ta,init_state->location,init_state->clock_zone,check_p,heuristique_checkp);
-//     fin = clock();            // Fin du chronomètre
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n Temps d execution EFEGP 2 tables: %f secondes", temps_ecoule);
-//     printf("\n trouver ? : %s ", c? "true" : "false  \n");
+   printf(" \n EFEG:\n");
+   debut = clock(); 
+    c =  EGEF_p_2tables(& ta,init_state->location,init_state->clock_zone,check_p,heuristique_checkp);
+    fin = clock();            // Fin du chronomètre
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n Temps d execution EFEGP 2 tables: %f secondes", temps_ecoule);
+    printf("\n trouver ? : %s ", c? "true" : "false  \n");
 
 
 /*------------------------------------------------------------------------------------*/
@@ -321,20 +321,20 @@ printf("\n ======================================== Les tests ==================
 
 
 
-// printf(" \n EFEFn:\n");
+printf(" \n EFEFn:\n");
 
-//  c = EFEF_pn_2tables(&ta, init_state->location, init_state->clock_zone, 2,
-//                          checks, heuristics);
+ c = EFEF_pn_2tables(&ta, init_state->location, init_state->clock_zone, 2,
+                         checks, heuristics);
 
-//   printf("\n trouver ? : %s ", c? "true" : "false  \n");
+  printf("\n trouver ? : %s ", c? "true" : "false  \n");
 
 
-//   printf(" \n EFEGn:\n");
+  printf(" \n EFEGn:\n");
 
-//  c =  EFEG_pn(&ta, init_state->location, init_state->clock_zone,
-//                          checks, heuristics);
+ c =  EFEG_pn(&ta, init_state->location, init_state->clock_zone,
+                         checks, heuristics);
 
-//   printf("\n trouver ? : %s ", c? "true" : "false  \n");
+  printf("\n trouver ? : %s ", c? "true" : "false  \n");
 
 
  /*--------------------------- Exploration espace etats ----------------------------*/

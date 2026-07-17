@@ -103,6 +103,7 @@ typedef struct {
 
 
 
+/*============================== Construction et exploration d'espace d'états dans (ta_extended_builder.c) ====================================================*/
 
 
 
@@ -114,17 +115,25 @@ State* compute_init_state(TA* ta);
 State* get_successors(TA* ta, State* source, int* num_successors);
 
 
+/*==============================Fonction d'exploration à la volée ====================================================*/
+
+/*
+Les arguments de EFP:
+            ta : timed automata
+            location : location de border state
+            clock : horloge de border state
+            result: l'etat retourné si la propriété est satifaite
+            check : la fonction check qui definie la propriété à vérifier
+            heuristique_check: l'heuristique définie
+
+Les arguments de EGP:
+            Meme parametre sans result
 
 
-/*==============================Fonction d'exploration====================================================*/
-
-//heurstique
- int heuristique_checkp(State* s);
-//check
-bool check_p(State* s);
-
+*/
 
 /*----------------- Partial memory (memoire que dans les borders) -----------------------------------------------------------------*/
+//EFP
 
 int EF_p(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s), int (*heuristique_check)(State* s));
@@ -139,6 +148,8 @@ int EF_p_1table(TA* ta, int location, DBM clock, State** result,
                 bool (*check)(State*s),
          int (*heuristique_check)(State*s));
 
+//EGP
+
 int EG_p_HV_M(TA* ta, int location, DBM clock, 
            bool (*check)(State* s),
           int  (*heuristique_check)(State* s));
@@ -150,20 +161,6 @@ int EG_p_1table(TA* ta, int location, DBM clock,
                 bool (*check)(State*s),
          int (*heuristique_check)(State*s));
 
-
-/*-------------tests------------------------------------------------------*/
-
-void print_all_exist(State_space_TA* ss_ta, TA* ta);
-
-
-/*-------------- No memory ---------------------------------------------*/
-int EF_pNO_memory(TA* ta, int location, DBM clock, State** result,
-          bool (*check)(State* s),
-          int  (*heuristique_check)(State* s));
-
-int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, 
-                  bool (*check)(State* s),
-                 int  (*heuristique_check)(State* s));
 /*--------------------Memory in layers---------------------------*/
 int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
@@ -181,9 +178,27 @@ int EF_FullMemory(TA* ta, int location, DBM clock, State** result,
 int EG_FullMemory(TA* ta, int location, DBM clock,
          bool (*check)(State* s),
                  int  (*heuristique_check)(State* s));
+
+/*-------------- No memory ---------------------------------------------*/
+int EF_pNO_memory(TA* ta, int location, DBM clock, State** result,
+          bool (*check)(State* s),
+          int  (*heuristique_check)(State* s));
+
+int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, 
+                  bool (*check)(State* s),
+                 int  (*heuristique_check)(State* s));
+
+
 /*---------------------------test fonction recursive-----------------------------*/
 
 
+/*-------------tests------------------------------------------------------*/
+
+void print_all_exist(State_space_TA* ss_ta, TA* ta);
+
+
+
+/*============================= Pour les structures des données (Les fonctiotions de data_structures.c)==========================================*/
 void  visit_add(visit** table, State s);
 visit* visit_find(visit** table, State s);
 void  visit_destroy(visit** table);
@@ -215,5 +230,14 @@ void visitState_destroy(StateHash** table);
 
   void swe_add(StateWeightExp** table, State s, int w);
   StateWeightExp* swe_find(StateWeightExp** table, State s);
-   void swe_destroy(StateWeightExp** table);                  
+   void swe_destroy(StateWeightExp** table); 
+
+
+/*============================= Pour définir l'ehuristique et la propriété à vérifier (Les fonctiotions de heuristiques_et_check.c)==========================================*/
+
+   /*----------------- Heuristique à définir -----------------------------------------------------------------*/
+ int heuristique_checkp(State* s);
+/*----------------- Propriété à vérifier -----------------------------------------------------------------*/
+bool check_p(State* s);
+              
 #endif

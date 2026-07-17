@@ -28,10 +28,13 @@ State* EFEGNextBorder(TA* ta, State state, int location, DBM clock,
     /* ---------- Finals ---------- */
     int capacity_finals = 32;
     State* finals = malloc(capacity_finals * sizeof(State));// trouver une optimisation sans le malloc
-    if (!finals) {
-        free(exploring);
-        return NULL;
-    }
+
+    visit* finals_table = NULL;   // table de hashage pour les doublons (border states)
+
+    // if (!finals) {
+    //     free(exploring);
+    //     return NULL;
+    // }
 
     *num_finals = 0;
     *found = false;
@@ -49,24 +52,14 @@ State* EFEGNextBorder(TA* ta, State state, int location, DBM clock,
         for (int j = 0; j < num_succ; j++) {
 
             State* s = &succs[j];
-            bool present = false;
+           // bool present = false;
 
             /* ----- Border state ----- */
             if ((s->location == location) &&
                 clock_zones_equal(s->clock_zone, clock, DBM_DIM))
             {
-                
-               
-                /* vérifier doublon */
-                for (int k = 0; k < *num_finals; k++) {
-                    if (equal_var(&(s->var),&(finals[k].var))) {  //(s->var.v == finals[k].var.v)
-                        present = true;
-                        break;
-                    }
-                }
-                // vu que j'ai visited esq cette verification est necessaire
-                if (!present) {
-                   
+                 if (visit_find(&finals_table, *s) == NULL) { // si il n'exite pas déja on l'ajoute à finals
+
                     if (*num_finals >= capacity_finals) {
                         capacity_finals *= 2;
                         // printf("\n capacite augmente:\n");
@@ -86,7 +79,9 @@ State* EFEGNextBorder(TA* ta, State state, int location, DBM clock,
                   
                     finals[*num_finals] = *s;
                     (*num_finals)++;
-                }
+                    visit_add(&finals_table, *s);  // marquer comme vu
+
+               }
 
             }
             /* ----- Continue BFS ----- */
@@ -228,13 +223,11 @@ int EGEF_p_2tables(TA* ta, int location, DBM clock,
 
 /* ================Test de EF(P1 && EF (......&&EF(Pn)))======================================*/
 
-
 State* EFPnNextBorder(TA* ta, State state, int location, DBM clock,
                       CheckFunc* props, int nbr_prop,
                       int* num_finals, int current_prop,
                       int** border_props_out)
 {
-
     int capacity = 32, head = 0, tail = 0;
     State* exploring       = malloc(capacity * sizeof(State));
     int*   exploring_props = malloc(capacity * sizeof(int));
@@ -248,6 +241,9 @@ State* EFPnNextBorder(TA* ta, State state, int location, DBM clock,
         printf("\n Erreur malloc!!!");
         return NULL;
     }
+
+    /* Table de hachage : state -> index dans finals[] (remplace la boucle linéaire) */
+    mark* finals_index = NULL;
 
     int start_prop = current_prop;
     while (start_prop < nbr_prop && props[start_prop](&state))
@@ -270,22 +266,19 @@ State* EFPnNextBorder(TA* ta, State state, int location, DBM clock,
             int s_prop = cur_prop;
             while (s_prop < nbr_prop && props[s_prop](s))
                 s_prop++;
-            
-             /* ----- Border state ----- */
+
+            /* ----- Border state ----- */
             if (s->location == location &&
                 clock_zones_equal(s->clock_zone, clock, DBM_DIM))
             {
-                /* Doublon : garder le meilleur prop */
-                bool present = false;
-                for (int k = 0; k < *num_finals; k++) {
-                    if (equal_var(&s->var, &finals[k].var)) {
-                        if (s_prop > finals_props[k])
-                            finals_props[k] = s_prop;
-                        present = true;
-                        break;
-                    }
+                /* Doublon : recherche O(1) via la hashtable au lieu de la boucle sur finals[] */
+                mark* existing = mark_find(&finals_index, *s);
+                if (existing != NULL) {
+                    int k = existing->mark;
+                    if (s_prop > finals_props[k])
+                        finals_props[k] = s_prop;
+                    continue;
                 }
-                if (present) continue;
 
                 if (*num_finals >= capacity) {
                     capacity *= 2;
@@ -295,6 +288,7 @@ State* EFPnNextBorder(TA* ta, State state, int location, DBM clock,
                         free(finals); free(finals_props);
                         free(exploring); free(exploring_props);
                         free(succs);
+                        mark_destroy(&finals_index);
                         return NULL;
                     }
                     finals       = tmp_f;
@@ -303,6 +297,7 @@ State* EFPnNextBorder(TA* ta, State state, int location, DBM clock,
 
                 finals[*num_finals]       = *s;
                 finals_props[*num_finals] = s_prop;
+                mark_add(&finals_index, *s, *num_finals);
                 (*num_finals)++;
             }
             /* ----- Continue BFS ----- */
@@ -315,6 +310,7 @@ State* EFPnNextBorder(TA* ta, State state, int location, DBM clock,
                         free(finals); free(finals_props);
                         free(exploring); free(exploring_props);
                         free(succs);
+                        mark_destroy(&finals_index);
                         printf("\nErreur: Memoire depasse!!");
                         return NULL;
                     }
@@ -325,18 +321,17 @@ State* EFPnNextBorder(TA* ta, State state, int location, DBM clock,
                 exploring_props[tail] = s_prop;
                 tail++;
             }
-
         }
         free(succs);
     }
 
     free(exploring);
     free(exploring_props);
+    mark_destroy(&finals_index);
     *border_props_out = finals_props;
 
     return finals;
 }
-
 
 
 
