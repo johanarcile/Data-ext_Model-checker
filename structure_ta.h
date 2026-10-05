@@ -2,6 +2,7 @@
 #define STRUCTURE_TA_H
 
 #include "structure_variable.h"
+
 #include "structure_DBM.h"
 
 

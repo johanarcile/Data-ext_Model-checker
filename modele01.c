@@ -17,7 +17,7 @@ Transition** transitions;        // Transitions sortantes de chaque état
 Variable variable;               // Variable de données
 UpdateFunction* update_functions; // Fonctions d'update
 Constraint* constraints;         // Contraintes
-int vmax =500; //9900000;
+int vmax = 9900000;
 // ---------------------Instantiation TA ---------------------
 
 void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND HAVING ALL VARIABLES BE ARRAYS
@@ -87,11 +87,11 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 void init_variables() { 
     variable.v = 0;
     variable.active=false;
-    variable.table_size = 3;
-    variable.table[0] = 0;
-    variable.table[1] = 0;
-    variable.table[2] = 0;
-    strcpy(variable.name, "start");
+    // variable.table_size = 3;
+    // variable.table[0] = 0;
+    // variable.table[1] = 0;
+    // variable.table[2] = 0;
+    // strcpy(variable.name, "start");
 }
 
 // --------------------- Update functions ---------------------

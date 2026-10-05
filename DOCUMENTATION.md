@@ -55,6 +55,12 @@ Programme principal à exécuter.
 
 ---
 
+### `main_rep_true.c` / `main_rep_false.c`
+
+- `main_rep_true.c` : exécute les différents algorithmes qui répondent à la requête EF(p) dans le cas où p **est vérifiée**, et affiche pour chacun les résultats (nombre d'états visités et temps d'exécution).
+- `main_rep_false.c` : même principe, pour la requête EF(p) dans le cas où p **n'est pas vérifiée**. 
+---
+
 ### `nested_queries.h` / `nested_queries.c`
 Implémentation des requêtes CTL imbriquées.
 
@@ -81,14 +87,32 @@ Structure d'un automate temporisé (Timed Automaton) et de ses transitions.
 
 ---
 
-### `structure_variable.h` / `structure_variable.c`
+### `structure_variable.h` / `structure_variable_model{1,2,3}.h` / `structure_variable_model{1,2,3}.c`
 Structure de données propre à chaque modèle, et fonctions relatives aux variables.
+
+- `structure_variable.h` : header commun, inclus par tous les autres fichiers du projet. Il sélectionne le header du modèle actif selon la macro `MODEL` définie à la compilation (`modele2` si `MODEL` n'est pas défini).
+- `structure_variable_model1.h`, `structure_variable_model2.h`, `structure_variable_model3.h` : définition de `struct Variable` pour chaque modèle, ainsi que les prototypes des fonctions associées (`equal_var`, `print_variable`, `check_p_var`, `heuristique_checkp_var`, `check_p_var_true`, `check_p_var_false`).
+- `structure_variable_model1.c`, `structure_variable_model2.c`, `structure_variable_model3.c` : implémentation de ces fonctions pour chaque modèle.
+
+> **Important** : les autres fichiers du projet doivent inclure uniquement `structure_variable.h`, jamais directement un `structure_variable_modeli.h`.
+
+#### Choix du modèle
+
+Le modèle se choisit à la compilation avec `-DMODEL=<i>`, et il faut compiler le `.c` correspondant (un seul des trois) :
+
+```bash
+gcc -DMODEL=2 -o executable_name main.c ta_extended_builder.c DBM.c modele02.c structure_variable_model2.c data_structures.c heuristiques_et_check.c
+```
+
+Pour changer de modèle, modifier à la fois la valeur de `MODEL` et le fichier `structure_variable_modeli.c` (ainsi que le fichier `modele0i.c` correspondant). Penser à recompiler tous les fichiers `.c` ensemble.
 
 **Fonctions principales**
 - `equal_var()` — retourne vrai si deux variables sont égales, faux sinon
 - `eprint_variable()` — affiche la valeur de chaque champ de la variable
 - `checkp_var()` — vérifie la propriété p relative aux variables de données
 - `heuristiquep_var()` — heuristique d'exploration relative aux variables de données
+- `check_p_var_true()` : requête prédéfinie sur les variables de données, conservée telle qu'utilisée pour obtenir les résultats du papier (cas où la propriété p est vérifiée)
+- `check_p_var_false()` : idem pour le second cas de requête du papier (cas où la propriété p n'est pas vérifiée)
 
 ---
 

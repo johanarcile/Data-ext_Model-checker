@@ -90,3 +90,55 @@ EF_p(&ta, init_state->location, init_state->clock_zone, &result, check_p, heuris
    ```bash
    ./executable_name
    ```
+## Reproduction des résultats du papier
+
+Les requêtes utilisées pour les expérimentations sont sauvegardées dans `check_p_var_true()` et `check_p_var_false()` de chaque `structure_variable_model{i}.c`. Il suffit donc de compiler le projet avec la bonne valeur de `MODEL` et les fichiers correspondants pour retrouver les mêmes résultats, sans avoir à réécrire les requêtes.
+
+Deux choses déterminent la configuration à compiler :
+
+- **Le modèle** : `-DMODEL=<i>`, avec les fichiers `modele0<i>.c` et `structure_variable_model<i>.c` correspondants.
+- **Le cas de la requête EF(p)** : `main_rep_true.c` (p est vérifiée) ou `main_rep_false.c` (p n'est pas vérifiée).
+
+### Modèle 1
+
+**EF(p) où p est vérifiée :**
+```bash
+gcc -DMODEL=1 -o executable_name main_rep_true.c ta_extended_builder.c DBM.c modele01.c structure_variable_model1.c data_structures.c heuristiques_et_check.c
+```
+
+**EF(p) où p n'est pas vérifiée :**
+```bash
+gcc -DMODEL=1 -o executable_name main_rep_false.c ta_extended_builder.c DBM.c modele01.c structure_variable_model1.c data_structures.c heuristiques_et_check.c
+```
+
+### Modèle 2
+
+**EF(p) où p est vérifiée :**
+```bash
+gcc -DMODEL=2 -o executable_name main_rep_true.c ta_extended_builder.c DBM.c modele02.c structure_variable_model2.c data_structures.c heuristiques_et_check.c
+```
+
+**EF(p) où p n'est pas vérifiée :**
+```bash
+gcc -DMODEL=2 -o executable_name main_rep_false.c ta_extended_builder.c DBM.c modele02.c structure_variable_model2.c data_structures.c heuristiques_et_check.c
+```
+
+### Modèle 3
+
+**EF(p) où p est vérifiée :**
+```bash
+gcc -DMODEL=3 -o executable_name main_rep_true.c ta_extended_builder.c DBM.c modele03.c structure_variable_model3.c data_structures.c heuristiques_et_check.c
+```
+
+**EF(p) où p n'est pas vérifiée :**
+```bash
+gcc -DMODEL=3 -o executable_name main_rep_false.c ta_extended_builder.c DBM.c modele03.c structure_variable_model3.c data_structures.c heuristiques_et_check.c
+```
+> **Attention** : `MODEL`, `modele0<i>.c` et `structure_variable_model<i>.c` doivent toujours correspondre au même numéro de modèle. Mélanger des fichiers de modèles différents provoque des erreurs de compilation ou des comportements incorrects.
+
+### Exécution
+
+```bash
+./executable_name        # Linux / macOS
+.\executable_name.exe    # Windows (PowerShell)
+

@@ -122,9 +122,9 @@ Les arguments de EFP:
             ta : timed automata
             location : location de border state
             clock : horloge de border state
-            result: l'etat retourné si la propriété est satifaite
-            check : la fonction check qui definie la propriété à vérifier
-            heuristique_check: l'heuristique définie
+            result: l'etat retourné si la propriété est satifaite (non modifié si la propriété n'est pas satisfaite).
+            check : la fonction check définissant la propriété p à satisfaire
+            heuristique_check: l'heuristique utilisée pour guider l'exploration.
 
 Les arguments de EGP:
             Meme parametre sans result
@@ -189,9 +189,6 @@ int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock,
                  int  (*heuristique_check)(State* s));
 
 
-/*---------------------------test fonction recursive-----------------------------*/
-
-
 /*-------------tests------------------------------------------------------*/
 
 void print_all_exist(State_space_TA* ss_ta, TA* ta);
@@ -239,5 +236,9 @@ void visitState_destroy(StateHash** table);
  int heuristique_checkp(State* s);
 /*----------------- Propriété à vérifier -----------------------------------------------------------------*/
 bool check_p(State* s);
+bool check_true(State* s);
+bool check_false(State* s);
+
+
               
 #endif

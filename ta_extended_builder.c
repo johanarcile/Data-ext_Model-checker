@@ -7,7 +7,11 @@
 #include "structure_state_space_ta.h"
 #include "uthash.h"
 #include "structure_DBM.h"
+//#include "structure_variable.h"
+
 #include "structure_variable.h"
+
+
 // --------------------- Hashed state space functions ---------------------
 
 // Ajouter un nouvel état
@@ -114,9 +118,10 @@ void print_state_space_ta(State_space_TA* ss_ta, char** locations, char** action
         printf("\t Location    : %s (ID %d)\n", locations[ss_ta->etats[i].location], ss_ta->etats[i].location);
         printf("\t Clock zone :\n");
         print_dbm(ss_ta->etats[i].clock_zone);
-        printf("\t Variables       : v = %d\n", ss_ta->etats[i].var.v);
-       printf("\t Variables       : active= %d\n", ss_ta->etats[i].var.active);
-        printf("\t Variables       : x= %d\n", ss_ta->etats[i].var.x);
+    //     printf("\t Variables       : v = %d\n", ss_ta->etats[i].var.v);
+    //    printf("\t Variables       : active= %d\n", ss_ta->etats[i].var.active);
+       print_variable( &(ss_ta->etats[i].var));
+       // printf("\t Variables       : x= %d\n", ss_ta->etats[i].var.x);
         // printf("\t Variables       : t[0] = %d\n", ss_ta->etats[i].var.table[0]);
         // printf("\t Variables       : t[1] = %d\n", ss_ta->etats[i].var.table[1]);
         // printf("\t Variables       : t[2] = %d\n", ss_ta->etats[i].var.table[2]);
@@ -686,12 +691,13 @@ int EF_p_HV(TA* ta, int location, DBM clock,State** result,
    // if (!init_state) return 0;//Vérifiecation
    *result= NULL;
    if (check(init_state)) { 
+
                        *result= init_state; 
                         return 1;
                     }
     MinHeap*     heap    = heap_create(64);
     visit* visited = NULL;
-     printf("size de heap %d",heap->size);
+    //  printf("size de heap %d",heap->size);
     int init_weight = heuristique_check(init_state);
     heap_push(heap, *init_state, init_weight);
     visit_add(&visited, *init_state);                
@@ -774,7 +780,7 @@ int EF_p_HV_M(TA* ta, int location, DBM clock,State** result,
 
     MinHeapP* heap = heap_createP(64);  
     visit* visited = NULL;
-    printf("size de heap %d",heap->size);
+    // printf("size de heap %d",heap->size);
     int init_weight = heuristique_check(init_state);
 
     heap_pushP(heap, init_state, init_weight);
@@ -1981,7 +1987,8 @@ int EG_FullMemory(TA* ta, int location, DBM clock,
                       /*-- verrifier si c une boucle*/
                     if (equal_var( &next_state.var, &s->var)){ 
                     printf("\n boucle");
-                    printf("\n variable v= %d, active = %d, x= %d ", s->var.v, s->var.active, s->var.x);
+                   // printf("\n variable v= %d, active = %d, x= %d ", s->var.v, s->var.active, s->var.x);
+                    print_variable(&s->var);
 
                     if (check(s))
                     {

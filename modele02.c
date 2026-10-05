@@ -90,11 +90,11 @@ void init_variables() {
     variable.v = 0;
     variable.x = 0;
     variable.active=false;
-    variable.table_size = 3;
-    variable.table[0] = 0;
-    variable.table[1] = 0;
-    variable.table[2] = 0;
-    strcpy(variable.name, "start");
+    // variable.table_size = 3;
+    // variable.table[0] = 0;
+    // variable.table[1] = 0;
+    // variable.table[2] = 0;
+    // strcpy(variable.name, "start");
 }
 
 // --------------------- Update functions ---------------------
