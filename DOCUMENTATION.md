@@ -60,6 +60,21 @@ Programme principal à exécuter.
 - `main_rep_true.c` : exécute les différents algorithmes qui répondent à la requête EF(p) dans le cas où p **est vérifiée**, et affiche pour chacun les résultats (nombre d'états visités et temps d'exécution).
 - `main_rep_false.c` : même principe, pour la requête EF(p) dans le cas où p **n'est pas vérifiée**. 
 ---
+## Modèles utilisés
+
+Les trois modèles sont des automates temporisés étendus avec deux horloges `x` et `y` et une variable de données `v`. 
+
+### Modèle 1 : linear layers (`modele01.c`)
+4 localités `l0` à `l3`, invariant `x, y ≤ 2`, `vmax = 9 900 000`. 
+
+### Modèle 2 : small layers(`modele02.c`)
+2 localités `l0`, `l1`, invariant `x, y ≤ 32`, `vmax = 3 000`. 
+
+### Modèle 3 : large layers(`modele03.c`)
+Même structure que le modèle 1, avec invariant `x, y ≤ 12`, `vmax = 20 000`.
+
+
+
 
 ### `nested_queries.h` / `nested_queries.c`
 Implémentation des requêtes CTL imbriquées.

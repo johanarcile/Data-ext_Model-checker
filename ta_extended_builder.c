@@ -500,6 +500,7 @@ int EF_p_1table(TA* ta, int location, DBM clock, State** result,
     // memset(&init_state->var, 0, sizeof(Variable));
 
     StateWeightExp* states = NULL;  /* Table unique */
+    *result= NULL;
 
     int init_weight = heuristique_check(init_state);
     swe_add(&states, *init_state, init_weight);
@@ -542,6 +543,8 @@ int EF_p_1table(TA* ta, int location, DBM clock, State** result,
                 if (existing == NULL) {
 
                     if (check(s)) {
+                         *result = malloc(sizeof(State));
+                         **result = *successors;
                         free(successors);
                         swe_destroy(&states);
                         return 1;

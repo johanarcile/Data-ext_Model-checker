@@ -37,21 +37,21 @@ int main() {
 printf("\n ======================================== Les tests =====================================");
 
 /*--------------------------- building state space ----------------------------*/
-// printf("\n ======================================== building state space=====================================");
+printf("\n ======================================== building state space=====================================");
 
-// for(int i=0; i< 3; i++) {
+for(int i=0; i< 3; i++) {
 
      
-//     debut = clock(); 
-//     build_state_space_ta(&ta, &state_space_ta);
-//     fin = clock();
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n temps de constructiond d espace d etats : %f", temps_ecoule);
-//     printf("\n Nombre total d'états étendus : %d", state_space_ta.nb_etats);
-//      tcee = tcee + temps_ecoule;
+    debut = clock(); 
+    build_state_space_ta(&ta, &state_space_ta);
+    fin = clock();
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n temps de constructiond d espace d etats : %f", temps_ecoule);
+    printf("\n Nombre total d'états étendus : %d", state_space_ta.nb_etats);
+     tcee = tcee + temps_ecoule;
 
 
-// }
+}
 
      
 /*--------------------------- EF(p) true----------------------------*/
@@ -83,19 +83,19 @@ for(int i=0; i< 3; i++) {
 
    printf("\n EF *********Memory on the borders only*************: \n ");
 
-//   debut = clock(); 
-//     c = EF_p_1table(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
-//     fin = clock();            // Fin du chronomètre
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n Temps d execution EFP 1 table de hashage: %f secondes", temps_ecoule);
-//     printf("\n trouver Avec  1 table de hashage? : %s ", c? "true" : "false  \n");
+  debut = clock(); 
+    c = EF_p_1table(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
+    fin = clock();            // Fin du chronomètre
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n Temps d execution EFP 1 table de hashage: %f secondes", temps_ecoule);
+    printf("\n trouver Avec  1 table de hashage? : %s ", c? "true" : "false  \n");
     
-//     if (result != NULL){
-//          printf("\n Le state qui verifie\n");
-//          print_state(result, ta.locations);
-//          free (result);
-//     }
-//    tmbef1 = tmbef1+ temps_ecoule;
+    if (result != NULL){
+         printf("\n Le state qui verifie\n");
+         print_state(result, ta.locations);
+         free (result);
+    }
+   tmbef1 = tmbef1+ temps_ecoule;
 
 
 
