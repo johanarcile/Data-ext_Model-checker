@@ -37,70 +37,70 @@ int main() {
 printf("\n ======================================== Les tests =====================================");
 
 /*--------------------------- building state space ----------------------------*/
-// printf("\n ======================================== building state space=====================================");
+printf("\n ======================================== building state space=====================================");
 
-// for(int i=0; i< 3; i++) {
+for(int i=0; i< 3; i++) {
 
      
-//     debut = clock(); 
-//     build_state_space_ta(&ta, &state_space_ta);
-//     fin = clock();
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n temps de constructiond d espace d etats : %f", temps_ecoule);
-//     printf("\n Nombre total d'états étendus : %d", state_space_ta.nb_etats);
-//      tcee = tcee + temps_ecoule;
+    debut = clock(); 
+    build_state_space_ta(&ta, &state_space_ta);
+    fin = clock();
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n temps de constructiond d espace d etats : %f", temps_ecoule);
+    printf("\n Nombre total d'états étendus : %d", state_space_ta.nb_etats);
+     tcee = tcee + temps_ecoule;
 
 
-// }
+}
 
      
 /*--------------------------- EF(p) true----------------------------*/
 
-printf("\n ======================================== EF(false) =====================================");
+printf("\n ======================================== EF(True) =====================================");
 
 for(int i=0; i< 3; i++) {
 
  
-  printf("\n ---------------- Test n: %d ----------------------------------------------------------",i);
+ printf("\n ---------------- Test n: %d ----------------------------------------------------------",i);
 
 
-//    printf("\n \n ****************EF No memory:****************** \n ");
+   printf("\n \n ****************EF No memory:****************** \n ");
  
-//     debut = clock(); 
-//     c = EF_pNO_memory(& ta,init_state->location,init_state->clock_zone, &result, check_false,heuristique_checkp);
-//     fin = clock();            // Fin du chronomètre
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n Temps d execution EFP 2 tables : %f secondes", temps_ecoule);
-//     printf("\n trouver Avec  EFP 2 tables No emory? : %s ", c? "true" : "false \n");
-//     if (result != NULL){
-//          printf("\n Le state qui verifie\n");
-//          print_state(result, ta.locations);
-//          free (result);
-//     }
+    debut = clock(); 
+    c = EF_pNO_memory(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
+    fin = clock();            // Fin du chronomètre
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n Temps d execution No memory : %f secondes", temps_ecoule);
+    printf("\n trouver Avec  EFP No memory? : %s ", c? "true" : "false \n");
+    if (result != NULL){
+         printf("\n Le state qui verifie\n");
+         print_state(result, ta.locations);
+         free (result);
+    }
 
-//     tnmef = tnmef + temps_ecoule;
+    tnmef = tnmef + temps_ecoule;
 
 
-//    printf("\n EF *********Memory on the borders only*************: \n ");
+   printf("\n EF *********Memory on the borders only*************: \n ");
 
-//   debut = clock(); 
-//     c = EF_p_1table(& ta,init_state->location,init_state->clock_zone, &result, check_false,heuristique_checkp);
-//     fin = clock();            // Fin du chronomètre
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n Temps d execution EFP 1 table de hashage: %f secondes", temps_ecoule);
-//     printf("\n trouver Avec  1 table de hashage? : %s ", c? "true" : "false  \n");
+  debut = clock(); 
+    c = EF_p_1table(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
+    fin = clock();            // Fin du chronomètre
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n Temps d execution EFP 1 table de hashage: %f secondes", temps_ecoule);
+    printf("\n trouver Avec  1 table de hashage? : %s ", c? "true" : "false  \n");
     
-//     if (result != NULL){
-//          printf("\n Le state qui verifie\n");
-//          print_state(result, ta.locations);
-//          free (result);
-//     }
-//    tmbef1 = tmbef1+ temps_ecoule;
+    if (result != NULL){
+         printf("\n Le state qui verifie\n");
+         print_state(result, ta.locations);
+         free (result);
+    }
+   tmbef1 = tmbef1+ temps_ecoule;
 
 
 
     debut = clock(); 
-    c = EF_p(& ta,init_state->location,init_state->clock_zone, &result, check_false,heuristique_checkp);
+    c = EF_p(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
     printf("\n Temps d execution EFP 2 tables : %f secondes", temps_ecoule);
@@ -116,7 +116,7 @@ for(int i=0; i< 3; i++) {
 
 
      debut = clock(); 
-    c = EF_p_HV(& ta,init_state->location,init_state->clock_zone, &result, check_false,heuristique_checkp);
+    c = EF_p_HV(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
     printf("\n Temps d execution EFP HEAP ET TABLE : %f secondes", temps_ecoule);
@@ -131,7 +131,7 @@ for(int i=0; i< 3; i++) {
      tmbhpef = tmbhpef+ temps_ecoule;
 
     debut = clock(); 
-    c = EF_p_HV_M(& ta,init_state->location,init_state->clock_zone, &result, check_false,heuristique_checkp);
+    c = EF_p_HV_M(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
     printf("\n Temps d execution EFP heap pool juse maloc au besoins: %f secondes", temps_ecoule);
@@ -150,10 +150,10 @@ for(int i=0; i< 3; i++) {
  printf("\n \n **************EF memory in layers:******************* \n ");
  
     debut = clock(); 
-    c = EF_p_Memory_in_Layer(& ta,init_state->location,init_state->clock_zone, &result, check_false,heuristique_checkp);
+    c = EF_p_Memory_in_Layer(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EFP 2 tables : %f secondes", temps_ecoule);
+    printf("\n Temps d execution Memory in layers : %f secondes", temps_ecoule);
     printf("\n trouver Avec  EFP 2 tables Memory in layers ? : %s ", c? "true" : "false \n");
     if (result != NULL){
          printf("\n Le state qui verifie\n");
@@ -167,10 +167,10 @@ for(int i=0; i< 3; i++) {
    printf("\n \n **********************EF Full memory************************: \n ");
  
     debut = clock(); 
-    c = EF_FullMemory(& ta,init_state->location,init_state->clock_zone, &result, check_false,heuristique_checkp);
+    c = EF_FullMemory(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
     fin = clock();            // Fin du chronomètre
     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-    printf("\n Temps d execution EFP 2 tables : %f secondes", temps_ecoule);
+    printf("\n Temps d execution full emory : %f secondes", temps_ecoule);
     printf("\n trouver Avec  EFP 2 tables full emory? : %s ", c? "true" : "false \n");
     if (result != NULL){
          printf("\n Le state qui verifie\n");
@@ -185,7 +185,7 @@ for(int i=0; i< 3; i++) {
 
 
 printf("\n ======================================== sumurry =====================================");
-//printf("\n space state construction :  temps :  %f  nbr visite: %d", tcee /3,state_space_ta.nb_etats );
+printf("\n space state construction :  temps :  %f  nbr visite: %d", tcee /3,state_space_ta.nb_etats );
 
 printf("\n ***************************Resultats pour EF(p) true :************************************** ");
 printf("\n Only Essential States (OES) :  temps :  %f ", tnmef /3 );
