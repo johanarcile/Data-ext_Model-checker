@@ -135,16 +135,16 @@ Les arguments de EGP:
 /*----------------- Partial memory (memoire que dans les borders) -----------------------------------------------------------------*/
 //EFP
 
-int EF_p(TA* ta, int location, DBM clock, State** result,
+int ABS_2tables(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s), int (*heuristique_check)(State* s));
 
 int EF_p_HV(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),  int  (*heuristique_check)(State* s));
-int EF_p_HV_M(TA* ta, int location, DBM clock, State** result,
+int ABS_table_and_minheap(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
          int  (*heuristique_check)(State* s));
 
-int EF_p_1table(TA* ta, int location, DBM clock, State** result,
+int ABS_1table(TA* ta, int location, DBM clock, State** result,
                 bool (*check)(State*s),
          int (*heuristique_check)(State*s));
 
@@ -162,7 +162,7 @@ int EG_p_1table(TA* ta, int location, DBM clock,
          int (*heuristique_check)(State*s));
 
 /*--------------------Memory in layers---------------------------*/
-int EF_p_Memory_in_Layer(TA* ta, int location, DBM clock, State** result,
+int ABS_and_current_layer(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
          int  (*heuristique_check)(State* s));
 
@@ -171,7 +171,7 @@ int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock,
                  int  (*heuristique_check)(State* s));
 
 /*-------------------- Full memory ---------------------------*/
-int EF_FullMemory(TA* ta, int location, DBM clock, State** result,
+int AS(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
          int  (*heuristique_check)(State* s));
 
@@ -180,7 +180,7 @@ int EG_FullMemory(TA* ta, int location, DBM clock,
                  int  (*heuristique_check)(State* s));
 
 /*-------------- No memory ---------------------------------------------*/
-int EF_pNO_memory(TA* ta, int location, DBM clock, State** result,
+int OES(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
           int  (*heuristique_check)(State* s));
 
