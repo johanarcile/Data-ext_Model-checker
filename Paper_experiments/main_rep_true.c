@@ -37,24 +37,6 @@ printf("\n======================================================================
 printf("\n  EXPERIMENTS: EF(p) where p is NOT satisfied");
 printf("\n==============================================================================\n");
 
-/*--------------------------- building state space ----------------------------*/
-printf("\n------------------------------------------------------------------------------");
-printf("\n  State space construction");
-printf("\n------------------------------------------------------------------------------\n");
-
-// for(int i=0; i< 3; i++) {
-
-
-//     debut = clock();
-//     build_state_space_ta(&ta, &state_space_ta);
-//     fin = clock();
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n  Construction time         : %f s", temps_ecoule);
-//     printf("\n  Total number of extended states : %d\n", state_space_ta.nb_etats);
-//      tcee = tcee + temps_ecoule;
-
-
-// }
 
 
 /*--------------------------- EF(p) not satisfied ----------------------------*/
@@ -87,20 +69,20 @@ for(int i=0; i< 3; i++) {
 
    printf("\n ---------[2] All Border States (ABS)-------------\n");
 
-//    printf("\n  Variant: 1 hash table\n");
-//     debut = clock();
-//     c = ABS_1table(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
-//     fin = clock();            // Stop the timer
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n  Execution time           : %f s\n", temps_ecoule);
-//     printf("  State satisfying p found : %s\n", c ? "yes" : "no");
+   printf("\n  Variant: 1 hash table\n");
+    debut = clock();
+    c = ABS_1table(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
+    fin = clock();            // Stop the timer
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n  Execution time           : %f s\n", temps_ecoule);
+    printf("  State satisfying p found : %s\n", c ? "yes" : "no");
 
-//     if (result != NULL){
-//          printf("  Satisfying state:\n");
-//          print_state(result, ta.locations);
-//          free (result);
-//     }
-//    tmbef1 = tmbef1+ temps_ecoule;
+    if (result != NULL){
+         printf("  Satisfying state:\n");
+         print_state(result, ta.locations);
+         free (result);
+    }
+   tmbef1 = tmbef1+ temps_ecoule;
 
 
    printf("\n  Variant: 2 hash tables\n");
@@ -136,7 +118,7 @@ for(int i=0; i< 3; i++) {
 
 //      tmbhpef = tmbhpef+ temps_ecoule;
 
-   printf("\n  Variant: hash table and min-heap (memory allocated on demand)\n");
+   printf("\n  Variant: hash table and min-heap \n");
     debut = clock();
     c = ABS_table_and_minheap(& ta,init_state->location,init_state->clock_zone, &result, check_true,heuristique_checkp);
     fin = clock();            // Stop the timer
@@ -191,6 +173,26 @@ for(int i=0; i< 3; i++) {
 }
 
 
+
+
+/*--------------------------- building state space ----------------------------*/
+printf("\n------------------------------------------------------------------------------");
+printf("\n  State space construction");
+printf("\n------------------------------------------------------------------------------\n");
+
+for(int i=0; i< 3; i++) {
+
+
+    debut = clock();
+    build_state_space_ta(&ta, &state_space_ta);
+    fin = clock();
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n  Construction time         : %f s", temps_ecoule);
+    printf("\n  Total number of extended states : %d\n", state_space_ta.nb_etats);
+     tcee = tcee + temps_ecoule;
+
+
+}
 
 printf("\n==============================================================================");
 printf("\n  SUMMARY: EF(p) where p is NOT satisfied (average over 3 runs)");
