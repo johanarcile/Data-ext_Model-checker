@@ -136,17 +136,17 @@ Les arguments de EGP:
 //EFP
 
 int ABS_2tables(TA* ta, int location, DBM clock, State** result,
-          bool (*check)(State* s), int (*heuristique_check)(State* s));
+          bool (*check)(State* s), int (*heuristique_check)(State* s),double timeout_s);
 
 int EF_p_HV(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),  int  (*heuristique_check)(State* s));
 int ABS_table_and_minheap(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
-         int  (*heuristique_check)(State* s));
+         int  (*heuristique_check)(State* s),double timeout_s);
 
 int ABS_1table(TA* ta, int location, DBM clock, State** result,
                 bool (*check)(State*s),
-         int (*heuristique_check)(State*s));
+         int (*heuristique_check)(State*s),double timeout_s);
 
 //EGP
 
@@ -164,7 +164,7 @@ int EG_p_1table(TA* ta, int location, DBM clock,
 /*--------------------Memory in layers---------------------------*/
 int ABS_and_current_layer(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
-         int  (*heuristique_check)(State* s));
+         int  (*heuristique_check)(State* s),double timeout_s);
 
 int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock, 
                   bool (*check)(State* s),
@@ -173,7 +173,7 @@ int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock,
 /*-------------------- Full memory ---------------------------*/
 int AS(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
-         int  (*heuristique_check)(State* s));
+         int  (*heuristique_check)(State* s),double timeout_s);
 
 int EG_FullMemory(TA* ta, int location, DBM clock,
          bool (*check)(State* s),
@@ -182,7 +182,7 @@ int EG_FullMemory(TA* ta, int location, DBM clock,
 /*-------------- No memory ---------------------------------------------*/
 int OES(TA* ta, int location, DBM clock, State** result,
           bool (*check)(State* s),
-          int  (*heuristique_check)(State* s));
+          int  (*heuristique_check)(State* s),double timeout_s);
 
 int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock, 
                   bool (*check)(State* s),

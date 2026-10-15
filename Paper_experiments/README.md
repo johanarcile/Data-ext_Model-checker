@@ -82,11 +82,13 @@ The program runs the different exploration algorithms on the query EF(p) and pri
 
 ## Long execution times
  
+
 > **Note**
 > For some models, some of the exploration functions called in `main_rep_true.c` and `main_rep_false.c` take a very long time to run (see the results of the paper, also stored in `Results/`).
-> To reproduce the other results without waiting for them, comment out the calls to these functions in `main_rep_true.c` and `main_rep_false.c` (with `//` or `/* ... */`), then compile and run as described above.
-> To reproduce the results of these functions as well, uncomment their calls and recompile.
- 
+> To avoid waiting indefinitely, a time limit (`TIMEOUT_SECONDS`) is defined at the top of `main_rep_true.c` and `main_rep_false.c`. It is set to 5 minutes (300 s) by default and can be changed there. Once it is exceeded, the algorithm is interrupted, `TIME OUT` is printed, and the run is ignored in the averages of the final summary.
+> Note that the interruption may slightly exceed the defined time limit: to avoid degrading performance, the algorithms only check the elapsed time in their main loop.
+
+
 ## Models used
  
 The three models are extended timed automata with two clocks `x` and `y` and one data variable `v`.

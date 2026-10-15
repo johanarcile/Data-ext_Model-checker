@@ -7,9 +7,11 @@
 #include "structure_state_space_ta.h"
 #include "uthash.h"
 #include "structure_DBM.h"
-//#include "structure_variable.h"
-
 #include "structure_variable.h"
+
+#include <time.h>
+#define TIMEOUT_SECONDS 60
+#define ALGO_TIMEOUT (-1)
 
 
 // --------------------- Hashed state space functions ---------------------
@@ -489,10 +491,14 @@ State* EGNextBorder(TA* ta, State state, int location, DBM clock,
 // // /*==========================================EFP table hashage avec champs exploring ====================================================*/
 
 
-int ABS_1table(TA* ta, int location, DBM clock, State** result,
+int ABS_1table(TA* ta, int location, DBM clockD, State** result,
                 bool (*check)(State*s),
-         int (*heuristique_check)(State*s))
+         int (*heuristique_check)(State*s),double timeout_s)
 {
+
+ clock_t debut = clock(); 
+     double temps_ecoule;
+       
     bool   found      = false;
     State* init_state = compute_init_state(ta);
    int num_visited = 0; 
@@ -522,7 +528,7 @@ int ABS_1table(TA* ta, int location, DBM clock, State** result,
         int    num_succ   = 0;
                                     
 
-        State* successors = NextBorder(ta, current, location, clock,
+        State* successors = NextBorder(ta, current, location, clockD,
                                         &num_succ, &found,&num_visited, check);
 
        
@@ -532,6 +538,12 @@ int ABS_1table(TA* ta, int location, DBM clock, State** result,
             free(successors);
             swe_destroy(&states);
             return 1;
+        }
+         if ((double)(clock() - debut) / CLOCKS_PER_SEC > timeout_s) {
+            free(successors);
+            swe_destroy(&states);
+        *result = NULL;
+        return ALGO_TIMEOUT;
         }
 
         if (!((num_succ == 1) &&
@@ -577,9 +589,15 @@ int ABS_1table(TA* ta, int location, DBM clock, State** result,
 
  /*==========================================   2 tabeles de hashage   ===================*/
 
-int ABS_2tables(TA* ta, int location, DBM clock,State** result,
+int ABS_2tables(TA* ta, int location, DBM clockD,State** result,
          bool (*check)(State*s),
-         int (*heuristique_check)(State*s)) {
+         int (*heuristique_check)(State*s),double timeout_s) {
+    
+            
+ clock_t debut = clock(); 
+     double temps_ecoule;
+       
+
 
     //if (!ta) return 0;
     int nbr_border_state =0;
@@ -621,7 +639,7 @@ int ABS_2tables(TA* ta, int location, DBM clock,State** result,
 
         /* --- Compute successors --- */
         int    num_succ  = 0;
-        State* successors = NextBorder(ta, current, location, clock,
+        State* successors = NextBorder(ta, current, location, clockD,
                                         &num_succ, &found,&num_visited, check);
         if (found) {
               *result = malloc(sizeof(State));
@@ -631,6 +649,13 @@ int ABS_2tables(TA* ta, int location, DBM clock,State** result,
             visit_destroy(&visited);
              printf("\n Number of visited states: %d", num_visited);
             return 1;
+        }
+
+        if ((double)(clock() - debut) / CLOCKS_PER_SEC > timeout_s) {
+        sw_destroy(&visiting);
+        visit_destroy(&visited);
+        *result = NULL;
+        return ALGO_TIMEOUT;
         }
 
         if (!successors) continue;
@@ -666,6 +691,8 @@ int ABS_2tables(TA* ta, int location, DBM clock,State** result,
       
 
         free(successors);
+
+        
     }
 
     sw_destroy(&visiting);
@@ -769,10 +796,13 @@ int EF_p_HV(TA* ta, int location, DBM clock,State** result,
 
 /*============================EFP miheap state avec pointeur===================================*/
 
-int ABS_table_and_minheap(TA* ta, int location, DBM clock,State** result,
+int ABS_table_and_minheap(TA* ta, int location, DBM clockD,State** result,
          bool (*check)(State*s),
-         int  (*heuristique_check)(State*s))
+         int  (*heuristique_check)(State*s),double timeout_s)
 {
+    clock_t debut = clock(); 
+    double temps_ecoule;
+
     bool found = false;
     int n = 0;
     *result= NULL;
@@ -797,7 +827,7 @@ int ABS_table_and_minheap(TA* ta, int location, DBM clock,State** result,
         State* current = best.state;
 
      
-        State* successors = NextBorder(ta, *current, location, clock,
+        State* successors = NextBorder(ta, *current, location, clockD,
                                         &num_succ, &found,&n, check);
 
         if (found) {
@@ -808,6 +838,15 @@ int ABS_table_and_minheap(TA* ta, int location, DBM clock,State** result,
             heap_destroyP(heap);
             visit_destroy(&visited);
             return 1;
+        }
+
+          if ((double)(clock() - debut) / CLOCKS_PER_SEC > timeout_s) {
+            free(current);
+            free(successors);
+            heap_destroyP(heap);
+            visit_destroy(&visited);
+            *result = NULL;
+        return ALGO_TIMEOUT;
         }
 
         if (successors) {
@@ -1261,11 +1300,13 @@ State* NextBorderMemory(TA* ta, State state, int location, DBM clock,
     return finals;
 }
 
-int ABS_and_current_layer (TA* ta, int location, DBM clock,State** result,
+int ABS_and_current_layer (TA* ta, int location, DBM clockD,State** result,
          bool (*check)(State*s),
-         int (*heuristique_check)(State*s)) {
+         int (*heuristique_check)(State*s),double timeout_s) {
 
-    //if (!ta) return 0;
+ clock_t debut = clock(); 
+     double temps_ecoule;
+
     int nbr_border_state =0;
     int num_visited = 0;
     bool   found      = false;
@@ -1300,7 +1341,7 @@ int ABS_and_current_layer (TA* ta, int location, DBM clock,State** result,
 
         /* --- Compute successors --- */
         int    num_succ  = 0;
-        State* successors = NextBorderMemory(ta, current, location, clock,
+        State* successors = NextBorderMemory(ta, current, location, clockD,
                                         &num_succ, &found,&num_visited, check);   // Appel à nextborder memory
         if (found) {
               *result = malloc(sizeof(State));
@@ -1311,6 +1352,16 @@ int ABS_and_current_layer (TA* ta, int location, DBM clock,State** result,
              printf("\n Number of visited states: %d", num_visited);
             return 1;
         }
+        
+        
+        if ((double)(clock() - debut) / CLOCKS_PER_SEC > timeout_s) {
+            free(successors);
+            sw_destroy(&visiting);
+            visit_destroy(&visited);
+            *result = NULL;
+        return ALGO_TIMEOUT;
+        }
+        
 
         if (!successors) continue;
 
@@ -1561,6 +1612,8 @@ int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock,
         }
 
         free(successors);
+
+         
     }
 
     /* open vide : aucun chemin infini satisfaisant trouvé */
@@ -1577,11 +1630,13 @@ int EG_p_2tables_Memory_Layer(TA* ta, int location, DBM clock,
 
 
 /***********************************************************************************  No memory *************************************************************************************/
-int OES(TA* ta, int location, DBM clock,State** result,
+int OES(TA* ta, int location, DBM clockD,State** result,
          bool (*check)(State*s),
-         int (*heuristique_check)(State*s)) {
+         int (*heuristique_check)(State*s),double timeout_s) {
 
-    //if (!ta) return 0;
+     clock_t debut = clock(); 
+     double temps_ecoule;
+
     int nbr_border_state =0;
     int num_found = 0; 
     bool   found      = false;
@@ -1617,7 +1672,7 @@ int OES(TA* ta, int location, DBM clock,State** result,
 
         /* --- Compute successors --- */
         int    num_succ  = 0;
-        State* successors = NextBorder(ta, current, location, clock,
+        State* successors = NextBorder(ta, current, location, clockD,
                                         &num_succ, &found,&num_found, check);
         if (found) {
               *result = malloc(sizeof(State));
@@ -1626,6 +1681,13 @@ int OES(TA* ta, int location, DBM clock,State** result,
             sw_destroy(&visiting);
             printf("\n Number of visited states: %d", num_found);
             return 1;
+        }
+
+         if ((double)(clock() - debut) / CLOCKS_PER_SEC > timeout_s) {
+            free(successors);
+            sw_destroy(&visiting);
+            *result = NULL;
+        return ALGO_TIMEOUT;
         }
 
         if (!successors) continue;
@@ -1766,10 +1828,13 @@ int EG_p_2tablesNo_memory(TA* ta, int location, DBM clock,
 /***********************************************************************************  full memory *****************************************************************************/
 
 
-int AS(TA* ta, int location, DBM clock, State** result,
+int AS(TA* ta, int location, DBM clockD, State** result,
          bool (*check)(State*s),
-         int (*heuristique_check)(State*s))
+         int (*heuristique_check)(State*s),double timeout_s)
 {
+ clock_t debut = clock(); 
+     double temps_ecoule;
+
     *result = NULL;
     int nbr_border =0;
     int num_visited = 0;
@@ -1831,7 +1896,7 @@ int AS(TA* ta, int location, DBM clock, State** result,
                   
  
                 if ((s->location == location) &&
-                    clock_zones_equal(s->clock_zone, clock, DBM_DIM))
+                    clock_zones_equal(s->clock_zone, clockD, DBM_DIM))
                 {
                     /* ----- Border state ----- */
                   
@@ -1875,6 +1940,14 @@ int AS(TA* ta, int location, DBM clock, State** result,
             num_visited++;
 
         } // Endwhile interieur (plus d'etats dans exploring)
+
+        if ((double)(clock() - debut) / CLOCKS_PER_SEC > timeout_s) {
+             free(exploring);
+             free(finals);
+             visitState_destroy(&layer_visited);
+            *result = NULL;
+        return ALGO_TIMEOUT;
+        }
 
         /* ---------- BFS épuisé : choisir le meilleur border state ---------- */
         if (num_finals == 0) break; // Si y'a plus d'états à explorer (l'exploration termine)
