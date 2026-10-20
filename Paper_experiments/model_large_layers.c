@@ -88,7 +88,6 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 void init_variables() { 
     variable.v = 0;
     variable.active=false;
-    variable.x = 0;
     
 }
 

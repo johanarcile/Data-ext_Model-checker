@@ -88,7 +88,7 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 void init_variables() { 
     //memset(&variable, 0, sizeof(Variable)); 
     variable.v = 0;
-    variable.x = 0;
+    variable.w = 0;
     variable.active=false;
     // variable.table_size = 3;
     // variable.table[0] = 0;
@@ -108,7 +108,7 @@ Variable update_a(Variable var) {
         
         var.v += 2;
         if (var.v >= vmax) var.active = true;
-        var.x += 1;
+        var.w += 1;
         
     } 
   
@@ -121,7 +121,7 @@ Variable update_b(Variable var) {
 
       var.v *= 2;
       if (var.v >= vmax) var.active = true;
-      var.x += 1;
+      var.w += 1;
      
     
     }
@@ -137,7 +137,7 @@ Variable update_c(Variable var) {
         
         var.v += 1;
         if (var.v >= vmax) var.active = true;
-        var.x += 1;
+        var.w += 1;
         
     } 
 

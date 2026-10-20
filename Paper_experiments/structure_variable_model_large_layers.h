@@ -9,7 +9,6 @@
 
 typedef struct Variable {
     int v;
-    int x;
     bool active;             
    
     

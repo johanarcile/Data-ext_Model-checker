@@ -3,18 +3,14 @@
 
 #include <stdbool.h>
 
-#define TABLE_SIZE 3
-#define NAME_SIZE 50
+
 // --------------------- Def de variables -------------------------
 
 typedef struct Variable {
     int v;
-    int x;
+    int w;
     bool active;             // booléen
-    // int table[TABLE_SIZE];   // tableau d'int
-    // int table_size;          // nombre d’éléments utilisés
-
-    // char name[NAME_SIZE];    // "string"
+  
     
 } Variable;
 
