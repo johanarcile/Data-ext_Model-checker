@@ -9,7 +9,7 @@
 // Time limit per execution (the algorithms return -1 when it is exceeded).
 // Must be the same value as in the algorithms (see README.md).
 #ifndef TIMEOUT_SECONDS
-#define TIMEOUT_SECONDS 100
+#define TIMEOUT_SECONDS 300
 #endif
 
 // Manual declaration of the function that builds the model
