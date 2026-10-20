@@ -106,7 +106,7 @@ void print_variable(Variable * v){
 
 bool check_p_var_true(Variable* V) {
 
-      if ((V->v == 9900000 )&&(V->active == false)) 
+      if ((V->v == 9900000 )&&(V->active == true)) 
       return true;
     
       else return false;

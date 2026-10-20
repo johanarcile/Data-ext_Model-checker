@@ -7,7 +7,7 @@ This document lists, for each file of the project, the structures and functions 
 ## Folders
  
 ### `Results/`
-Latest results obtained for the models `linear_layers`, `small_layers` and `large_layers`, on the properties defined in the paper.
+Latest results obtained for the models `chain_layers`, `small_layers` and `large_layers`, on the properties defined in the paper.
  
 ---
 
@@ -92,9 +92,9 @@ The three models are extended timed automata with two clocks `x` and `y` and a d
  
 | Model | Name | Locations | Invariant | `vmax` |
 |-------|------|-----------|-----------|--------|
-| 1 | `linear_layers` | 4 (`l0` to `l3`) | `x, y ≤ 2` | 9 900 000 |
+| 1 | `chain_layers` | 4 (`l0` to `l3`) | `x, y ≤ 2` | 9 900 000 |
 | 2 | `small_layers` | 2 (`l0`, `l1`) | `x, y ≤ 32` | 3 000 |
-| 3 | `large_layers` | 4 (`l0` to `l3`), same structure as `linear_layers` | `x, y ≤ 12` | 20 000 |
+| 3 | `large_layers` | 4 (`l0` to `l3`) | `x, y ≤ 12` | 20 000 |
  
 Each model is made of two files, named after the model:
  
@@ -103,11 +103,11 @@ Each model is made of two files, named after the model:
 ---
  
 ### `structure_variable.h` and `structure_variable_model_<name>.h` / `.c`
-Data structure specific to each model, and functions related to its variables. `<name>` is one of `linear_layers`, `small_layers` or `large_layers`.
+Data structure specific to each model, and functions related to its variables. `<name>` is one of `chain_layers`, `small_layers` or `large_layers`.
  
-- `structure_variable.h`: common header, included by all the other files of the project. It defines the model names as numeric macros (`linear_layers` = 1, `small_layers` = 2, `large_layers` = 3) and selects the header of the active model according to the macro `MODEL` given at compile time. If `MODEL` is not defined, `small_layers` is used. An invalid value triggers a `#error`.
-- `structure_variable_model_linear_layers.h`, `structure_variable_model_small_layers.h`, `structure_variable_model_large_layers.h`: definition of `struct Variable` for each model, together with the prototypes of the associated functions.
-- `structure_variable_model_linear_layers.c`, `structure_variable_model_small_layers.c`, `structure_variable_model_large_layers.c`: implementation of these functions for each model.
+- `structure_variable.h`: common header, included by all the other files of the project. It defines the model names as numeric macros (`chain_layers` = 1, `small_layers` = 2, `large_layers` = 3) and selects the header of the active model according to the macro `MODEL` given at compile time. If `MODEL` is not defined, `small_layers` is used. An invalid value triggers a `#error`.
+- `structure_variable_model_chain_layers.h`, `structure_variable_model_small_layers.h`, `structure_variable_model_large_layers.h`: definition of `struct Variable` for each model, together with the prototypes of the associated functions.
+- `structure_variable_model_chain_layers.c`, `structure_variable_model_small_layers.c`, `structure_variable_model_large_layers.c`: implementation of these functions for each model.
 **Main functions**
 - `equal_var()`: returns true if two variables are equal, false otherwise
 - `print_variable()`: prints the value of each field of the variable

@@ -17,11 +17,12 @@ bool equal_var( Variable *v1,  Variable *v2) {
        
             return false;
         }
-      // if (v1->x != v2->x)
-      // {
+
+   if (v1->x != v2->x)
+      {
     
-      //   return false;
-      // }
+        return false;
+      }
         
 
     if (v1->active != v2->active)
@@ -30,6 +31,7 @@ bool equal_var( Variable *v1,  Variable *v2) {
         return false;
       }
 
+    
     // if (strcmp(v1->name, v2->name) != 0)
     //  {
   
@@ -62,20 +64,12 @@ int compare_var(const Variable *v1, const Variable *v2) {
     if (v1->v < v2->v) return -1;
     if (v1->v > v2->v) return 1;
     // si ici donc v1.v == v2.V
-    //  if (v1->x < v2->x) return -1;
-    // if (v1->x > v2->x) return 1;
+     if (v1->x < v2->x) return -1;
+    if (v1->x > v2->x) return 1;
+        // si ici donc v1.v == v2.V et v1.x == v2.x
     if (v1->active < v2->active) return -1;
     if (v1->active > v2->active) return 1;
-     // si ici donc v1.v == v2.V et  v1.active = v2.active 
-    // int name_cmp = strcmp(v1->name, v2->name);
-    // if (name_cmp != 0) return name_cmp;
-    // for (int i = 0; i < TABLE_SIZE; i++) {
-    //     if (v1->table[i] < v2->table[i])
-    //         return -1;
-    //     else if (v1->table[i] > v2->table[i]){
-    //        return 1;
-    //     }
-    // }
+     // si ici donc v1.v == v2.V et v1.x == v2.x et  v1.active = v2.active 
     return 0;
 }
 
@@ -90,8 +84,9 @@ int compare_var(const Variable *v1, const Variable *v2) {
 void print_variable(Variable * v){
 
         printf("\t Variables       : v = %d\n", v->v);
-       //  printf("\t Variables       : x = %d\n", v->x);
+        printf("\t Variables       : x = %d\n", v->x);
         printf("\t Variables       : Active = %d\n", v->active);
+
         // printf("\t Variables       : name = %s\n", v->name);
         //  printf("\t Variables       : table = [ %d, %d, %d,] \n", v->table[0], v->table[1],v->table[2]);
          
@@ -107,7 +102,7 @@ void print_variable(Variable * v){
 bool check_p_var_true(Variable* V) {
 
    //9900000
-      if ((V->v == 20000 )&&(V->active == false)) 
+      if ((V->v == 20000 )&&(V->active == true)) 
       return true;
     
       else return false;

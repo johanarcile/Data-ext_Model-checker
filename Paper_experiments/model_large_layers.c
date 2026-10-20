@@ -88,11 +88,8 @@ void init_ta() { //CAN BE OPTIMIZED BY #define NB_LOCATIONS AND NB_ACTIONS, AND 
 void init_variables() { 
     variable.v = 0;
     variable.active=false;
-    // variable.table_size = 3;
-    // variable.table[0] = 0;
-    // variable.table[1] = 0;
-    // variable.table[2] = 0;
-    // strcpy(variable.name, "start");
+    variable.x = 0;
+    
 }
 
 // --------------------- Update functions ---------------------
@@ -105,13 +102,9 @@ Variable update_a(Variable var) {
      if (var.v + 2 <= vmax && var.v + 2 >= -10){ 
         
         var.v += 2;
-         //var.x *= 2;
-         var.active = false;
-        // if(var.v == vmax){var.active = true;}
-        // var.table[0]++;
-        // var.table[1] = var.v;
-        // var.table[2] = var.v;
-        // snprintf(var.name, NAME_SIZE, "transition a");
+        
+         if(var.v == vmax){var.active = true;}
+        
     } 
   
     return var;
@@ -124,13 +117,8 @@ Variable update_b(Variable var) {
     if (var.v *2 <= vmax && var.v + 1 >= -10){
         
         var.v *= 2;
-       // var.x += 2;
-        var.active = false;
-      // if(var.v == vmax){var.active = true;}
-        //  var.table[0]++;
-        // var.table[1] = var.v;
-        // var.table[2] = var.v;
-        // snprintf(var.name, NAME_SIZE, "transition b");
+        if(var.v == vmax){var.active = true;}
+        
     } 
 
     
@@ -142,15 +130,9 @@ Variable update_c(Variable var) {
     if (var.v + 1 <= vmax && var.v * 2 >= -10) {
 
       var.v += 1;
-      //var.x += 1;
 
-      var.active = false;
-
-    // if(var.v == vmax){var.active = true;}
-    //   var.table[0]++;
-    //   var.table[1] = var.v;
-    //   var.table[2] = var.v;
-    //   snprintf(var.name, NAME_SIZE, "transition c");
+     if(var.v == vmax){var.active = true;}
+   
     }
  
     return var;

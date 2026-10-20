@@ -107,13 +107,9 @@ Variable update_a(Variable var) {
      if (var.v + 2 <= vmax && var.v + 2 >= -10){ 
         
         var.v += 2;
-        var.active = false;
-       // if (var.v >= vmax) var.active = true;
+        if (var.v >= vmax) var.active = true;
         var.x += 1;
-        // var.table[0]++;
-        // var.table[1] = var.v;
-        // var.table[2] = var.v;
-        // snprintf(var.name, NAME_SIZE, "transition a");
+        
     } 
   
     return var;
@@ -124,15 +120,10 @@ Variable update_b(Variable var) {
     if (var.v * 2 <= vmax && var.v * 2 >= -10) {
 
       var.v *= 2;
-    // if (var.v >= vmax) var.active = true;
-    // else 
-     var.active = false;
+      if (var.v >= vmax) var.active = true;
       var.x += 1;
      
-    //   var.table[0]++;
-    //   var.table[1] = var.v;
-    //   var.table[2] = var.v;
-    //   snprintf(var.name, NAME_SIZE, "transition c");
+    
     }
  
     return var;
@@ -145,14 +136,9 @@ Variable update_c(Variable var) {
     if (var.v + 1 <= vmax && var.v + 1 >= -10){
         
         var.v += 1;
-    // if (var.v >= vmax) var.active = true;
-    // else
-      var.active = false;
+        if (var.v >= vmax) var.active = true;
         var.x += 1;
-        //  var.table[c
-        // var.table[1] = var.v;
-        // var.table[2] = var.v;
-        // snprintf(var.name, NAME_SIZE, "transition b");
+        
     } 
 
     

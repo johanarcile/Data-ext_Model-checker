@@ -2,7 +2,7 @@
  
 This document explains how to compile and run the experiments of the paper. The queries used for the experiments are already saved in the code, so no query needs to be rewritten: it is enough to compile the project with the right model and the right `main` file, and to run the executable.
  
-The latest results we obtained are stored in the `Results/` folder, for the models `linear_layers`, `small_layers` and `large_layers`.
+The latest results we obtained are stored in the `Results/` folder, for the models `chain_layers`, `small_layers` and `large_layers`.
  
 ---
  
@@ -15,7 +15,7 @@ The latest results we obtained are stored in the `Results/` folder, for the mode
  
 Two choices determine which executable is built:
  
-- **The model**: `linear_layers`, `small_layers` or `large_layers`. It is selected with `-DMODEL=<name>`, and the two files specific to the model must be compiled with it: `model_<name>.c` and `structure_variable_model_<name>.c`.
+- **The model**: `chain_layers`, `small_layers` or `large_layers`. It is selected with `-DMODEL=<name>`, and the two files specific to the model must be compiled with it: `model_<name>.c` and `structure_variable_model_<name>.c`.
 - **The case of the query EF(p)**:
   - `main_rep_true.c`: p **is satisfied**.
   - `main_rep_false.c`: p **is not satisfied**.
@@ -31,16 +31,16 @@ The queries themselves are saved in `check_p_var_true()` and `check_p_var_false(
  
 All the commands below can be copied and pasted as they are. Run them from the project folder.
  
-### Model `linear_layers`
+### Model `chain_layers`
  
 **EF(p) where p is satisfied:**
 ```bash
-gcc -DMODEL=linear_layers -o executable_name main_rep_true.c ta_extended_builder.c DBM.c model_linear_layers.c structure_variable_model_linear_layers.c data_structures.c heuristiques_et_check.c
+gcc -DMODEL=chain_layers -o executable_name main_rep_true.c ta_extended_builder.c DBM.c model_chain_layers.c structure_variable_model_chain_layers.c data_structures.c heuristiques_et_check.c
 ```
  
 **EF(p) where p is not satisfied:**
 ```bash
-gcc -DMODEL=linear_layers -o executable_name main_rep_false.c ta_extended_builder.c DBM.c model_linear_layers.c structure_variable_model_linear_layers.c data_structures.c heuristiques_et_check.c
+gcc -DMODEL=chain_layers -o executable_name main_rep_false.c ta_extended_builder.c DBM.c model_chain_layers.c structure_variable_model_chain_layers.c data_structures.c heuristiques_et_check.c
 ```
  
 ### Model `small_layers`
@@ -95,8 +95,8 @@ The three models are extended timed automata with two clocks `x` and `y` and one
  
 | Model | Locations | Invariant | `vmax` |
 |-------|-----------|-----------|--------|
-| `linear_layers` | 4 (`l0` to `l3`) | `x, y ≤ 2` | 9 900 000 |
+| `chain_layers` | 4 (`l0` to `l3`) | `x, y ≤ 2` | 9 900 000 |
 | `small_layers` | 2 (`l0`, `l1`) | `x, y ≤ 32` | 3 000 |
-| `large_layers` | 4 (`l0` to `l3`), same structure as `linear_layers` | `x, y ≤ 12` | 20 000 |
+| `large_layers` | 4 (`l0` to `l3`) | `x, y ≤ 12` | 20 000 |
  
 For the description of the project files and functions, see [DOCUMENTATION.md](DOCUMENTATION.md).

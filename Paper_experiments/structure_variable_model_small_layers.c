@@ -109,7 +109,7 @@ void print_variable(Variable * v){
 bool check_p_var_true(Variable* V) {
 
    //9900000
-      if ((V->v == 3000 )&&(V->active == false) &&(V->x>987)) 
+      if ((V->v == 3000 )&&(V->active == true) &&(V->x > 987)) 
       return true;
     
       else return false;

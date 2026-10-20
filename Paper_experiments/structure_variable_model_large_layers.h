@@ -9,12 +9,9 @@
 
 typedef struct Variable {
     int v;
-   // int x;
-    bool active;             // booléen
-    // int table[TABLE_SIZE];   // tableau d'int
-    // int table_size;          // nombre d’éléments utilisés
-
-    // char name[NAME_SIZE];    // "string"
+    int x;
+    bool active;             
+   
     
 } Variable;
 

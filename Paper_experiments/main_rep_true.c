@@ -10,7 +10,7 @@
 // Time limit per execution (the algorithms return -1 when it is exceeded).
 // Must be the same value as in the algorithms (see README.md).
 #ifndef TIMEOUT_SECONDS
-#define TIMEOUT_SECONDS 60
+#define TIMEOUT_SECONDS 100
 #endif
 
 // Manual declaration of the function that builds the model
@@ -54,44 +54,31 @@ int main() {
 
 
 printf("\n==============================================================================");
-printf("\n  EXPERIMENTS: EF(p) where p is NOT satisfied");
+printf("\n  EXPERIMENTS: EF(p) where p is satisfied");
 printf("\n  Time limit per execution: %d s (an execution exceeding it is interrupted)", TIMEOUT_SECONDS);
 printf("\n==============================================================================\n");
 
 /*--------------------------- building state space ----------------------------*/
-// printf("\n------------------------------------------------------------------------------");
-// printf("\n  State space construction");
-// printf("\n------------------------------------------------------------------------------\n");
-
-// for(int i=0; i< 3; i++) {
+printf("\n------------------------------------------------------------------------------");
+printf("\n  State space construction");
+printf("\n------------------------------------------------------------------------------\n");
 
 
-//     debut = clock();
-//     build_state_space_ta(&ta, &state_space_ta);
-//     fin = clock();
-//     temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
-//     printf("\n  Construction time         : %f s", temps_ecoule);
-//     printf("\n  Total number of extended states : %d\n", state_space_ta.nb_etats);
-//      tcee = tcee + temps_ecoule;
+
+    debut = clock();
+    build_state_space_ta(&ta, &state_space_ta);
+    fin = clock();
+    temps_ecoule = (double)(fin - debut) / CLOCKS_PER_SEC;
+    printf("\n  Construction time         : %f s", temps_ecoule);
+    printf("\n  Total number of extended states : %d\n", state_space_ta.nb_etats);
+     tcee = tcee + temps_ecoule;
 
 
-// }
 
 
-/*--------------------------- EF(p) not satisfied ----------------------------*/
-// PROCESS_MEMORY_COUNTERS_EX m;
-// GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&m, sizeof(m));
-// printf("Memoire engagee : %.0f Mo | pic RAM : %.0f Mo\n",
-//        m.PagefileUsage / 1048576.0,
-//        m.PeakWorkingSetSize / 1048576.0);
-// printf("Memoire privee : %.0f Mo\n", m.PrivateUsage / 1048576.0);
-
-// for(int i=0; i< 3; i++) {
 
 
-//   printf("\n------------------------------------------------------------------------------");
-//   printf("\n  Run %d of 3", i + 1);
-//   printf("\n------------------------------------------------------------------------------\n");
+
 
 
    printf("\n ---------[1] Only Essential States (OES)-------------\n");
@@ -246,7 +233,7 @@ printf("\n======================================================================
 // printf("Memoire privee : %.0f Mo\n", m.PrivateUsage / 1048576.0);
 
 printf("\n==============================================================================");
-printf("\n  SUMMARY: EF(p) where p is NOT satisfied");
+printf("\n  SUMMARY: EF(p) where p is satisfied");
 printf("\n  (execution time, time limit: %d s)", TIMEOUT_SECONDS);
 printf("\n==============================================================================\n");
 //printf("\n  State space construction : %f s (%d states)", tcee / 3, state_space_ta.nb_etats);
