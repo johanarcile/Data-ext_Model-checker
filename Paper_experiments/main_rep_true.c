@@ -3,9 +3,7 @@
 #include "structure_ta.h"
 #include "structure_state_space_ta.h"
 #include <time.h>
-#include <windows.h>
-#include <psapi.h>
-#include <malloc.h>
+
 
 // Time limit per execution (the algorithms return -1 when it is exceeded).
 // Must be the same value as in the algorithms (see README.md).

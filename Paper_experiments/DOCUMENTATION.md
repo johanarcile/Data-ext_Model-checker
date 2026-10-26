@@ -39,6 +39,11 @@ Entry points of the experiments. Compile **one** of them, not both.
 - `main_rep_false.c`: same principle, for the query EF(p) in the case where p **is not satisfied**.
 ---
 
+### `Makefile`
+
+Simplifies the compilation of the project by allowing users to select the model (chain_layers, small_layers or large_layers) and the property to check (true or false) through command-line parameters. It automatically selects the appropriate source files and reports an error if a required parameter is missing or invalid.
+---
+
 
 ### `structure_state_space_ta.h`
 Central header grouping:

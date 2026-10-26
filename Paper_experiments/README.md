@@ -23,12 +23,36 @@ The queries themselves are saved in `check_p_var_true()` and `check_p_var_false(
  
 > **Warning**
 > - `MODEL`, `model_<name>.c` and `structure_variable_model_<name>.c` must always refer to the same model. Mixing files of different models causes compilation errors or incorrect behaviour.
-> - Write `-DMODEL=small_layers` **without any space** after `=`. 
  
 ---
  
 ## Compilation
- 
+
+You can compile the project using either the `Makefile` (recommended) or the GCC commands provided below. Run all commands from the project folder.
+
+### Option 1: Using the Makefile
+
+The `Makefile` simplifies compilation by automatically selecting the appropriate source files according to the chosen model and property.
+
+**Requirements:** `gcc` and GNU `Make` must be available from the terminal.
+
+On Windows, if GNU Make is not already installed, you can install it using [MSYS2](https://www.msys2.org/). After installation, make sure the directory containing `make.exe` (e.g. `C:\msys64\usr\bin`) is added to your Windows `Path` environment variable. 
+
+```bash
+make MODEL=chain_layers PROPERTY=true
+```
+
+Replace `chain_layers` with `small_layers` or `large_layers` to select another model. Set `PROPERTY=false` to check the case where p is not satisfied. For example:
+
+```bash
+make MODEL=small_layers PROPERTY=false
+```
+
+
+### Option 2: Compiling directly with GCC
+
+If you do not want to install GNU Make, you can compile the project directly using GCC. 
+
 All the commands below can be copied and pasted as they are. Run them from the project folder.
  
 ### Model `chain_layers`
